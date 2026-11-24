@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Sheet</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111111">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: practical, calm, a personal work tool you open daily.
+   IDEA: a punch-clock time card — stamped rows, a running total.
+   PICTURE: the entry form itself with a big live "stamped" result.
+   COLOUR and TYPE: steel panel, white card, black ink, time-clock red; Inter Tight + Inter, tabular figures.
+   LAYOUT: tab bar on top; form + result card; recent rows; report with tiles and a ledger table. */
+:root{color-scheme:light dark;
+--bg:light-dark(#d5dbe0,#16191c);--card:light-dark(#fff,#1f2327);--ink:light-dark(#111,#eef1f3);--mute:light-dark(#5b646c,#9aa4ad);
+--line:light-dark(#dfe4e8,#30363c);--soft:light-dark(#f2f4f6,#262b30);--red:#e8251a;
+--ot:#e8251a;--al:light-dark(#0b4f8a,#5aa2e6);--perm:light-dark(#0f7b6c,#3fc2ad);--sick:light-dark(#a3456f,#e07aa6);--trip:light-dark(#9a6200,#e0a640);--work:light-dark(#3d4650,#b8c2cc);--late:light-dark(#c2410c,#fb8a4c);--early:light-dark(#6d28d9,#a78bfa)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:"Inter Tight",Inter,sans-serif;margin:0;line-height:1.1}
+.wrap{max-width:980px;margin:0 auto;padding:0 max(4vw,14px) 60px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 14px}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em}
+h1 b{color:var(--red)}
+.status{font-size:13px;color:var(--mute)}
+nav{display:flex;gap:6px;background:var(--card);padding:5px;border-radius:14px;margin-bottom:18px}
+nav a{flex:1;text-align:center;padding:11px 4px;font-size:15px;border-radius:10px;color:var(--ink);text-decoration:none;font-weight:600;min-height:44px}
+nav a.on{background:var(--ink);color:var(--card)}
+.card{background:var(--card);border-radius:16px;padding:clamp(16px,3vw,26px);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px}
+.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:18px}
+.cats button{border:2px solid var(--line);background:var(--soft);color:var(--ink);border-radius:12px;padding:10px 4px;font:600 14px Inter,sans-serif;min-height:52px;cursor:pointer}
+.cats button.on{border-color:var(--c);background:var(--c);color:#fff}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:6px;color:var(--mute)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:14px}
+.f{margin-bottom:14px}
+input,select{width:100%;font:16px Inter,sans-serif;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink);min-height:46px}
+input:focus,select:focus,button:focus-visible,nav a:focus-visible{outline:3px solid var(--red);outline-offset:1px}
+.check{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--ink);min-height:44px;cursor:pointer}
+.check input{width:22px;height:22px;min-height:0;accent-color:var(--red)}
+.seg{display:flex;gap:6px}.seg button{flex:1;border:1.5px solid var(--line);background:var(--soft);color:var(--ink);border-radius:10px;min-height:46px;font:600 15px Inter,sans-serif;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.btn{border:0;border-radius:12px;background:var(--red);color:#fff;font:700 16px Inter,sans-serif;padding:14px 18px;min-height:50px;width:100%;cursor:pointer}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btns{display:flex;gap:8px}
+.stamp{border:2px dashed var(--c,var(--red));border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
+.stamp .big{font:700 clamp(40px,8vw,60px)/1 "Inter Tight",sans-serif;color:var(--c,var(--red));white-space:nowrap}
+.stamp .why{color:var(--mute);font-size:14px;margin-top:8px}
+.msg{font-size:14px;border-radius:10px;padding:10px 12px;margin-top:10px}
+.msg.warn{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--ink)}
+.msg.ok{background:var(--soft);color:var(--mute)}
+.meters{display:grid;gap:12px}
+.meter .top{display:flex;justify-content:space-between;font-size:14px;gap:8px}.meter .top b{white-space:nowrap}
+.bar{height:10px;background:var(--soft);border-radius:6px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:var(--c)}
+h2{font-size:20px;margin-bottom:12px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.list .t{flex:1}.list .t small{display:block;color:var(--mute);font-size:13px}
+.amt{font-weight:700;white-space:nowrap}
+.ib{border:0;background:var(--soft);color:var(--ink);border-radius:8px;min-width:44px;min-height:40px;font:600 13px Inter,sans-serif;cursor:pointer;padding:0 10px}
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.tile{background:var(--card);border-radius:14px;padding:14px;border:2px solid transparent;cursor:pointer;text-align:left;color:var(--ink);font:inherit}
+.tile.on{border-color:var(--c)}
+.tile .k{font-size:13px;color:var(--mute);display:flex;align-items:center;gap:6px}
+.tile .v{font:700 clamp(24px,4vw,32px)/1.1 "Inter Tight",sans-serif;color:var(--c);margin:6px 0 2px;white-space:nowrap}
+.tile .s{font-size:13px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-size:13px;color:var(--mute);font-weight:600;padding:8px 6px;border-bottom:2px solid var(--ink)}
+td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:right;white-space:nowrap}
+tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--ink)}
+.tag{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.mini{display:inline-block;height:6px;background:var(--ot);border-radius:3px;vertical-align:middle;margin-right:6px}
+.flag{color:var(--red);font-size:12px;font-weight:600}
+.empty{color:var(--mute);text-align:center;padding:26px 8px}
+.wake{margin-top:14px;padding:14px;border-radius:12px;background:var(--soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap}.wake p{margin:0;flex:1 1 200px}.wake a{color:var(--ink);font-size:14px}.wake .btn{width:auto}
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.pgrid .card{margin-bottom:0}.pgrid small[dir]{text-align:left}
+.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:600px){.tiles.t3{grid-template-columns:minmax(0,1fr)}}
+.split{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--soft)}.split i{display:block;height:100%}
+.upbox{position:relative;display:inline-block;overflow:hidden;border-radius:12px}.upbox input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:200px;min-height:0;padding:0;border:0}
+.upbox:focus-within{outline:3px solid var(--red);outline-offset:2px}
+.upl{display:inline-flex;align-items:center;justify-content:center;width:auto;padding:14px 22px}
+@media(max-width:900px){.pgrid{grid-template-columns:minmax(0,1fr)}.pgrid .card{margin-bottom:0}}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 12px 10px 16px;border-radius:12px;display:none;align-items:center;gap:12px;z-index:5;max-width:92vw}
+.toast.show{display:flex}.toast button{background:var(--red);color:#fff;border:0;border-radius:8px;min-height:38px;padding:0 12px;font-weight:700;cursor:pointer}
+.note{font-size:13px;color:var(--mute)}
+[hidden]{display:none!important}
+.scroll{overflow-x:auto}
+@media(max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile:last-child:nth-child(odd){grid-column:1/-1}}
+@media(max-width:600px){.cats{grid-template-columns:repeat(2,minmax(0,1fr))}.cats button{min-height:46px}.filters{grid-template-columns:minmax(0,1fr)}
+table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;color:var(--mute);font-size:13px;font-weight:600}.stack td:empty{display:none}.stack td.n{text-align:start}.stack tfoot tr{border:0}}
+@media(prefers-reduced-motion:no-preference){.stamp .big{transition:transform .2s}.stamp.pop .big{transform:scale(1.06)}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Time Sheet<b>.</b></h1><span class="status" id="status">Connecting…</span></header>
+<nav><a href="#log" id="t-log">Enter data</a><a href="#report" id="t-report">Report</a><a href="#pay" id="t-pay">Payslip</a><a href="#setup" id="t-setup">Settings</a></nav>
+
+<section id="v-log">
+ <div class="grid">
+  <div class="card">
+   <div class="cats" id="cats"></div>
+   <div id="fTime">
+    <div class="f"><label for="date">Date</label><input type="date" id="date"></div>
+    <div class="row"><div id="inWrap"><label for="tin">Clock in</label><input type="time" id="tin"></div><div id="outWrap"><label for="tout">Clock out</label><input type="time" id="tout"></div></div>
+    <label class="check" id="holWrap"><input type="checkbox" id="hol"> Official holiday</label>
+    <label class="check" id="compWrap" hidden style="padding-left:32px"><input type="checkbox" id="comp"> Add 1 day to my annual leave instead of overtime</label>
+   </div>
+   <div id="fLeave" hidden>
+    <div class="row"><div><label for="from">From</label><input type="date" id="from"></div><div><label for="to">To (optional)</label><input type="date" id="to"></div></div>
+    <div class="f"><label>Length</label><div class="seg" id="portion"><button type="button" data-p="full" class="on">Full day</button><button type="button" data-p="half">Half day</button></div></div>
+   </div>
+   <div class="f"><label for="note">Note (optional)</label><input id="note" maxlength="120" placeholder="e.g. Month-end closing"></div>
+   <div class="btns"><button class="btn" id="save">Save entry</button><button class="btn ghost" id="cancel" hidden>Cancel edit</button></div>
+   <div class="wake" id="wake" hidden></div>
+  </div>
+  <div>
+   <div class="card">
+    <div class="stamp" id="stamp"><div class="big" id="big">—</div><div class="why" id="why">Fill in the form to see the result</div></div>
+    <div id="msgs"></div>
+   </div>
+   <div class="card"><h2 id="mTitle">This month</h2><div class="meters" id="meters"></div></div>
+  </div>
+ </div>
+ <div class="card"><h2>Latest entries</h2><ul class="list" id="recent"></ul></div>
+</section>
+
+<section id="v-report" hidden>
+ <div class="card filters">
+  <div><label for="fy">Year</label><select id="fy"></select></div>
+  <div><label for="fm">Month</label><select id="fm"></select></div>
+  <div><label for="fc">Category</label><select id="fc"></select></div>
+ </div>
+ <div class="tiles" id="tiles"></div>
+ <div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px"><h2 id="rTitle" style="margin:0">Day by day</h2><button class="ib" id="csv">Copy as CSV</button></div>
+  <div id="table"></div>
+ </div>
+</section>
+
+<section id="v-pay" hidden>
+ <div class="card">
+  <h2>Upload payslips</h2>
+  <p class="note" style="margin-top:0">Choose the payslip .htm file from your email. You can pick several months at once; uploading a month again replaces it. Payslips are saved on this phone.</p>
+  <div class="upbox"><span class="btn upl" aria-hidden="true">Upload payslip files</span><input type="file" id="payFile" multiple aria-label="Upload payslip files"></div>
+  <div id="payMsg"></div>
+ </div>
+ <div class="card filters">
+  <div><label for="py">Year</label><select id="py"></select></div>
+  <div><label for="pv">Show</label><select id="pv"></select></div>
+  <div style="align-self:end"><label class="check"><input type="checkbox" id="pz"> Show zero items</label></div>
+ </div>
+ <div id="payOut"></div>
+</section>
+
+<section id="v-setup" hidden>
+ <div class="card">
+  <h2>Your rules</h2>
+  <div class="row"><div><label for="sStart">Shift start (Sun–Thu)</label><input type="time" id="sStart"></div><div><label for="sEnd">Shift end (Sun–Thu)</label><input type="time" id="sEnd"></div></div>
+  <div class="row"><div><label for="sAnnual">Annual leave days per year</label><input type="number" min="0" step="0.5" id="sAnnual"></div><div><label for="sPerm">Permission hours per month</label><input type="number" min="0" step="0.5" id="sPerm"></div></div>
+  <div class="f"><label for="sWake">Wake-up time for weekend or holiday work</label><input type="time" id="sWake"></div>
+  <p class="note">Friday and Saturday are your weekend: overtime there counts the full period, as on official holidays. Workdays and business trips: overtime is the time outside your shift. On a workday, arriving after the shift start or leaving before the shift end is rounded up to the next 30 minutes; if the whole amount fits in what's left of your monthly permission it is taken from permission, otherwise it is recorded as late coming or early leaving. Leave spanning several days skips Fridays and Saturdays; if an official holiday falls inside, delete that day's entry.</p>
+  <button class="btn" id="sSave">Save settings</button>
+ </div>
+ <div class="card">
+  <h2>Backup &amp; restore</h2>
+  <p class="note" style="margin-top:0">Save all your entries, payslips and settings in one file. Restore it here or in the standalone app to move your data. Restoring adds and updates entries — it never deletes anything.</p>
+  <div class="btns"><button class="btn" id="bkExport">Export backup</button><div class="upbox" style="flex:1"><span class="btn ghost" style="display:block;text-align:center" aria-hidden="true">Restore from file</span><input type="file" id="bkFile" aria-label="Restore from backup file"></div></div>
+  <div id="bkMsg"></div>
+ </div>
+ <div class="card">
+  <h2>Adjust annual leave balance</h2>
+  <p class="note" style="margin-top:0">Set how many annual leave days you really have left in a year. From then on, only annual leave dated after the day you set it is taken from that number. Other years keep the normal allowance.</p>
+  <div class="row"><div><label for="aYear">Year</label><input type="number" id="aYear" min="2000" max="2100"></div><div><label for="aLeft">Days left now</label><input type="number" id="aLeft" min="0" step="0.5"></div></div>
+  <button class="btn ghost" id="aSave">Set balance</button>
+  <ul class="list" id="adjList" style="margin-top:12px"></ul>
+ </div>
+</section>
+</div>
+<div class="toast" id="toast"><span id="toastT"></span><button id="toastB">Undo</button></div>
+
+<script>
+{
+const CATS={work:{n:'Workday',c:'var(--work)'},ot:{n:'Overtime',c:'var(--ot)'},trip:{n:'Business trip',c:'var(--trip)'},perm:{n:'Permission',c:'var(--perm)'},
+ late:{n:'Late coming',c:'var(--late)'},early:{n:'Early leaving',c:'var(--early)'},al:{n:'Annual leave',c:'var(--al)'},sick:{n:'Sick leave',c:'var(--sick)'}};
+const TIMED=['work','ot','trip','perm','late','early'],DAYCAT=['al','sick'];
+const DEF={start:'08:30',end:'17:30',annual:21,perm:2,wake:'06:15',alFix:{'2026':{remaining:0.5,asOf:'2026-11-24'}}};
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let S={...DEF},entries=[],pays=[],col=null,mcp=null,cat='work',portion='full',editId=null,undoList=null,rCat='all';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m};
+const dur=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h&&r?`${h}h ${r}m`:h?`${h}h`:`${r}m`};
+const dd=d=>{const n=+d;return (n%1?n.toFixed(1):n)+(n===1?' day':' days')};
+const dow=d=>new Date(d+'T00:00').getDay();
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=iso(new Date());
+const fmtDate=d=>{const x=new Date(d+'T00:00');return `${x.getDate()} ${MONTHS[x.getMonth()].slice(0,3)} ${x.getFullYear()}`};
+const monthName=ym=>MONTHS[+ym.slice(5,7)-1];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const r30=m=>Math.ceil(m/30)*30;
+const weekend=d=>{const w=dow(d);return w===5||w===6};
+
+function span(a,b){let x=toMin(a),y=toMin(b);if(y<=x)y+=1440;return[x,y]}
+function calcOT(date,a,b,hol){
+ const[x,y]=span(a,b),total=y-x,w=dow(date);
+ if(hol)return{mins:total,total,why:'Official holiday — full period counts'};
+ if(weekend(date))return{mins:total,total,why:`${DAYS[w]} (weekend) — full period counts`};
+ const s=toMin(S.start),e=toMin(S.end),ov=Math.max(0,Math.min(y,e)-Math.max(x,s));
+ return{mins:total-ov,total,why:`time outside your ${S.start}–${S.end} shift`};
+}
+const lateBy=inT=>{const d=Math.min(toMin(inT),toMin(S.end))-toMin(S.start);return d>0?r30(d):0};
+const earlyBy=(outT,inT)=>{if(inT&&toMin(outT)<=toMin(inT))return 0;const d=toMin(S.end)-Math.max(toMin(outT),toMin(S.start));return d>0?r30(d):0};
+function leaveDays(from,to){
+ const out=[];if(!from)return out;let d=new Date(from+'T00:00');const end=new Date((to&&to>=from?to:from)+'T00:00');
+ while(d<=end){const w=d.getDay();if(w!==5&&w!==6)out.push(iso(d));d.setDate(d.getDate()+1)}return out;
+}
+const skipEdit=e=>editId&&(e.id===editId||e.parent===editId);
+const permUsed=ym=>entries.filter(e=>e.cat==='perm'&&e.date.startsWith(ym)&&!skipEdit(e)).reduce((s,e)=>s+e.mins,0);
+const leaveUsed=(c,y)=>entries.filter(e=>e.cat===c&&e.date.startsWith(y)&&!skipEdit(e)).reduce((s,e)=>s+e.days,0);
+/* annual leave left in a year: a set balance minus leave dated after it was set, else the normal allowance minus all leave that year */
+const compDays=(y,after)=>entries.filter(e=>e.comp&&e.date.startsWith(y)&&(!after||e.date>after)&&!skipEdit(e)).length;
+const alLeft=y=>{const f=(S.alFix||{})[y];if(f)return f.remaining+compDays(y,f.asOf)-entries.filter(e=>e.cat==='al'&&e.date.startsWith(y)&&e.date>f.asOf&&!skipEdit(e)).reduce((s,e)=>s+e.days,0);return S.annual+compDays(y)-leaveUsed('al',y)};
+const alCap=y=>{const f=(S.alFix||{})[y];return f?`balance set to ${dd(f.remaining)} on ${fmtDate(f.asOf)}`:`${S.annual}-day allowance`};
+/* late / early → permission if the whole amount fits in what's left this month, else its own category */
+function deduct(date,items){
+ let left=S.perm*60-permUsed(date.slice(0,7));
+ return items.filter(i=>i.mins>0).map(i=>{const word=i.kind==='late'?'late coming':'early leaving',t=i.kind==='late'?`clocked in ${i.time}`:`clocked out ${i.time}`;
+  if(i.mins<=left){left-=i.mins;return{...i,cat:'perm',note:`Auto: permission for ${word} (${t})`,line:`${CATS[i.kind].n} ${dur(i.mins)} → taken from permission (${dur(left)} left in ${monthName(date)})`}}
+  return{...i,cat:i.kind,note:`Auto: ${word} — not enough permission left (${t})`,line:`${CATS[i.kind].n} ${dur(i.mins)} → recorded as ${word}: ${left>0?`only ${dur(left)}`:'no'} permission left in ${monthName(date)}`,warn:true}});
+}
+const wakeable=e=>['work','ot','trip'].includes(e.cat)&&!e.parent&&(weekend(e.date)||e.hol)&&e.date>=today;
+const plus15=t=>{const m=toMin(t)+15;return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const gcalLink=d=>{const a=d.replace(/-/g,'')+'T'+S.wake.replace(':','')+'00',b=d.replace(/-/g,'')+'T'+plus15(S.wake).replace(':','')+'00';
+ return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Wake up – work today')+'&dates='+a+'/'+b+'&ctz=Africa/Cairo'};
+function showWake(e,failed){const w=$('wake');w.hidden=false;
+ if(!mcp)w.innerHTML=`<p><b>Working ${DAYS[dow(e.date)]} ${fmtDate(e.date)}?</b><br>Add a ${esc(S.wake)} wake-up to Google Calendar, then tap Save there.</p><a class="btn" style="text-align:center;text-decoration:none;color:#fff" href="${gcalLink(e.date)}" target="_blank" rel="noopener">Open Google Calendar</a>`;
+ else w.innerHTML=failed?`<p>Couldn't add it automatically. <a href="${gcalLink(e.date)}" target="_blank" rel="noopener">Open Google Calendar to add the ${esc(S.wake)} wake-up</a>, then tap Save there.</p>`
+ :`<p><b>Working ${DAYS[dow(e.date)]} ${fmtDate(e.date)}?</b><br>Add a ${esc(S.wake)} wake-up alert to your Google Calendar.</p><button class="btn" data-wake="${e.id}">Add wake-up</button>`}
+async function addWake(id){const e=entries.find(x=>x.id===id);if(!e)return;
+ try{if(!mcp)throw 0;
+  await mcp.callTool('Google Calendar','create_event',{summary:'Wake up – work today',startTime:`${e.date}T${S.wake}:00`,endTime:`${e.date}T${plus15(S.wake)}:00`,
+   description:`Logged in Time Sheet: ${CATS[e.cat].n}${e.in?` ${e.in}–${e.out}`:''}`,overrideReminders:[{method:'popup',minutes:0}],availability:'AVAILABILITY_FREE'});
+  await put({...e,wake:true});$('wake').hidden=true;toast(`Wake-up set for ${S.wake} on ${DAYS[dow(e.date)]} ${fmtDate(e.date)}`,false)}
+ catch(err){showWake(e,true);$('wake').scrollIntoView({behavior:'smooth',block:'center'})}}
+const amount=e=>e.comp?(e.cat==='ot'?'+1 leave day':'1 day · +1 leave day'):e.cat==='work'||e.cat==='trip'?'1 day'+(e.mins?` · ${dur(e.mins)} OT`:''):DAYCAT.includes(e.cat)?dd(e.days):dur(e.mins);
+
+/* ---------- storage ---------- */
+function setStatus(t){$('status').textContent=t}
+function localLoad(){try{const j=JSON.parse(localStorage.getItem('ts-data')||'{}');entries=j.entries||[];pays=j.pays||[];S={...DEF,...(j.settings||{})}}catch(e){}}
+function localSave(){try{localStorage.setItem('ts-data',JSON.stringify({entries,pays,settings:S}))}catch(e){}}
+async function put(e){if(col){await col.doc(e.id).set(e)}else{entries=entries.filter(x=>x.id!==e.id).concat(e);localSave();renderAll()}}
+async function del(id){if(col){await col.doc(id).delete()}else{entries=entries.filter(x=>x.id!==id);localSave();renderAll()}}
+async function putSettings(){if(col){await col.doc('settings').set({...S,kind:'settings'})}else{localSave();renderAll()}}
+async function connect(){
+ try{
+  if(!window.claude||!claude.use)throw 0;
+  const[db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+  const id=user&&await user.id();
+  claude.use('mcp').then(m=>{mcp=m}).catch(()=>{});claude.use('downloads').then(d=>{dl=d}).catch(()=>{});
+  if(!db||!id)throw 0;
+  col=db.collection('data/users/'+id);
+  const timer=setTimeout(()=>setStatus('Still connecting — data may be out of date'),10000);
+  col.onSnapshot(snap=>{
+   const list=[],pl=[];snap.docs.forEach(d=>{const v=d.data();if(d.id==='settings')S={...DEF,...v};else if(d.id.startsWith('pay-'))pl.push({...v,id:d.id});else list.push({...v,id:d.id})});
+   entries=list;pays=pl;if(!snap.metadata.fromCache){clearTimeout(timer);setStatus('Saved to your account · private to you')}
+   renderAll();
+  },err=>{clearTimeout(timer);setStatus('Could not reach saved data ('+err.code+')')});
+ }catch(e){col=null;localLoad();setStatus('Saved on this phone · back up from Settings');renderAll()}
+}
+
+/* ---------- input screen ---------- */
+$('cats').innerHTML=Object.entries(CATS).map(([k,v])=>`<button type="button" data-c="${k}" style="--c:${v.c}">${v.n}</button>`).join('');
+function setCat(c){cat=c;document.querySelectorAll('#cats button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));
+ const time=TIMED.includes(c);$('fTime').hidden=!time;$('fLeave').hidden=time;
+ $('inWrap').hidden=c==='early';$('outWrap').hidden=c==='late';$('holWrap').hidden=!['work','ot','trip'].includes(c);
+ $('stamp').style.setProperty('--c',CATS[c].c);preview()}
+function setPortion(p){portion=p;document.querySelectorAll('#portion button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));preview()}
+function read(){
+ const r={cat,note:$('note').value.trim(),errs:[],warns:[],oks:[],ded:[]};
+ if(TIMED.includes(cat)){
+  r.date=$('date').value;const a=$('tin').value,b=$('tout').value;
+  const needIn=cat!=='early',needOut=cat!=='late';
+  if(!r.date||(needIn&&!a)||(needOut&&!b)){r.errs.push(`Enter the date${needIn?', clock in':''}${needOut?(needIn?' and':',')+' clock out':''}.`);return r}
+  if(needIn)r.in=a;if(needOut)r.out=b;r.hol=['work','ot','trip'].includes(cat)&&$('hol').checked;
+  if(cat==='ot'||cat==='trip'||cat==='work'){
+   const o=calcOT(r.date,a,b,r.hol);r.mins=o.mins;r.comp=r.hol&&$('comp').checked;
+   if(r.comp){r.mins=0;const y=r.date.slice(0,4);r.big=cat==='ot'?'+1 day':dur(o.total);r.why=cat==='ot'?'Official holiday — added to annual leave':`Worked ${dur(o.total)} on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
+    r.oks.push(`No overtime — 1 day added to your ${y} annual leave (${dd(alLeft(y)+(editId&&entries.find(e=>e.id===editId&&e.comp)?0:1))} left after this).`)}
+   else if(cat==='ot'){r.big=dur(o.mins);r.why=o.why.charAt(0).toUpperCase()+o.why.slice(1);if(!o.mins)r.warns.push('No overtime: these times are all inside your normal shift.')}
+   else{r.big=dur(o.total);r.why=`Worked ${dur(o.total)} on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
+    r.oks.push(o.mins?`Overtime ${dur(o.mins)} (${o.why}).`:'No overtime.');
+    if(cat==='work'&&!r.hol&&!weekend(r.date))r.ded=deduct(r.date,[{kind:'late',mins:lateBy(a),time:a},{kind:'early',mins:earlyBy(b,a),time:b}]);
+    if(cat==='work'&&!r.ded.length&&!r.hol&&!weekend(r.date))r.oks.push('On time — no late coming or early leaving.')}
+  }else if(cat==='perm'){const[x,y]=span(a,b);r.mins=y-x;r.big=dur(r.mins);r.why=`Permission on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
+   const ym=r.date.slice(0,7),lim=S.perm*60,used=permUsed(ym);
+   if(used+r.mins>lim)r.warns.push(`This goes over your ${S.perm}h monthly permission limit: ${dur(used)} already used in ${monthName(ym)}, ${dur(used+r.mins-lim)} over.`);
+   else r.oks.push(`${dur(lim-used-r.mins)} of permission left in ${monthName(ym)} after this.`)}
+  else{
+   if(weekend(r.date)){r.errs.push('That day is a Friday or Saturday (weekend).');return r}
+   const m=cat==='late'?lateBy(a):earlyBy(b);
+   if(!m){r.errs.push(cat==='late'?`On time — clock in after ${S.start} to count as late.`:`Not early — clock out before ${S.end} to count as early leaving.`);return r}
+   r.big=dur(m);r.why=`${cat==='late'?`Clocked in ${a}`:`Clocked out ${b}`}, rounded up to the next 30 minutes`;
+   r.ded=deduct(r.date,[{kind:cat,mins:m,time:cat==='late'?a:b}]);
+  }
+ }else{
+  const from=$('from').value,to=editId?'':$('to').value;
+  if(!from){r.errs.push('Choose the leave date.');return r}
+  r.dates=leaveDays(from,to);
+  if(!r.dates.length){r.errs.push('That day is a Friday or Saturday (weekend).');return r}
+  if(r.dates.length>1&&portion==='half'){r.errs.push('Half day works for a single date only.');return r}
+  r.days=portion==='half'?.5:1;const total=r.days*r.dates.length;r.big=dd(total);
+  r.why=r.dates.length>1?`${r.dates.length} working days, ${fmtDate(r.dates[0])} – ${fmtDate(r.dates.at(-1))} (Fri & Sat skipped)`:`${portion==='half'?'Half day':'Full day'} on ${DAYS[dow(from)]} ${fmtDate(from)}`;
+  if(cat==='al'){const y=from.slice(0,4),left=alLeft(y)-total;
+   if(left<0)r.warns.push(`This goes over your annual leave for ${y} (${alCap(y)}) by ${dd(-left)}.`);else r.oks.push(`${dd(left)} of annual leave left in ${y} after this.`)}
+ }
+ return r;
+}
+function preview(){
+ $('compWrap').hidden=$('holWrap').hidden||$('fTime').hidden||!$('hol').checked;if($('compWrap').hidden)$('comp').checked=false;
+ const r=read();
+ $('big').textContent=r.errs.length?'—':r.big;$('why').textContent=r.errs[0]||r.why||'';
+ $('msgs').innerHTML=r.ded.map(d=>`<div class="msg ${d.warn?'warn':'ok'}">${esc(d.line)}</div>`).join('')+r.warns.map(w=>`<div class="msg warn">${esc(w)}</div>`).join('')+r.oks.map(w=>`<div class="msg ok">${esc(w)}</div>`).join('');
+ return r;
+}
+function resetForm(){editId=null;['note','tin','tout','to'].forEach(i=>$(i).value='');$('hol').checked=false;$('comp').checked=false;$('to').disabled=false;
+ $('save').textContent='Save entry';$('cancel').hidden=true;setPortion('full');preview()}
+async function saveEntry(){
+ const r=preview();if(r.errs.length)return;
+ const base={note:r.note,created:Date.now()};let list=[],old=[];
+ if(editId)old=entries.filter(e=>e.parent===editId);
+ if(cat==='work'||cat==='ot'||cat==='trip'||cat==='perm'){
+  const id=editId||uid();
+  list.push({...base,id,cat,date:r.date,in:r.in,out:r.out,hol:!!r.hol,comp:!!r.comp,mins:r.mins,...(cat==='work'||cat==='trip'?{days:1}:{})});
+  r.ded.forEach(d=>list.push({id:uid(),created:Date.now(),cat:d.cat,date:r.date,mins:d.mins,reason:d.kind,[d.kind==='late'?'in':'out']:d.time,note:d.note,parent:id}));
+ }else if(cat==='late'||cat==='early'){
+  const d=r.ded[0];list.push({...base,id:editId||uid(),cat:d.cat,src:cat,reason:cat,date:r.date,mins:d.mins,[cat==='late'?'in':'out']:d.time,note:d.note+(r.note?' · '+r.note:''),usernote:r.note});
+ }else list=r.dates.map((d,i)=>({...base,id:(i===0&&editId)||uid(),cat,date:d,days:r.days}));
+ $('save').disabled=true;
+ try{for(const e of old)await del(e.id);for(const e of list)await put(e);
+  const extra=list.filter(e=>e.parent).map(e=>CATS[e.cat].n.toLowerCase()).join(' + ');
+  toast(`Saved ${CATS[cat].n.toLowerCase()}${extra?' + '+extra:''}`,false);resetForm();
+  const w=list.find(e=>wakeable(e)&&!e.wake);if(w)showWake(w);else $('wake').hidden=true}
+ catch(err){toast('Could not save — '+(err&&err.code||'try again'),false)}
+ $('save').disabled=false;
+}
+function edit(id){let e=entries.find(x=>x.id===id);if(!e)return;if(e.parent){e=entries.find(x=>x.id===e.parent);if(!e)return}
+ location.hash='log';const c=e.src||e.cat;setCat(c);editId=e.id;$('note').value=e.src?(e.usernote||''):(e.note||'');
+ if(TIMED.includes(c)){$('date').value=e.date;$('tin').value=e.in||'';$('tout').value=e.out||'';$('hol').checked=!!e.hol;$('comp').checked=!!e.comp}
+ else{$('from').value=e.date;$('to').value='';$('to').disabled=true;setPortion(e.days===.5?'half':'full')}
+ $('save').textContent='Update entry';$('cancel').hidden=false;preview();window.scrollTo({top:0,behavior:'smooth'})}
+async function remove(id){const e=entries.find(x=>x.id===id);if(!e)return;const list=[e,...entries.filter(x=>x.parent===id)];
+ try{for(const x of list)await del(x.id);undoList=list;toast(`Deleted ${CATS[e.cat].n.toLowerCase()} on ${fmtDate(e.date)}`,true)}catch(err){toast('Could not delete',false)}}
+let tt;function toast(t,undo){$('toastT').textContent=t;$('toastB').hidden=!undo;$('toast').classList.add('show');clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('show'),5000)}
+
+const sumM=(list,cats)=>list.filter(e=>cats.includes(e.cat)).reduce((s,e)=>s+(e.mins||0),0);
+function renderMeters(){
+ const ym=today.slice(0,7),y=today.slice(0,4),inM=entries.filter(e=>e.date.startsWith(ym));$('mTitle').textContent=`${monthName(ym)} ${y}`;
+ const pm=sumM(inM,['perm']),al=entries.filter(e=>e.cat==='al'&&e.date.startsWith(y)).reduce((s,e)=>s+e.days,0);
+ const n=c=>inM.filter(e=>e.cat===c).length;
+ const m=(k,label,val,pct)=>`<div class="meter" style="--c:${CATS[k].c}"><div class="top"><span>${label}</span><b>${val}</b></div>${pct==null?'':`<div class="bar"><i style="width:${Math.min(100,pct)}%"></i></div>`}</div>`;
+ $('meters').innerHTML=m('perm','Permission used',`${dur(pm)} of ${S.perm}h`,pm/(S.perm*60)*100)
+  +m('ot','Overtime (all days)',dur(sumM(inM,['ot','work','trip'])))
+  +m('late','Late coming / early leaving',`${dur(sumM(inM,['late']))} / ${dur(sumM(inM,['early']))}`)
+  +m('work','Workdays · trip days',`${n('work')} · ${n('trip')}`)
+  +m('al',`Annual leave ${y}`,`${al} taken · ${dd(alLeft(y))} left`,(1-alLeft(y)/S.annual)*100)
+  +m('sick','Sick leave this month',dd(inM.filter(e=>e.cat==='sick').reduce((s,e)=>s+e.days,0)));
+}
+function btns(e){const wk=wakeable(e)?(e.wake?'<span class="note">Wake-up set</span>':`<button class="ib" data-wake="${e.id}">Wake-up</button>`):'';return wk+(e.parent?`<button class="ib" data-edit="${e.id}">Edit day</button>`:`<button class="ib" data-edit="${e.id}">Edit</button><button class="ib" data-del="${e.id}" aria-label="Delete">✕</button>`)}
+function row(e){return `<li style="--c:${CATS[e.cat].c}"><span class="dot"></span><span class="t">${CATS[e.cat].n}${e.hol?' · holiday':''}${e.comp?' → leave day':''}<small>${DAYS[dow(e.date)]} ${fmtDate(e.date)}${e.in&&e.out?` · ${e.in}–${e.out}`:''}${e.note?' · '+esc(e.note):''}</small></span><span class="amt">${amount(e)}</span>${btns(e)}</li>`}
+function renderRecent(){const l=[...entries].sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created).slice(0,10);
+ $('recent').innerHTML=l.length?l.map(row).join(''):'<li class="empty" style="display:block">No entries yet. Pick a category above and save your first one.</li>'}
+
+/* ---------- report ---------- */
+function fillFilters(){
+ const ys=new Set([today.slice(0,4),...entries.map(e=>e.date.slice(0,4))]);const cy=$('fy').value||today.slice(0,4);
+ $('fy').innerHTML=[...ys].sort().reverse().map(y=>`<option${y===cy?' selected':''}>${y}</option>`).join('');
+ if(!$('fm').options.length){$('fm').innerHTML='<option value="all">All months</option>'+MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,'0')}">${m}</option>`).join('');$('fm').value=today.slice(5,7)}
+ if(!$('fc').options.length)$('fc').innerHTML='<option value="all">All categories</option>'+Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('');
+}
+function period(){const y=$('fy').value,m=$('fm').value;return{y,m,prefix:m==='all'?y:`${y}-${m}`,label:m==='all'?`All of ${y}`:`${MONTHS[+m-1]} ${y}`}}
+function renderReport(){
+ fillFilters();rCat=$('fc').value;const p=period();
+ const inP=entries.filter(e=>e.date.startsWith(p.prefix));
+ const cnt=k=>inP.filter(e=>e.cat===k).length,days=k=>inP.filter(e=>e.cat===k).reduce((s,e)=>s+e.days,0);
+ const alY=entries.filter(e=>e.cat==='al'&&e.date.startsWith(p.y)).reduce((s,e)=>s+e.days,0),pm=sumM(inP,['perm']);
+ const otAll=sumM(inP,['ot','work','trip']),autoP=inP.filter(e=>e.cat==='perm'&&e.reason).length;
+ const tile=(k,v,s)=>`<button class="tile${rCat===k?' on':''}" style="--c:${CATS[k].c}" data-tile="${k}"><span class="k"><span class="dot"></span>${CATS[k].n}</span><div class="v">${v}</div><span class="s">${s}</span></button>`;
+ $('tiles').innerHTML=tile('work',dd(cnt('work')),`${dur(sumM(inP,['work']))} overtime`)
+  +tile('ot',dur(otAll),`${(otAll/60).toFixed(2)} h on all days`)
+  +tile('trip',dd(cnt('trip')),`${dur(sumM(inP,['trip']))} overtime`)
+  +tile('perm',dur(pm),(p.m==='all'?`${cnt('perm')} times`:`of ${S.perm}h allowed`+(pm>S.perm*60?' · over':''))+(autoP?` · ${autoP} for late/early`:''))
+  +tile('late',dur(sumM(inP,['late'])),`${cnt('late')} ${cnt('late')===1?'time':'times'}, no permission left`)
+  +tile('early',dur(sumM(inP,['early'])),`${cnt('early')} ${cnt('early')===1?'time':'times'}, no permission left`)
+  +tile('al',dd(days('al')),`${dd(alLeft(p.y))} left in ${p.y}`+(compDays(p.y)?` · +${compDays(p.y)} from holidays`:''))
+  +tile('sick',dd(days('sick')),`${cnt('sick')} entries`);
+ const rows=inP.filter(e=>rCat==='all'||e.cat===rCat||(rCat==='ot'&&(e.cat==='trip'||e.cat==='work')&&e.mins>0)).sort((a,b)=>a.date.localeCompare(b.date)||(a.created-b.created));
+ $('rTitle').textContent=`${rCat==='all'?'All entries':CATS[rCat].n} · ${p.label}`;
+ if(!rows.length){$('table').innerHTML='<div class="empty">Nothing recorded for this period.</div>';return}
+ const maxOT=Math.max(1,...rows.filter(e=>['ot','trip','work'].includes(e.cat)).map(e=>e.mins||0));
+ const permRun={};
+ const body=rows.map(e=>{let flag='';if(e.cat==='perm'){const ym=e.date.slice(0,7);permRun[ym]=(permRun[ym]||0)+e.mins;if(permRun[ym]>S.perm*60)flag=' <span class="flag">over limit</span>'}
+  const bar=['ot','trip','work'].includes(e.cat)&&e.mins?`<span class="mini" style="width:${Math.round(e.mins/maxOT*40)}px"></span>`:'';
+  return `<tr><td style="white-space:nowrap">${fmtDate(e.date)}</td><td>${DAYS[dow(e.date)]}</td><td><span class="tag" style="--c:${CATS[e.cat].c}"><span class="dot"></span>${CATS[e.cat].n}${e.hol?' (holiday)':''}${e.comp?' → +1 leave day':''}</span></td><td class="n">${DAYCAT.includes(e.cat)?(e.days===.5?'Half':'Full'):(e.in||'')}</td><td class="n">${e.out||''}</td><td class="n">${bar}<b>${amount(e)}</b>${flag}</td><td>${esc(e.note)}</td><td class="n"><button class="ib" data-edit="${e.id}">Edit</button></td></tr>`}).join('');
+ let foot='';if(rCat!=='all'){const om=rows.reduce((s,e)=>s+(e.mins||0),0);
+  const t=rCat==='work'||rCat==='trip'?`${dd(rows.length)} · ${dur(om)} OT`:DAYCAT.includes(rCat)?dd(rows.reduce((s,e)=>s+e.days,0)):dur(om);
+  foot=`<tfoot><tr><td colspan="5">Total · ${rows.length} entries</td><td class="n">${t}</td><td></td><td></td></tr></tfoot>`}
+ $('table').innerHTML=`<table class="stack"><thead><tr><th>Date</th><th>Day</th><th>Type</th><th class="n">In</th><th class="n">Out</th><th class="n">Amount</th><th>Note</th><th></th></tr></thead><tbody>${body}</tbody>${foot}</table>`;
+ $('table').dataset.csv=['Date,Day,Type,Clock in,Clock out,Hours,Days,Note'].concat(rows.map(e=>[e.date,DAYS[dow(e.date)],CATS[e.cat].n+(e.hol?' (holiday)':''),e.in||'',e.out||'',e.mins!=null?(e.mins/60).toFixed(2):'',e.days??'','"'+(e.note||'').replace(/"/g,'""')+'"'].join(','))).join('\n');
+}
+
+/* ---------- payslips ---------- */
+const EN={'المرتبالأساسي':'Basic salary','علاوةالسنةالحالية':'Current-year raise','علاوةسنواتسابقة':'Previous years\' raises','حوافزومكافآت':'Incentives & bonuses','بدلات':'Allowances',
+ 'أضافي':'Overtime','إضافي':'Overtime','تسوياتأخرى':'Other settlements','تسوياتأخري':'Other settlements','عمولات':'Commissions','م.توزيعأرباح':'Profit share','تسويةرصيداجازات':'Leave balance settlement',
+ 'تأمينات':'Social insurance','ت.معاشاضافى':'Additional pension','ضريبةكسبالعمل':'Income tax','أجازةمرضية':'Sick leave','غياب':'Absence','أيامبدونأجر':'Unpaid days',
+ 'تسويةضريبية':'Tax settlement','تأمينصحىشامل':'Universal health insurance','م.بالرعايةالصحية':'Health care contribution','م.بصندوقالعاملين':'Employees\' fund','مساهمهتكافليه':'Takaful contribution',
+ 'قسطشراءمدة':'Service-period purchase','مشاركةمجتمعية':'Community contribution','تسويةدفعةمقدمةمكافآت':'Bonus advance settlement','تسويةدفعةمقدمةعمولات':'Commission advance settlement',
+ 'تأمينسيارة':'Car insurance','استقطاعاتمزاياعاملين':'Employee benefits deductions','إنتقالات':'Transportation','انتقالات':'Transportation','قسطبنك':'Bank installment','عهدمؤقتة':'Temporary custody',
+ 'فاتورةمحمول':'Mobile bill','إصلاحسيارة':'Car repair','مصروفات':'Expenses'};
+const tr=ar=>EN[ar.replace(/\s/g,'')]||ar;
+const money=n=>(n<0?'−':'')+Math.abs(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const clean=t=>String(t||'').replace(/ /g,' ').replace(/\s+/g,' ').trim();
+const num=t=>{t=clean(t);if(!t)return 0;const m=t.match(/^(-?)([\d,]+(?:\.\d+)?)(-?)$/);if(!m)return 0;const v=parseFloat(m[2].replace(/,/g,''));return (m[1]||m[3])?-v:v};
+const r2=n=>Math.round(n*100)/100,sumA=a=>r2(a.reduce((s,x)=>s+x.amt,0));
+function parsePayslip(html){
+ const doc=new DOMParser().parseFromString(html,'text/html'),all=clean(doc.body?doc.body.textContent:'');
+ const pm=all.match(/Pa[yr]*oll\s*for\s*:\s*(\d{1,2})\s*\/\s*(\d{4})/i);
+ if(!pm)throw new Error('could not find the payroll month ("Payroll for: MM/YYYY")');
+ const ym=`${pm[2]}-${pm[1].padStart(2,'0')}`,p={id:'pay-'+ym,kind:'payslip',ym,earn:[],ded:[],rem:[],totals:{},uploaded:Date.now()};
+ for(const t of doc.querySelectorAll('table')){
+  const rows=[...t.rows].map(r=>[...r.cells].map(c=>clean(c.textContent))),txt=rows.flat().join(' ');
+  if(/نوع\s*ال[إا]ستقطاع/.test(txt)){
+   for(const c of rows){
+    if(c.some(x=>/نوع\s*ال/.test(x)))continue;
+    if(c.length>=4){const[da,dl,ea,el]=c;
+     if(/[أاإ]جمالي/.test(dl+el)){p.totals.ded=num(da);p.totals.earn=num(ea);continue}
+     if(dl)p.ded.push({ar:dl,amt:num(da)});if(el)p.earn.push({ar:el,amt:num(ea)})}
+    else if(c.length>=2&&/صافي/.test(c[1]))p.totals.netIncome=num(c[0]);
+   }
+  }else if(/Net\s*:/.test(txt)){const m=txt.match(/Net\s*:\s*(-?[\d,]+(?:\.\d+)?-?)/);if(m)p.totals.net=num(m[1])}
+  else if(rows.length&&rows.every(c=>c.length===2)&&!/Personnel|Company|Pers\./i.test(txt)){
+   for(const[a,l]of rows){if(!l)continue;if(/^[إاأ]جمالي$/.test(l)){p.totals.rem=num(a);continue}p.rem.push({ar:l,amt:num(a)})}
+  }
+ }
+ if(!p.earn.length)throw new Error('no earnings table found — is this the payslip email file?');
+ const T=p.totals;T.earn??=sumA(p.earn);T.ded??=sumA(p.ded);T.rem??=sumA(p.rem);T.netIncome??=r2(T.earn-T.ded);T.net??=r2(T.netIncome-T.rem);
+ return p;
+}
+const prevYM=ym=>{let[y,m]=ym.split('-').map(Number);m--;if(!m){m=12;y--}return `${y}-${String(m).padStart(2,'0')}`};
+const otPaid=p=>r2(p.earn.filter(x=>tr(x.ar)==='Overtime').reduce((s,x)=>s+x.amt,0));
+/* the payslip for month M pays overtime worked in month M-1 */
+function otCheck(p){const wm=prevYM(p.ym),list=entries.filter(e=>['ot','work','trip'].includes(e.cat)&&e.date.startsWith(wm)&&!e.comp&&e.mins>0);
+ const mins=list.reduce((s,e)=>s+e.mins,0);return{wm,mins,days:list.length,paid:otPaid(p),rate:mins?r2(otPaid(p)/(mins/60)):null}}
+const payOK=p=>{const T=p.totals;return Math.abs(sumA(p.earn)-T.earn)<.02&&Math.abs(sumA(p.ded)-T.ded)<.02&&Math.abs(T.earn-T.ded-T.netIncome)<.02&&Math.abs(T.netIncome-T.rem-T.net)<.02};
+async function savePay(p){if(col)await col.doc(p.id).set(p);else{pays=pays.filter(x=>x.id!==p.id).concat(p);localSave();renderPay()}}
+async function delPay(id){if(col)await col.doc(id).delete();else{pays=pays.filter(x=>x.id!==id);localSave();renderPay()}}
+async function readFile(f){const buf=await f.arrayBuffer();let t=new TextDecoder('utf-8').decode(buf);if(!/[؀-ۿ]/.test(t)){try{t=new TextDecoder('windows-1256').decode(buf)}catch(e){}}return t}
+$('payFile').addEventListener('change',async ev=>{
+ const files=[...ev.target.files];ev.target.value='';if(!files.length)return;const out=[];let last=null;
+ for(const f of files){try{const p=parsePayslip(await readFile(f));const had=pays.some(x=>x.id===p.id);await savePay(p);last=p.ym;
+   out.push(`<div class="msg ${payOK(p)?'ok':'warn'}">${monthName(p.ym)} ${p.ym.slice(0,4)} ${had?'replaced':'added'} — net paid ${money(p.totals.net)} EGP${payOK(p)?'':' · totals do not add up, please check the file'}</div>`)}
+  catch(e){out.push(`<div class="msg warn">${esc(f.name)}: ${esc(e.message||'could not read this file')}</div>`)}}
+ $('payMsg').innerHTML=out.join('');if(last){payPick={y:last.slice(0,4),v:last}}renderPay();
+});
+let payPick=null;
+function payList(title,items,total,showZero){const rows=items.filter(x=>showZero||x.amt);
+ return `<div class="card"><h2>${title}</h2><ul class="list">${rows.length?rows.map(x=>`<li><span class="t">${esc(tr(x.ar))}<small dir="rtl" lang="ar">${esc(x.ar)}</small></span><span class="amt">${money(x.amt)}</span></li>`).join(''):'<li class="note">None this month</li>'}
+ <li style="border-top:2px solid var(--ink)"><span class="t"><b>Total</b></span><span class="amt">${money(total)}</span></li></ul></div>`}
+function renderPay(){
+ const ys=[...new Set([today.slice(0,4),...pays.map(p=>p.ym.slice(0,4))])].sort().reverse();
+ if(!payPick){const lastP=[...pays].sort((a,b)=>b.ym.localeCompare(a.ym))[0];payPick=lastP?{y:lastP.ym.slice(0,4),v:lastP.ym}:{y:today.slice(0,4),v:'year'}}
+ const y=payPick.y,inY=pays.filter(p=>p.ym.startsWith(y)).sort((a,b)=>a.ym.localeCompare(b.ym));
+ if(payPick.v!=='year'&&!inY.some(p=>p.ym===payPick.v))payPick.v=inY.length?inY.at(-1).ym:'year';
+ $('py').innerHTML=ys.map(x=>`<option${x===y?' selected':''}>${x}</option>`).join('');
+ $('pv').innerHTML=`<option value="year">Whole year</option>`+inY.map(p=>`<option value="${p.ym}"${p.ym===payPick.v?' selected':''}>${monthName(p.ym)}</option>`).join('');
+ if(payPick.v==='year')$('pv').value='year';
+ const z=$('pz').checked,out=$('payOut');
+ if(!inY.length){out.innerHTML=`<div class="card empty">No payslips for ${y} yet. Upload the .htm payslip files from your email above — you can pick several at once.</div>`;return}
+ if(payPick.v!=='year'){
+  const p=inY.find(x=>x.ym===payPick.v),T=p.totals,prev=pays.find(x=>x.ym<p.ym&&x.ym===[...pays.map(q=>q.ym).filter(q=>q<p.ym)].sort().at(-1));
+  const pct=v=>T.earn?Math.max(0,v/T.earn*100):0,diff=prev?r2(T.net-prev.totals.net):null;
+  out.innerHTML=`<div class="card"><div class="stamp" style="--c:var(--perm)"><div class="big">${money(T.net)}</div><div class="why">Net paid for ${monthName(p.ym)} ${y} (EGP)${diff!=null?` · ${diff>=0?'▲':'▼'} ${money(Math.abs(diff))} vs ${monthName(prev.ym)}`:''}</div></div>
+   <div class="split"><i style="width:${pct(T.net)}%;background:var(--perm)"></i><i style="width:${pct(T.ded)}%;background:var(--ot)"></i><i style="width:${pct(T.rem)}%;background:var(--trip)"></i></div>
+   <div class="meters" style="margin-top:12px">
+    <div class="meter"><div class="top"><span>Total earnings (gross)</span><b>${money(T.earn)}</b></div></div>
+    <div class="meter"><div class="top"><span><span class="dot" style="--c:var(--ot);display:inline-block"></span> Payroll deductions</span><b>− ${money(T.ded)}</b></div></div>
+    <div class="meter"><div class="top"><span>Net income</span><b>${money(T.netIncome)}</b></div></div>
+    <div class="meter"><div class="top"><span><span class="dot" style="--c:var(--trip);display:inline-block"></span> Additional deductions</span><b>− ${money(T.rem)}</b></div></div>
+    <div class="meter"><div class="top"><span><span class="dot" style="--c:var(--perm);display:inline-block"></span> <b>Net paid</b></span><b>${money(T.net)}</b></div></div>
+   </div>${payOK(p)?'':'<div class="msg warn">The totals in this payslip do not add up — please check the original.</div>'}
+   <div style="margin-top:14px;text-align:right"><button class="ib" data-delpay="${p.id}">Remove this payslip</button></div></div>
+   ${(()=>{const o=otCheck(p);return `<div class="card"><h2>Overtime check</h2><p class="note" style="margin-top:0">${monthName(p.ym)}'s payslip pays the overtime worked in ${monthName(o.wm)} ${o.wm.slice(0,4)}.</p>
+    <div class="tiles t3" style="margin:0"><div class="tile" style="--c:var(--ot);cursor:default"><span class="k">Overtime paid</span><div class="v">${money(o.paid)}</div><span class="s">EGP on this payslip</span></div>
+    <div class="tile" style="--c:var(--ot);cursor:default"><span class="k">Logged in ${monthName(o.wm)}</span><div class="v">${o.mins?dur(o.mins):'—'}</div><span class="s">${o.mins?`${(o.mins/60).toFixed(2)} h over ${o.days} day${o.days===1?'':'s'}`:'No overtime in your Time Sheet'}</span></div>
+    <div class="tile" style="--c:var(--ot);cursor:default"><span class="k">Paid per hour</span><div class="v">${o.rate!=null?money(o.rate):'—'}</div><span class="s">${o.rate!=null?'EGP per logged hour':'Needs logged hours'}</span></div></div>
+    ${!o.mins&&o.paid?`<div class="msg ok">No Time Sheet data for ${monthName(o.wm)}, so there's nothing to compare yet.</div>`:''}${o.mins&&!o.paid?`<div class="msg warn">You logged ${dur(o.mins)} of overtime in ${monthName(o.wm)} but this payslip shows no overtime payment.</div>`:''}</div>`})()}
+   <div class="pgrid">${payList('Earnings',p.earn,T.earn,z)}${payList('Deductions',p.ded,T.ded,z)}${payList('Additional deductions',p.rem,T.rem,z)}</div>`;
+ }else{
+  const tot=k=>r2(inY.reduce((s,p)=>s+p.totals[k],0)),maxN=Math.max(1,...inY.map(p=>p.totals.net));
+  const missing=MONTHS.map((m,i)=>`${y}-${String(i+1).padStart(2,'0')}`).filter(k=>k<today.slice(0,7)&&!inY.some(p=>p.ym===k)).map(k=>monthName(k).slice(0,3));
+  const agg=key=>{const m=new Map();inY.forEach(p=>p[key].forEach(x=>m.set(x.ar,r2((m.get(x.ar)||0)+x.amt))));return[...m].map(([ar,amt])=>({ar,amt}))};
+  out.innerHTML=`<div class="card"><h2>${y} month by month</h2><p class="note" style="margin-top:0">${inY.length} payslip${inY.length===1?'':'s'} uploaded${missing.length?` · missing: ${missing.join(', ')}`:''}</p>
+   <table class="stack"><thead><tr><th>Month</th><th class="n">Gross</th><th class="n">Deductions</th><th class="n">Other</th><th class="n">Net paid</th></tr></thead><tbody>
+   ${inY.map(p=>`<tr><td><button class="ib" data-paym="${p.ym}">${monthName(p.ym)}</button></td><td class="n">${money(p.totals.earn)}</td><td class="n">${money(p.totals.ded)}</td><td class="n">${money(p.totals.rem)}</td><td class="n"><span class="mini" style="width:${Math.round(p.totals.net/maxN*40)}px;background:var(--perm)"></span><b>${money(p.totals.net)}</b></td></tr>`).join('')}
+   </tbody><tfoot><tr><td>Total</td><td class="n">${money(tot('earn'))}</td><td class="n">${money(tot('ded'))}</td><td class="n">${money(tot('rem'))}</td><td class="n">${money(tot('net'))}</td></tr></tfoot></table></div>
+   <div class="card"><h2>Overtime paid vs logged</h2><p class="note" style="margin-top:0">Each payslip pays the previous month's overtime.</p>
+   <table class="stack"><thead><tr><th>Payslip</th><th>Worked in</th><th class="n">Hours logged</th><th class="n">Paid (EGP)</th><th class="n">Per hour</th></tr></thead><tbody>
+   ${inY.map(p=>{const o=otCheck(p);return `<tr><td>${monthName(p.ym)}</td><td>${monthName(o.wm)}</td><td class="n">${o.mins?(o.mins/60).toFixed(2):'—'}</td><td class="n">${money(o.paid)}</td><td class="n">${o.rate!=null?money(o.rate):'—'}</td></tr>`}).join('')}
+   </tbody></table></div>
+   <div class="pgrid">${payList(`Earnings in ${y}`,agg('earn'),tot('earn'),z)}${payList(`Deductions in ${y}`,agg('ded'),tot('ded'),z)}${payList(`Additional deductions in ${y}`,agg('rem'),tot('rem'),z)}</div>`;
+ }
+}
+$('py').addEventListener('change',()=>{payPick={y:$('py').value,v:'year'};renderPay()});
+$('pv').addEventListener('change',()=>{payPick={y:$('py').value,v:$('pv').value};renderPay()});
+$('pz').addEventListener('change',renderPay);
+let pendingDel=null;
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.paym){payPick={y:b.dataset.paym.slice(0,4),v:b.dataset.paym};renderPay();window.scrollTo({top:0,behavior:'smooth'})}
+ else if(b.dataset.delpay){if(pendingDel!==b.dataset.delpay){pendingDel=b.dataset.delpay;b.textContent='Tap again to remove';return}
+  pendingDel=null;try{await delPay(b.dataset.delpay);payPick=null;toast('Payslip removed',false)}catch(err){toast('Could not remove',false)}}});
+
+/* ---------- backup & restore (same file format in the Claude tool and the standalone app) ---------- */
+let dl=null,pendingImport=null;
+function backupJSON(){return JSON.stringify({app:'timesheet',version:1,exported:new Date().toISOString(),settings:S,entries,pays},null,1)}
+$('bkExport').addEventListener('click',async()=>{
+ const json=backupJSON(),name=`timesheet-backup-${today}.json`;
+ if(dl){try{await dl.save({filename:name,data:json});toast('Backup saved',false);return}catch(e){if(e&&e.code==='declined')return}}
+ if(!window.claude){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Backup downloaded',false);return}catch(e){}}
+ try{await navigator.clipboard.writeText(json);toast('Backup copied — paste it into a note and save it',false)}catch(e){toast('Could not export here',false)}
+});
+$('bkFile').addEventListener('change',async ev=>{const f=ev.target.files[0];ev.target.value='';if(!f)return;
+ try{const d=JSON.parse(await f.text());if(d.app!=='timesheet'||!Array.isArray(d.entries))throw 0;
+  pendingImport=d;$('bkMsg').innerHTML=`<div class="msg ok">Backup from ${esc(fmtDate((d.exported||today).slice(0,10)))}: ${d.entries.length} entries, ${(d.pays||[]).length} payslips. <br><button class="btn" style="margin-top:8px" data-restore="1">Restore now</button></div>`}
+ catch(e){pendingImport=null;$('bkMsg').innerHTML='<div class="msg warn">That file is not a Time Sheet backup.</div>'}});
+async function restore(){const d=pendingImport;if(!d)return;pendingImport=null;$('bkMsg').innerHTML='<div class="msg ok">Restoring…</div>';
+ const es=d.entries.filter(e=>e&&e.id&&e.cat&&e.date),ps=(d.pays||[]).filter(p=>p&&p.id&&String(p.id).startsWith('pay-'));
+ try{S={...DEF,...(d.settings||{})};
+  if(col){for(const e of es)await col.doc(e.id).set(e);for(const p of ps)await col.doc(p.id).set(p);await putSettings()}
+  else{const m=(a,b)=>{const map=new Map(a.map(x=>[x.id,x]));b.forEach(x=>map.set(x.id,x));return[...map.values()]};entries=m(entries,es);pays=m(pays,ps);localSave();renderAll()}
+  renderSetup();$('bkMsg').innerHTML=`<div class="msg ok">Restored ${es.length} entries and ${ps.length} payslips.</div>`}
+ catch(e){$('bkMsg').innerHTML='<div class="msg warn">Restore stopped partway — try again; nothing is deleted.</div>'}}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.restore){b.disabled=true;restore()}});
+
+/* ---------- settings / routing ---------- */
+function renderSetup(){$('sStart').value=S.start;$('sEnd').value=S.end;$('sAnnual').value=S.annual;$('sPerm').value=S.perm;$('sWake').value=S.wake;$('aYear').value=today.slice(0,4);renderAdj()}
+function renderAdj(){const f=S.alFix||{},ks=Object.keys(f).sort();
+ $('adjList').innerHTML=ks.length?ks.map(y=>`<li><span class="t">${y}: ${dd(f[y].remaining)} left as of ${fmtDate(f[y].asOf)}<small>Now ${dd(alLeft(y))} left</small></span><button class="ib" data-unfix="${y}">Remove</button></li>`).join(''):'<li class="note">No adjustments — every year uses the normal allowance.</li>'}
+function route(){const V=['log','report','pay','setup'],v=V.includes(location.hash.slice(1))?location.hash.slice(1):'log';
+ V.forEach(k=>{$('v-'+k).hidden=k!==v;$('t-'+k).classList.toggle('on',k===v)});if(v==='report')renderReport();if(v==='pay')renderPay();if(v==='setup')renderSetup()}
+function renderAll(){renderMeters();renderRecent();if(!$('v-report').hidden)renderReport();if(!$('v-pay').hidden)renderPay();preview()}
+
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.c)setCat(b.dataset.c);else if(b.dataset.p)setPortion(b.dataset.p);else if(b.dataset.edit)edit(b.dataset.edit);
+ else if(b.dataset.del)remove(b.dataset.del);else if(b.dataset.unfix){const f={...(S.alFix||{})};delete f[b.dataset.unfix];S={...S,alFix:f};putSettings().then(()=>{renderAdj();toast('Adjustment removed',false)}).catch(()=>toast('Could not save',false))}
+ else if(b.dataset.wake){b.disabled=true;addWake(b.dataset.wake)}else if(b.dataset.tile){$('fc').value=rCat===b.dataset.tile?'all':b.dataset.tile;renderReport()}});
+['date','tin','tout','hol','comp','from','to','note'].forEach(id=>$(id).addEventListener('input',preview));
+$('save').addEventListener('click',saveEntry);$('cancel').addEventListener('click',resetForm);
+['fy','fm','fc'].forEach(id=>$(id).addEventListener('change',renderReport));
+$('toastB').addEventListener('click',async()=>{if(undoList){const l=undoList;undoList=null;for(const e of l)await put(e);toast('Restored',false)}});
+$('csv').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('table').dataset.csv||'');toast('Report copied — paste into Excel or Sheets',false)}catch(e){toast('Copy was blocked by the browser',false)}});
+$('sSave').addEventListener('click',async()=>{const a=parseFloat($('sAnnual').value),p=parseFloat($('sPerm').value);
+ if(!$('sStart').value||!$('sEnd').value||!$('sWake').value||!(a>=0)||!(p>=0)){toast('Please fill in every setting',false);return}
+ S={...S,start:$('sStart').value,end:$('sEnd').value,annual:a,perm:p,wake:$('sWake').value};try{await putSettings();toast('Settings saved',false)}catch(e){toast('Could not save settings',false)}});
+$('aSave').addEventListener('click',async()=>{const y=String(parseInt($('aYear').value)),v=parseFloat($('aLeft').value);
+ if(!(+y>2000)||!(v>=0)){toast('Enter a year and the days left',false);return}
+ S={...S,alFix:{...(S.alFix||{}),[y]:{remaining:v,asOf:today}}};try{await putSettings();renderAdj();toast(`${y} annual leave set to ${dd(v)} left`,false)}catch(e){toast('Could not save',false)}});
+window.addEventListener('hashchange',route);
+$('date').value=today;$('from').value=today;
+setCat('work');route();renderAll();connect();
+}
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
+</body>
+</html>
