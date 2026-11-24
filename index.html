@@ -172,6 +172,13 @@ table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-bl
   <p class="note">Friday and Saturday are your weekend: overtime there counts the full period, as on official holidays. Workdays and business trips: overtime is the time outside your shift. On a workday, arriving after the shift start or leaving before the shift end is rounded up to the next 30 minutes; if the whole amount fits in what's left of your monthly permission it is taken from permission, otherwise it is recorded as late coming or early leaving. Leave spanning several days skips Fridays and Saturdays; if an official holiday falls inside, delete that day's entry.</p>
   <button class="btn" id="sSave">Save settings</button>
  </div>
+ <div class="card" id="driveCard" hidden>
+  <h2>Google Drive backup</h2>
+  <p class="note" style="margin-top:0">Like WhatsApp: sign in once with your Google account and the app backs up every day to a "Time Sheet Backups" folder in your Google Drive. The newest 30 backups are kept.</p>
+  <div id="driveState"></div>
+  <div class="btns" id="driveBtns" style="margin-top:12px"></div>
+  <div id="driveMsg"></div>
+ </div>
  <div class="card">
   <h2>Backup &amp; restore</h2>
   <p class="note" style="margin-top:0">Save all your entries, payslips and settings in one file. Restore it here or in the standalone app to move your data. Restoring adds and updates entries — it never deletes anything.</p>
@@ -259,7 +266,8 @@ const amount=e=>e.comp?(e.cat==='ot'?'+1 leave day':'1 day · +1 leave day'):e.c
 /* ---------- storage ---------- */
 function setStatus(t){$('status').textContent=t}
 function localLoad(){try{const j=JSON.parse(localStorage.getItem('ts-data')||'{}');entries=j.entries||[];pays=j.pays||[];S={...DEF,...(j.settings||{})}}catch(e){}}
-function localSave(){try{localStorage.setItem('ts-data',JSON.stringify({entries,pays,settings:S}))}catch(e){}}
+function localSave(){try{localStorage.setItem('ts-data',JSON.stringify({entries,pays,settings:S}))}catch(e){}
+ if(window.Android&&Android.storeBackup){try{Android.storeBackup(backupJSON())}catch(e){}}}
 async function put(e){if(col){await col.doc(e.id).set(e)}else{entries=entries.filter(x=>x.id!==e.id).concat(e);localSave();renderAll()}}
 async function del(id){if(col){await col.doc(id).delete()}else{entries=entries.filter(x=>x.id!==id);localSave();renderAll()}}
 async function putSettings(){if(col){await col.doc('settings').set({...S,kind:'settings'})}else{localSave();renderAll()}}
@@ -277,7 +285,7 @@ async function connect(){
    entries=list;pays=pl;if(!snap.metadata.fromCache){clearTimeout(timer);setStatus('Saved to your account · private to you')}
    renderAll();
   },err=>{clearTimeout(timer);setStatus('Could not reach saved data ('+err.code+')')});
- }catch(e){col=null;localLoad();setStatus('Saved on this phone · back up from Settings');renderAll()}
+ }catch(e){col=null;localLoad();if(window.Android&&Android.storeBackup)localSave();setStatus('Saved on this phone · back up from Settings');renderAll()}
 }
 
 /* ---------- input screen ---------- */
@@ -544,17 +552,36 @@ $('bkFile').addEventListener('change',async ev=>{const f=ev.target.files[0];ev.t
  try{const d=JSON.parse(await f.text());if(d.app!=='timesheet'||!Array.isArray(d.entries))throw 0;
   pendingImport=d;$('bkMsg').innerHTML=`<div class="msg ok">Backup from ${esc(fmtDate((d.exported||today).slice(0,10)))}: ${d.entries.length} entries, ${(d.pays||[]).length} payslips. <br><button class="btn" style="margin-top:8px" data-restore="1">Restore now</button></div>`}
  catch(e){pendingImport=null;$('bkMsg').innerHTML='<div class="msg warn">That file is not a Time Sheet backup.</div>'}});
-async function restore(){const d=pendingImport;if(!d)return;pendingImport=null;$('bkMsg').innerHTML='<div class="msg ok">Restoring…</div>';
+async function restore(box){box=box||$('bkMsg');const d=pendingImport;if(!d)return;pendingImport=null;box.innerHTML='<div class="msg ok">Restoring…</div>';
  const es=d.entries.filter(e=>e&&e.id&&e.cat&&e.date),ps=(d.pays||[]).filter(p=>p&&p.id&&String(p.id).startsWith('pay-'));
  try{S={...DEF,...(d.settings||{})};
   if(col){for(const e of es)await col.doc(e.id).set(e);for(const p of ps)await col.doc(p.id).set(p);await putSettings()}
   else{const m=(a,b)=>{const map=new Map(a.map(x=>[x.id,x]));b.forEach(x=>map.set(x.id,x));return[...map.values()]};entries=m(entries,es);pays=m(pays,ps);localSave();renderAll()}
-  renderSetup();$('bkMsg').innerHTML=`<div class="msg ok">Restored ${es.length} entries and ${ps.length} payslips.</div>`}
- catch(e){$('bkMsg').innerHTML='<div class="msg warn">Restore stopped partway — try again; nothing is deleted.</div>'}}
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.restore){b.disabled=true;restore()}});
+  renderSetup();box.innerHTML=`<div class="msg ok">Restored ${es.length} entries and ${ps.length} payslips.</div>`}
+ catch(e){box.innerHTML='<div class="msg warn">Restore stopped partway — try again; nothing is deleted.</div>'}}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.restore){b.disabled=true;restore(b.dataset.restore==='drive'?$('driveMsg'):null)}});
+/* ---------- Google Drive (Android app only) ---------- */
+const HAS_DRIVE=!!(window.Android&&typeof Android.driveStatus==='function');
+function driveRender(st){if(!HAS_DRIVE)return;try{st=st||JSON.parse(Android.driveStatus())}catch(e){return}
+ $('driveCard').hidden=false;
+ const when=st.last?new Date(st.last).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'not yet';
+ $('driveState').innerHTML=st.on?`<div class="msg ok">Connected as <b>${esc(st.email||'your Google account')}</b><br>Last backup: ${esc(when)} · backs up daily when you have internet</div>`:'<div class="msg ok">Not connected</div>';
+ if(st.error)$('driveState').innerHTML+=`<div class="msg warn">${esc(st.error)}</div>`;
+ $('driveBtns').innerHTML=st.on?'<button class="btn" data-drive="backup">Back up now</button><button class="btn ghost" data-drive="restore">Restore from Drive</button><button class="btn ghost" data-drive="off">Disconnect</button>'
+  :'<button class="btn" data-drive="connect">Sign in with Google</button>'}
+window.onDrive=ev=>{
+ if(ev.type==='status'){driveRender(ev);$('driveMsg').innerHTML=ev.message?`<div class="msg ok">${esc(ev.message)}</div>`:'';
+  if(ev.justConnected){if(!entries.length&&!pays.length){$('driveMsg').innerHTML='<div class="msg ok">Connected. Looking for an earlier backup…</div>';Android.driveRestore()}else $('driveMsg').innerHTML='<div class="msg ok">Connected — your first backup is done.</div>'}}
+ else if(ev.type==='error'){driveRender();$('driveMsg').innerHTML=`<div class="msg warn">${esc(ev.message)}</div>`}
+ else if(ev.type==='restore'){try{const d=JSON.parse(ev.data);if(d.app!=='timesheet')throw 0;pendingImport=d;
+   $('driveMsg').innerHTML=`<div class="msg ok">Latest Drive backup (${esc(fmtDate(String(d.exported||today).slice(0,10)))}): ${d.entries.length} entries, ${(d.pays||[]).length} payslips.<br><button class="btn" style="margin-top:8px" data-restore="drive">Restore now</button></div>`}
+  catch(e){$('driveMsg').innerHTML='<div class="msg warn">The Drive backup could not be read.</div>'}}};
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!b.dataset.drive||!HAS_DRIVE)return;
+ const a=b.dataset.drive;$('driveMsg').innerHTML='<div class="msg ok">Working…</div>';
+ if(a==='connect')Android.driveConnect();else if(a==='backup')Android.driveBackupNow();else if(a==='restore')Android.driveRestore();else if(a==='off')Android.driveDisconnect()});
 
 /* ---------- settings / routing ---------- */
-function renderSetup(){$('sStart').value=S.start;$('sEnd').value=S.end;$('sAnnual').value=S.annual;$('sPerm').value=S.perm;$('sWake').value=S.wake;$('aYear').value=today.slice(0,4);renderAdj()}
+function renderSetup(){$('sStart').value=S.start;$('sEnd').value=S.end;$('sAnnual').value=S.annual;$('sPerm').value=S.perm;$('sWake').value=S.wake;$('aYear').value=today.slice(0,4);renderAdj();driveRender()}
 function renderAdj(){const f=S.alFix||{},ks=Object.keys(f).sort();
  $('adjList').innerHTML=ks.length?ks.map(y=>`<li><span class="t">${y}: ${dd(f[y].remaining)} left as of ${fmtDate(f[y].asOf)}<small>Now ${dd(alLeft(y))} left</small></span><button class="ib" data-unfix="${y}">Remove</button></li>`).join(''):'<li class="note">No adjustments — every year uses the normal allowance.</li>'}
 function route(){const V=['log','report','pay','setup'],v=V.includes(location.hash.slice(1))?location.hash.slice(1):'log';

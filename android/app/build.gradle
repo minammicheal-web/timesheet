@@ -1,0 +1,37 @@
+plugins { id 'com.android.application' }
+def run = System.getenv('GITHUB_RUN_NUMBER') ?: '1'
+android {
+    namespace 'com.mina.timesheet'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.mina.timesheet'
+        minSdk 24
+        targetSdk 34
+        versionCode run as Integer
+        versionName "1.${run}"
+    }
+    signingConfigs {
+        release {
+            storeFile rootProject.file('../android-key/timesheet.jks')
+            storePassword 'timesheet123'
+            keyAlias 'timesheet'
+            keyPassword 'timesheet123'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    lint { checkReleaseBuilds false; abortOnError false }
+}
+
+dependencies {
+    implementation 'com.google.android.gms:play-services-auth:21.2.0'
+    implementation 'androidx.work:work-runtime:2.9.1'
+}
