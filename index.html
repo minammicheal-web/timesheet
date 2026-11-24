@@ -535,6 +535,7 @@ let dl=null,pendingImport=null;
 function backupJSON(){return JSON.stringify({app:'timesheet',version:1,exported:new Date().toISOString(),settings:S,entries,pays},null,1)}
 $('bkExport').addEventListener('click',async()=>{
  const json=backupJSON(),name=`timesheet-backup-${today}.json`;
+ if(window.Android&&Android.saveFile){const r=Android.saveFile(name,json);toast(r?`Backup saved to ${r}: ${name}`:'Could not save the backup',false);return}
  if(dl){try{await dl.save({filename:name,data:json});toast('Backup saved',false);return}catch(e){if(e&&e.code==='declined')return}}
  if(!window.claude){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Backup downloaded',false);return}catch(e){}}
  try{await navigator.clipboard.writeText(json);toast('Backup copied — paste it into a note and save it',false)}catch(e){toast('Could not export here',false)}
