@@ -48,7 +48,7 @@ input:focus,select:focus,button:focus-visible,nav a:focus-visible{outline:3px so
 .seg button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
 .btn{border:0;border-radius:12px;background:var(--red);color:#fff;font:700 16px Inter,sans-serif;padding:14px 18px;min-height:50px;width:100%;cursor:pointer}
 .btn.ghost{background:var(--soft);color:var(--ink)}
-.btns{display:flex;gap:8px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}.btns>*{flex:1 1 160px}.upbox .btn{display:flex;align-items:center;justify-content:center;height:100%;min-height:50px}
 .stamp{border:2px dashed var(--c,var(--red));border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
 .stamp .big{font:700 clamp(40px,8vw,60px)/1 "Inter Tight",sans-serif;color:var(--c,var(--red));white-space:nowrap}
 .stamp .why{color:var(--mute);font-size:14px;margin-top:8px}
@@ -175,7 +175,7 @@ table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-bl
  <div class="card">
   <h2>Backup &amp; restore</h2>
   <p class="note" style="margin-top:0">Save all your entries, payslips and settings in one file. Restore it here or in the standalone app to move your data. Restoring adds and updates entries — it never deletes anything.</p>
-  <div class="btns"><button class="btn" id="bkExport">Export backup</button><div class="upbox" style="flex:1"><span class="btn ghost" style="display:block;text-align:center" aria-hidden="true">Restore from file</span><input type="file" id="bkFile" aria-label="Restore from backup file"></div></div>
+  <div class="btns"><button class="btn" id="bkExport">Export backup</button><div class="upbox"><span class="btn ghost" style="display:block;text-align:center" aria-hidden="true">Restore from file</span><input type="file" id="bkFile" aria-label="Restore from backup file"></div></div>
   <div id="bkMsg"></div>
  </div>
  <div class="card">
