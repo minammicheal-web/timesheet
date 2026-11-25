@@ -131,6 +131,36 @@ main .ms-l{background:var(--bg)}
 .chk label:has(input:checked){background:var(--soft);border-color:var(--accent);color:var(--accent)}
 .chkline{display:flex;align-items:center;gap:10px;color:var(--text);font-size:15px;font-weight:600;margin:0 0 6px}
 .chkline input{width:auto;margin:0}
+/* Round checkboxes (native inputs and the log's selection circles) with a ripple on press */
+input[type=checkbox],.cbx{-webkit-appearance:none;appearance:none;position:relative;flex:none;display:inline-block;width:22px;height:22px;margin:0;padding:0;
+  border:2px solid var(--outline);border-radius:50%;background:transparent;cursor:pointer;vertical-align:middle;transition:background-color .18s,border-color .18s;
+  --rc:rgba(15,118,110,.3)}
+@supports (color:color-mix(in srgb,red 50%,blue)){input[type=checkbox],.cbx{--rc:color-mix(in srgb,var(--accent) 34%,transparent)}}
+input[type=checkbox]::after,.cbx::after{content:"";position:absolute;left:5.5px;top:1.5px;width:5px;height:10px;border:solid var(--on-accent);border-width:0 2.5px 2.5px 0;
+  transform:rotate(45deg) scale(0);transition:transform .2s cubic-bezier(.2,.8,.3,1.5)}
+input[type=checkbox]:checked,.cbx.on{background:var(--accent);border-color:var(--accent)}
+input[type=checkbox]:checked::after,.cbx.on::after{transform:rotate(45deg) scale(1)}
+input[type=checkbox]:focus{outline:none}
+input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.crip::before{content:"";position:absolute;inset:-2px;border-radius:50%;pointer-events:none;animation:crip .5s ease-out}
+@keyframes crip{from{box-shadow:0 0 0 0 var(--rc)}to{box-shadow:0 0 0 18px transparent}}
+/* Daily log multi-select */
+.row{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.row.selm{position:relative;overflow:hidden;justify-content:flex-start;margin:0 -16px;padding-left:16px;padding-right:16px;width:calc(100% + 32px);transition:background .18s}
+.row.selm .r{margin-left:auto}
+.row.selm .cbx{animation:cbIn .22s cubic-bezier(.2,.8,.2,1)}
+.row.picked{background:var(--soft)}
+@keyframes cbIn{from{transform:scale(0);opacity:0}to{transform:none;opacity:1}}
+body.selon main{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+#selbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--card);border-top:1px solid var(--line);border-radius:20px 20px 0 0;
+  box-shadow:0 -8px 24px rgba(15,23,42,.14);padding:10px 14px calc(14px + env(safe-area-inset-bottom));animation:sbUp .26s cubic-bezier(.2,.8,.2,1)}
+@keyframes sbUp{from{transform:translateY(100%)}to{transform:none}}
+#selbar .in{max-width:620px;margin:0 auto}
+.sb-top{display:flex;align-items:center;gap:10px}
+.sb-x{position:relative;overflow:hidden;width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--text);font-size:20px;cursor:pointer}
+.sb-n{flex:1;font-weight:800;font-size:17px}
+.sb-all{display:flex;align-items:center;gap:10px;margin:0;padding:8px 4px;color:var(--text);font-size:15px;font-weight:600;cursor:pointer}
+#selbar .btns{margin-top:8px}
 </style>
 </head>
 <body>
@@ -316,9 +346,10 @@ let view='home';
 const now0=new Date();
 const ui={month:now0.getFullYear()+'-'+pad(now0.getMonth()+1),year:now0.getFullYear(),ltype:'all',ptype:'all',stab:'holidays'};
 let toastT,resolver=null,draft=null,exportData={};
+let sel=null,selPushed=false,bulk=null; /* Daily log multi-select: Set of picked dates, and the bulk "record" form state */
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
 function openModal(h){closeMs();$('#sheet').innerHTML=h;$('#modal').classList.add('show')}
-function closeModal(){closeMs();$('#modal').classList.remove('show');$('#sheet').innerHTML='';draft=null;resolver=null}
+function closeModal(){closeMs();$('#modal').classList.remove('show');$('#sheet').innerHTML='';draft=null;resolver=null;bulk=null}
 function ask(msg,ok){return new Promise(res=>{
   openModal('<h3>'+esc(msg)+'</h3><div class="btns"><button class="btn ghost" data-a="ask-no">Cancel</button><button class="btn danger" data-a="ask-yes">'+esc(ok||'Confirm')+'</button></div>');
   resolver=res;
@@ -388,6 +419,7 @@ function applySelect(id,v){
     case 'pt':ui.ptype=v;render();break;
     case 'st':ui.stab=v;render();break;
     case 'd-type':if(draft){draft.type=v;renderDay()}break;
+    case 'b-type':if(bulk){bulk.type=v;bulkForm()}break;
     case 'd-hm':if(draft){draft.holidayMode=v;renderDay()}break;
     case 'theme':S.settings.theme=v;applyTheme();save();render();break;
   }
@@ -435,18 +467,143 @@ function vLog(){
   let h=monthPicker()+'<section class="card" style="padding:6px 16px">';
   st.rows.forEach(r=>{
     const isToday=r.d===now;
+    const act=sel?'seltog':'editday',sc=sel?' selm'+(sel.has(r.d)?' picked':''):'',cb=sel?'<span class="cbx'+(sel.has(r.d)?' on':'')+'"></span>':'';
     if(r.kind!=='workday'&&!r.rec){
       const lab=r.kind==='weekend'?'Weekend':esc(holidayOf(r.d).name||'Holiday');
-      h+='<button class="row off" data-a="editday" data-d="'+r.d+'"><span class="d">'+dayShort(r.d)+'</span><span class="muted small">'+lab+'</span></button>';
+      h+='<button class="row off'+sc+'" data-a="'+act+'" data-d="'+r.d+'">'+cb+'<span class="d">'+dayShort(r.d)+'</span><span class="muted small'+(sel?' r':'')+'">'+lab+'</span></button>';
       return;
     }
     let right=r.rec?tags(r.rec,r.c):(r.d<now?'<span class="tag warn">No record</span>':'<span class="tag mute">—</span>');
     if(r.kind==='holiday'&&r.rec)right='<span class="tag mute">'+esc(holidayOf(r.d).name||'Holiday')+'</span>'+right;
     if(r.kind==='weekend'&&r.rec)right='<span class="tag mute">Weekend</span>'+right;
-    h+='<button class="row'+(isToday?' today':'')+'" id="'+(isToday?'todayrow':'')+'" data-a="editday" data-d="'+r.d+'"><span class="d">'+dayShort(r.d)+'</span><span class="r">'+right+'</span></button>';
+    h+='<button class="row'+(isToday?' today':'')+sc+'" id="'+(isToday?'todayrow':'')+'" data-a="'+act+'" data-d="'+r.d+'">'+cb+'<span class="d">'+dayShort(r.d)+'</span><span class="r">'+right+'</span></button>';
   });
-  return h+'</section>';
+  return h+'</section>'+(sel?'':'<div class="muted small center" style="margin-top:-4px">Tip: press and hold a day to select several</div>');
 }
+
+/* ================= daily log: multi-select & bulk record ================= */
+/* "Select all" picks this month's workdays up to today, plus any day that already has a record (empty weekends/holidays stay out). */
+function selAllDates(){const now=todayStr();return monthStats(ui.month).rows.filter(r=>r.d<=now&&(r.kind==='workday'||r.rec)).map(r=>r.d)}
+function cRip(el){if(!el)return;el.classList.remove('crip');void el.offsetWidth;el.classList.add('crip');clearTimeout(el._rt);el._rt=setTimeout(()=>el.classList.remove('crip'),520)}
+function keepScroll(fn){const y=window.scrollY;fn();window.scrollTo(0,y)}
+function selEnter(d){
+  sel=new Set([d]);
+  try{history.pushState({sel:1},'');selPushed=true}catch(e){selPushed=false}
+  try{navigator.vibrate&&navigator.vibrate(25)}catch(e){}
+  keepScroll(render);
+  const r=document.querySelector('.row[data-d="'+d+'"]');if(r)cRip($('.cbx',r));
+}
+function selDone(){sel=null;keepScroll(render)}
+function selExit(){if(!sel)return;if(selPushed){selPushed=false;history.back()}else selDone()} /* popstate finishes the exit */
+function selBar(){
+  let bar=$('#selbar');
+  if(view!=='log')sel=null;
+  document.body.classList.toggle('selon',!!sel);
+  if(!sel){if(bar)bar.remove();return}
+  if(!bar){
+    bar=document.createElement('div');bar.id='selbar';
+    bar.innerHTML='<div class="in"><div class="sb-top"><button class="sb-x" data-a="selexit" aria-label="Cancel selection">✕</button><span class="sb-n"></span>'+
+      '<label class="sb-all"><input type="checkbox" id="selall"> Select all</label></div>'+
+      '<div class="btns"><button class="btn danger" data-a="seldel">Delete</button><button class="btn" data-a="selrecord">Record</button></div></div>';
+    document.body.appendChild(bar);
+  }
+  selSync();
+}
+function selSync(){
+  if(!sel)return;
+  document.querySelectorAll('.row[data-d]').forEach(r=>{const on=sel.has(r.dataset.d);r.classList.toggle('picked',on);const c=$('.cbx',r);if(c)c.classList.toggle('on',on)});
+  const bar=$('#selbar');if(!bar)return;
+  const n=sel.size,all=selAllDates();
+  $('.sb-n',bar).textContent=n+' selected';
+  $('#selall').checked=all.length>0&&all.every(d=>sel.has(d));
+  $('[data-a=seldel]',bar).style.display=[...sel].some(d=>S.days[d])?'':'none';
+  const rb=$('[data-a=selrecord]',bar);rb.disabled=!n;rb.textContent=n?'Record '+n+' day'+(n>1?'s':''):'Record';
+}
+function selToggle(d,row){
+  if(sel.has(d))sel.delete(d);else sel.add(d);
+  selSync();if(row)cRip($('.cbx',row));
+}
+const BULK_TYPES=[['work','Work day'],['annual','Annual leave'],['casual','Casual leave'],['sick','Sick leave'],['unpaid','Unpaid leave']];
+function bulkOpen(){
+  if(!sel||!sel.size)return;
+  const sc=schedule(todayStr());
+  bulk={type:'work',normal:true,in:sc.start,out:sc.end,note:''};
+  bulkForm();
+}
+function bulkForm(){
+  const b=bulk,n=sel.size;
+  let h='<h3>Record '+n+' day'+(n>1?'s':'')+'</h3>'+msel('b-type','Day type',sortOpts(BULK_TYPES),b.type);
+  if(b.type==='work'){
+    h+='<label class="chkline" style="margin-top:14px"><input type="checkbox" id="b-normal"'+(b.normal?' checked':'')+'> <span>Normal workday (each day\'s usual hours)</span></label>';
+    if(!b.normal)h+='<div class="two"><label>Clock in<input type="time" data-b="in" value="'+esc(b.in)+'"></label><label>Clock out<input type="time" data-b="out" value="'+esc(b.out)+'"></label></div>';
+  }
+  h+='<label>Note (optional)<input data-b="note" maxlength="80" placeholder="Keeps each day\'s note if empty" value="'+esc(b.note)+'"></label>'+
+    '<div class="prev" id="bprev">'+bulkPreview()+'</div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="bulksave">Save</button></div>';
+  openModal(h);
+}
+function bulkPreview(){
+  const ds=[...sel],leave=bulk.type!=='work',L=[];
+  const skip=leave?ds.filter(d=>kindOf(d)!=='workday').length:0,use=ds.length-skip;
+  const rep=ds.filter(d=>S.days[d]&&!(leave&&kindOf(d)!=='workday')).length;
+  L.push('<b>'+esc(TYPE_LABEL[bulk.type])+': '+use+' day'+(use!==1?'s':'')+'</b>');
+  if(bulk.type==='work')L.push(bulk.normal?'Clock in/out at each day\'s normal hours':'Clock in '+esc(bulk.in||'—')+' · clock out '+esc(bulk.out||'—'));
+  if(rep)L.push('Replaces '+rep+' existing record'+(rep>1?'s':''));
+  if(skip)L.push('Skips '+skip+' weekend/holiday day'+(skip>1?'s':'')+' — leave only counts on workdays');
+  if(!leave){const off=ds.filter(d=>kindOf(d)!=='workday').length;if(off)L.push(off+' weekend/holiday day'+(off>1?'s':'')+' will count as overtime')}
+  return L.join('<br>');
+}
+function saveBulk(bal){
+  const b=bulk;if(!b||!sel)return;
+  const leave=b.type!=='work',now=todayStr();
+  if(!leave&&!b.normal){
+    if(!TIME.test(b.in)||!TIME.test(b.out)){toast('Add clock-in and clock-out times');return}
+    if(tm(b.out)<=tm(b.in)){toast('Clock-out must be after clock-in');return}
+  }
+  const recs=[];
+  [...sel].sort().forEach(d=>{
+    const kind=kindOf(d);
+    if(leave&&kind!=='workday')return;
+    const ex=S.days[d],sc=schedule(d),keep=!leave&&kind==='workday'&&ex&&ex.type==='work';
+    const r={date:d,type:b.type,in:leave?'':(b.normal?sc.start:b.in),out:leave?'':(b.normal?sc.end:b.out),
+      perms:keep?(ex.perms||[]):[],trips:keep?(ex.trips||[]):[],holidayMode:(ex&&ex.holidayMode)||'ot',note:b.note.trim()||(ex&&ex.note)||''};
+    if(ex&&ex.alarm&&d>=now)r.alarm=ex.alarm;
+    if(ex&&ex.otPlan)r.otPlan=ex.otPlan;
+    recs.push(r);
+  });
+  if(!recs.length){toast('Leave only applies to workdays — none of the selected days are workdays');return}
+  if(balFlag(recs,bal)==='ask')return;
+  recs.forEach(r=>{S.days[r.date]=r});
+  save();closeModal();selExit();
+  toast(TYPE_LABEL[b.type]+' recorded for '+recs.length+' day'+(recs.length>1?'s':''));
+}
+function selDelete(){
+  const ds=[...sel].filter(d=>S.days[d]);if(!ds.length)return;
+  ask('Delete the records for '+ds.length+' day'+(ds.length>1?'s':'')+'?','Delete').then(ok=>{
+    if(!ok)return;ds.forEach(d=>{delete S.days[d]});save();selExit();toast('Deleted '+ds.length+' record'+(ds.length>1?'s':''));
+  });
+}
+/* Long-press a day in the log to start selecting */
+(function(){
+  let t=null,x=0,y=0,fired=false;
+  const cancel=()=>{clearTimeout(t);t=null};
+  document.addEventListener('pointerdown',ev=>{
+    fired=false;cancel();
+    if(view!=='log'||sel||$('#modal').classList.contains('show'))return;
+    const r=ev.target.closest('.row[data-d]');if(!r)return;
+    x=ev.clientX;y=ev.clientY;
+    t=setTimeout(()=>{t=null;fired=true;selEnter(r.dataset.d)},450);
+  },{passive:true});
+  document.addEventListener('pointermove',ev=>{if(t&&Math.hypot(ev.clientX-x,ev.clientY-y)>10)cancel()},{passive:true});
+  document.addEventListener('pointerup',cancel,{passive:true});
+  document.addEventListener('pointercancel',cancel,{passive:true});
+  document.addEventListener('scroll',cancel,{passive:true,capture:true});
+  /* the tap that ends a long press must not also toggle or open the day */
+  document.addEventListener('click',ev=>{if(fired){fired=false;ev.stopPropagation();ev.preventDefault()}},true);
+  document.addEventListener('contextmenu',ev=>{if(ev.target.closest&&ev.target.closest('.row[data-d]'))ev.preventDefault()});
+})();
+/* Ripple on every checkbox when it's tapped (taps on its label land here too) */
+document.addEventListener('click',ev=>{const t=ev.target;if(t&&t.matches&&t.matches('input[type=checkbox]'))cRip(t)},true);
 
 function vLeaves(){
   const ys=yearStats(ui.year);
@@ -602,7 +759,8 @@ function render(){
   document.querySelectorAll('.tab').forEach(b=>{const on=b.dataset.tab===view;b.classList.toggle('on',on);if(on){b.setAttribute('aria-current','page');const t=$('#tabs');t.scrollTo({left:b.offsetLeft-(t.clientWidth-b.offsetWidth)/2})}else b.removeAttribute('aria-current')});
   $('#act').classList.toggle('hide',view!=='log');
   $('#view').innerHTML=({home:vHome,log:vLog,leaves:vLeaves,perm:vPerm,ot:vOt,report:vReport,pay:vPay,setup:vSetup,settings:vSettings})[view]();
-  if(view==='log'){const t=$('#todayrow');if(t&&ui.month===todayStr().slice(0,7))t.scrollIntoView({block:'center'})}
+  if(view==='log'&&!sel){const t=$('#todayrow');if(t&&ui.month===todayStr().slice(0,7))t.scrollIntoView({block:'center'})}
+  selBar();
   tick();
 }
 function tick(){
@@ -779,7 +937,7 @@ function balFlag(recs,bal){
   const need=recs.filter(needsBalChoice);
   if(!need.length)return 'ok';
   let ch=bal;
-  if(ch===undefined&&draft.inBal!==undefined&&recs.length===1)ch=draft.inBal?'in':'out';
+  if(ch===undefined&&draft&&draft.inBal!==undefined&&recs.length===1)ch=draft.inBal?'in':'out';
   if(ch===undefined){askBal();return 'ask'}
   need.forEach(r=>{r.inBal=(ch==='in')});
   return 'ok';
@@ -1341,7 +1499,7 @@ function updateHolidays(silent){
 
 /* ================= events ================= */
 document.addEventListener('click',ev=>{
-  const g=ev.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+  const g=ev.target.closest('[data-go]');if(g){if(sel){sel=null;selPushed=false}go(g.dataset.go);return}
   if(ev.target.closest('#back')){view=prevView||'home';render();window.scrollTo(0,0);return}
   if(ev.target.id==='act'){openDay(todayStr());return}
   if(ev.target.id==='msmask'){closeMs();return}
@@ -1359,6 +1517,11 @@ document.addEventListener('click',ev=>{
     case 'backin':backIn();break;
     case 'out':clockOut();break;
     case 'editday':openDay(t.dataset.d);break;
+    case 'seltog':if(sel)selToggle(t.dataset.d,t);break;
+    case 'selexit':selExit();break;
+    case 'selrecord':bulkOpen();break;
+    case 'seldel':selDelete();break;
+    case 'bulksave':saveBulk();break;
     case 'addleave':openDay(todayStr(),{type:['annual','casual','sick','unpaid','halfAM','halfPM'].includes(ui.ltype)?ui.ltype:'annual'});break;
     case 'close':closeModal();break;
     case 'planot':otForm();break;
@@ -1369,9 +1532,9 @@ document.addEventListener('click',ev=>{
     case 'ot-back':otSnooze[todayStr()]=0;closeModal();checkOt();break;
     case 'ot-stay-save':otStaySave();break;
     case 'saveday':saveDay();break;
-    case 'bal-in':saveDay('in');break;
-    case 'bal-out':saveDay('out');break;
-    case 'bal-back':renderDay();break;
+    case 'bal-in':if(bulk)saveBulk('in');else saveDay('in');break;
+    case 'bal-out':if(bulk)saveBulk('out');else saveDay('out');break;
+    case 'bal-back':if(bulk)bulkForm();else renderDay();break;
     case 'addrow':draft[t.dataset.key].push({from:'',to:''});renderDay();break;
     case 'delrow':draft[t.dataset.key].splice(+t.dataset.i,1);renderDay();break;
     case 'delday':{const d=draft._orig;ask('Delete the record for '+dayShort(d)+'?','Delete').then(ok=>{if(ok){delete S.days[d];save();closeModal();render();toast('Deleted')}});break}
@@ -1416,6 +1579,8 @@ document.addEventListener('change',ev=>{
   if(t.id==='payfile'){const f=t.files;importPayslips(f);t.value='';return}
   if(t.dataset.set){setSetting(t.dataset.set,t.value);return}
   if(t.dataset.flag){S.settings[t.dataset.flag]=t.checked;save();toast(t.checked?'Reminders on':'Reminders off');return}
+  if(t.id==='selall'&&sel){const all=selAllDates();all.forEach(d=>{if(t.checked)sel.add(d);else sel.delete(d)});selSync();return}
+  if(t.id==='b-normal'&&bulk){bulk.normal=t.checked;bulkForm();return}
   if(t.dataset.wd!==undefined){
     const i=+t.dataset.wd,w=S.settings.workDays.filter(x=>x!==i);
     if(t.checked)w.push(i);S.settings.workDays=w.sort();save();toast('Saved');return;
@@ -1431,7 +1596,9 @@ document.addEventListener('change',ev=>{
   if(t.id==='d-end'){draft.endDate=t.value||draft.date;renderDay();return}
 });
 document.addEventListener('input',ev=>{
-  const t=ev.target;if(!draft||!$('#sheet').contains(t))return;
+  const t=ev.target;
+  if(bulk&&t.dataset.b&&$('#sheet').contains(t)){bulk[t.dataset.b]=t.value;const p=$('#bprev');if(p)p.innerHTML=bulkPreview();return}
+  if(!draft||!$('#sheet').contains(t))return;
   if(t.id==='d-normal'){
     const sc=schedule(draft.date),i=$('[data-k=in]'),o=$('[data-k=out]');
     if(t.checked){draft.in=sc.start;draft.out=sc.end}
@@ -1456,7 +1623,7 @@ function timePre(ev){
   previewDay();
 }
 document.addEventListener('pointerdown',timePre,true);document.addEventListener('click',timePre,true);
-window.addEventListener('popstate',()=>{closeMs();if(view==='settings'){view=prevView||'home';render()}else if(view!=='home'){view='home';render()}});
+window.addEventListener('popstate',()=>{closeMs();if(sel){selPushed=false;if($('#modal').classList.contains('show'))closeModal();selDone();return}if(view==='settings'){view=prevView||'home';render()}else if(view!=='home'){view='home';render()}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeMs()});
 window.addEventListener('resize',closeMs);
 document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&t.id==='msmenu')return;closeMs()},true);
@@ -1474,7 +1641,7 @@ if(!S.adj.asOf&&(Object.keys(S.adj.years).length||Object.keys(S.adj.months).leng
 buildTabs();
 /* ---- ripple on taps ---- */
 document.addEventListener('pointerdown',ev=>{
-  const b=ev.target.closest('.tab,.btn,.menu button,header button,.mcell,.yb');if(!b||b.disabled)return;
+  const b=ev.target.closest('.tab,.btn,.menu button,header button,.mcell,.yb,.row.selm,.sb-x');if(!b||b.disabled)return;
   const r=b.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2.2,x=ev.clientX-r.left-sz/2,y=ev.clientY-r.top-sz/2;
   const e=document.createElement('span');e.className='rip';e.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+x+'px;top:'+y+'px';
   b.appendChild(e);setTimeout(()=>e.remove(),650);
@@ -1482,7 +1649,7 @@ document.addEventListener('pointerdown',ev=>{
 /* ---- swipe the screen left/right to move between tabs ---- */
 (function(){
   let sx=0,sy=0,mode=0,on=false;const el=()=>$('#view');
-  const blocked=t=>$('#modal').classList.contains('show')||$('#msmenu')||t.closest('input,textarea,select,.ms,#top');
+  const blocked=t=>$('#modal').classList.contains('show')||$('#msmenu')||sel||t.closest('input,textarea,select,.ms,#top');
   document.addEventListener('touchstart',ev=>{
     on=false;mode=0;if(ev.touches.length!==1||tabIdx(view)<0||blocked(ev.target))return;
     sx=ev.touches[0].clientX;sy=ev.touches[0].clientY;on=true;el().classList.remove('snap');
