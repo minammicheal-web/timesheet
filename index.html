@@ -120,7 +120,7 @@ const monthTitle=ym=>{const p=ym.split('-');return MONTHS[+p[1]-1]+' '+p[0]};
 /* ================= data ================= */
 const KEY='attendance.v1';
 let mem=null;
-function defaults(){return {days:{},periods:[],holidays:[],settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2}}}
+function defaults(){return {days:{},periods:[],holidays:[],payslips:[],settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2}}}
 function load(){
   const d=defaults();let raw=null;
   try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
@@ -129,6 +129,7 @@ function load(){
     if(p.days&&typeof p.days==='object')d.days=p.days;
     if(Array.isArray(p.periods))d.periods=p.periods;
     if(Array.isArray(p.holidays))d.holidays=p.holidays;
+    if(Array.isArray(p.payslips))d.payslips=p.payslips;
     if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
   }catch(e){}}
   return d;
@@ -268,7 +269,7 @@ const sel=(id,opts,cur)=>'<select id="'+id+'">'+opts.map(o=>'<option value="'+es
 const sortOpts=a=>a.slice().sort((x,y)=>x[1].localeCompare(y[1]));
 
 /* ================= views ================= */
-const TITLES={home:'Attendance & Leave',log:'Daily Log',leaves:'Leaves',perm:'Permissions & Trips',ot:'Overtime',report:'Monthly Report',setup:'Holidays & Schedules',settings:'Settings'};
+const TITLES={home:'Attendance & Leave',log:'Daily Log',leaves:'Leaves',perm:'Permissions & Trips',ot:'Overtime',report:'Monthly Report',pay:'Payslips',setup:'Holidays & Schedules',settings:'Settings'};
 
 function vHome(){
   const d=todayStr(),rec=S.days[d],kind=kindOf(d),sch=schedule(d),c=rec?calc(rec):null;
@@ -297,7 +298,7 @@ function vHome(){
     '<div class="stat"><b>'+fm(ms.left)+'</b><span>Permission left this month</span></div></div>';
   h+='<div class="menu">'+
     menuBtn('log','🗓','Daily Log')+menuBtn('leaves','🌴','Leaves')+menuBtn('perm','⏱','Permissions & Trips')+
-    menuBtn('ot','➕','Overtime')+menuBtn('report','📊','Monthly Report')+menuBtn('setup','📅','Holidays & Schedules')+menuBtn('settings','⚙️','Settings')+'</div>';
+    menuBtn('ot','➕','Overtime')+menuBtn('report','📊','Monthly Report')+menuBtn('pay','💵','Payslips')+menuBtn('setup','📅','Holidays & Schedules')+menuBtn('settings','⚙️','Settings')+'</div>';
   return h;
 }
 const menuBtn=(v,ic,l)=>'<button data-go="'+v+'"><span class="ic">'+ic+'</span>'+l+'<span class="go">›</span></button>';
@@ -454,7 +455,7 @@ function render(){
   $('#title').textContent=TITLES[view];
   $('#back').classList.toggle('hide',view==='home');
   $('#act').classList.toggle('hide',view!=='log');
-  $('#view').innerHTML=({home:vHome,log:vLog,leaves:vLeaves,perm:vPerm,ot:vOt,report:vReport,setup:vSetup,settings:vSettings})[view]();
+  $('#view').innerHTML=({home:vHome,log:vLog,leaves:vLeaves,perm:vPerm,ot:vOt,report:vReport,pay:vPay,setup:vSetup,settings:vSettings})[view]();
   if(view==='log'){const t=$('#todayrow');if(t&&ui.month===todayStr().slice(0,7))t.scrollIntoView({block:'center'})}
   tick();
 }
@@ -622,6 +623,9 @@ function copyText(){
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(()=>toast('Copied'),fb);else fb();
 }
 function download(){
+  if(window.Android&&typeof window.Android.saveFile==='function'){
+    try{const r=window.Android.saveFile(exportData.name,exportData.text);toast(r?'Saved to '+r+' as '+exportData.name:'Could not save — use Copy');return}catch(e){}
+  }
   try{const b=new Blob(['\ufeff'+exportData.text],{type:exportData.mime}),a=document.createElement('a');
     a.href=URL.createObjectURL(b);a.download=exportData.name;document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('Download started')}
@@ -632,6 +636,7 @@ function doImport(){
   if(!p||!p.days||typeof p.days!=='object'){toast('Not a valid backup');return}
   const d=defaults();d.days=p.days;
   if(Array.isArray(p.periods))d.periods=p.periods;if(Array.isArray(p.holidays))d.holidays=p.holidays;
+  if(Array.isArray(p.payslips))d.payslips=p.payslips;
   if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
   S=d;save();closeModal();render();toast('Restored '+Object.keys(S.days).length+' days');
 }
@@ -640,6 +645,156 @@ function setSetting(k,v){
   if(k==='start'||k==='end'){if(!TIME.test(v))return;s[k]=v}
   else{const n=parseFloat(v);if(isNaN(n)||n<0)return;s[k]=n}
   save();toast('Saved');
+}
+
+/* ================= payslips ================= */
+const normAr=s=>String(s||'').replace(/[ً-ٰٟـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+const cellText=td=>td.textContent.replace(/ /g,' ').replace(/\s+/g,' ').trim();
+function num(s){
+  const t=String(s||'').replace(/,/g,'').trim();
+  if(/^-?\d+(\.\d+)?$/.test(t))return parseFloat(t);
+  const m=t.match(/^(\d+(?:\.\d+)?)-$/);
+  return m?-parseFloat(m[1]):null;
+}
+const m2=n=>(n==null?0:n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const EN_RAW={
+  'المرتب الأساسي':'Basic salary','علاوة السنة الحالية':'Current-year raise','علاوة سنوات سابقة':'Previous-years raise',
+  'حوافز و مكافآت':'Incentives & bonuses','بدلات':'Allowances','أضافي':'Overtime','تسويات أخرى':'Other adjustments',
+  'عمولات':'Commissions','م. توزيع أرباح':'Profit distribution','تسوية رصيد اجازات':'Leave balance adjustment',
+  'تأمينات':'Social insurance','ت.معاش اضافى':'Extra pension','ضريبة كسب العمل':'Income tax','أجازة مرضية':'Sick leave',
+  'غياب':'Absence','أيام بدون أجر':'Unpaid days','تسوية ضريبية':'Tax settlement','تأمين صحى شامل':'Universal health insurance',
+  'م. بالرعاية الصحية':'Healthcare contribution','م. بصندوق العاملين':'Employees fund contribution','مساهمه تكافليه':'Takaful contribution',
+  'قسط شراء مدة':'Service-period purchase installment','مشاركة مجتمعية':'Community participation',
+  'تسوية دفعة مقدمة مكافآت':'Advance settlement – bonuses','تسوية دفعة مقدمة عمولات':'Advance settlement – commissions',
+  'تأمين سيارة':'Car insurance','استقطاعات مزايا عاملين':'Employee benefit deductions','إنتقالات':'Transport','قسط بنك':'Bank installment',
+  'عهد مؤقتة':'Temporary custody','فاتورة محمول':'Mobile bill','إصلاح سيارة':'Car repair','تسويات أخري':'Other adjustments','مصروفات':'Expenses'
+};
+const EN={};Object.keys(EN_RAW).forEach(k=>{EN[normAr(k)]=EN_RAW[k]});
+const labelHtml=l=>{const en=EN[normAr(l)];return en?esc(en)+'<div class="muted small" dir="auto">'+esc(l)+'</div>':'<span dir="auto">'+esc(l)+'</span>'};
+const isOT=l=>{const n=normAr(l);return n.indexOf('اضاف')>=0&&n.indexOf('علاو')<0};
+const isAbs=l=>normAr(l).indexOf('غياب')>=0;
+const isUnpaid=l=>normAr(l).indexOf('بدون اجر')>=0;
+const isSickL=l=>normAr(l).indexOf('مرضي')>=0;
+const isBasic=l=>normAr(l).indexOf('المرتب الاساسي')>=0;
+const sumBy=(items,fn)=>items.filter(x=>fn(x.label)).reduce((a,x)=>a+x.amount,0);
+const prevMonth=ym=>{const p=ym.split('-'),d=new Date(+p[0],+p[1]-2,1);return d.getFullYear()+'-'+pad(d.getMonth()+1)};
+
+/* Reads the company's "Employee Remuneration statement" HTML. Nothing leaves the phone. */
+function parsePayslip(html){
+  let doc;try{doc=new DOMParser().parseFromString(html,'text/html')}catch(e){return null}
+  const all=(doc.body?doc.body.textContent:'').replace(/ /g,' ');
+  const mm=all.match(/for\s*:\s*(\d{1,2})\s*\/\s*(\d{4})/i);
+  if(!mm)return null;
+  const mo=+mm[1];if(mo<1||mo>12)return null;
+  const p={month:mm[2]+'-'+pad(mo),earn:[],ded:[],orders:[],totEarn:null,totDed:null,netIncome:null,net:null,ordersTotal:null,ok:true};
+  let after=false;
+  Array.prototype.forEach.call(doc.querySelectorAll('tr'),tr=>{
+    const c=Array.prototype.map.call(tr.children,cellText);
+    if(!c.length)return;
+    if(/^net\s*:/i.test(c[0])){p.net=num(c[0].replace(/^net\s*:/i,''));after=true;return}
+    if(!after){
+      if(c.length>=4){
+        const dl=c[1],dv=num(c[0]),el=c[3],ev=num(c[2]);
+        if(normAr(dl).indexOf('اجمالي')>=0||normAr(el).indexOf('اجمالي')>=0){
+          if(dv!==null)p.totDed=dv;if(ev!==null)p.totEarn=ev;return;
+        }
+        if(dl&&dv!==null)p.ded.push({label:dl,amount:dv});
+        if(el&&ev!==null)p.earn.push({label:el,amount:ev});
+      }else if(c.length===2&&num(c[0])!==null&&normAr(c[1]).indexOf('صافي')>=0){p.netIncome=num(c[0])}
+    }else if(c.length===2){
+      const v=num(c[0]),l=c[1];if(!l)return;
+      if(normAr(l).indexOf('اجمالي')>=0){if(v!==null)p.ordersTotal=v;return}
+      if(v!==null)p.orders.push({label:l,amount:v});
+    }
+  });
+  if(!p.earn.length&&!p.ded.length)return null;
+  const se=p.earn.reduce((a,x)=>a+x.amount,0),sd=p.ded.reduce((a,x)=>a+x.amount,0);
+  p.ok=(p.totEarn===null||Math.abs(se-p.totEarn)<0.015)&&(p.totDed===null||Math.abs(sd-p.totDed)<0.015);
+  return p;
+}
+function importPayslips(files){
+  const list=Array.prototype.slice.call(files||[]);if(!list.length)return;
+  let done=0,good=0,last=null;
+  list.forEach(f=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      const p=parsePayslip(String(fr.result||''));
+      if(p){S.payslips=S.payslips.filter(x=>x.month!==p.month).concat(p);good++;last=p.month}
+      if(++done===list.length)finish();
+    };
+    fr.onerror=()=>{if(++done===list.length)finish()};
+    fr.readAsText(f,'utf-8');
+  });
+  function finish(){
+    save();render();
+    if(!good){toast('Could not read that file as a payslip');return}
+    toast('Imported '+good+' payslip'+(good>1?'s':'')+(good<list.length?' ('+(list.length-good)+' not recognised)':''));
+    if(good===1&&last)payDetail(last);
+  }
+}
+function vPay(){
+  let h='<label class="btn full" style="text-align:center;margin:0">Import payslip<input type="file" id="payfile" accept=".htm,.html,text/html" multiple hidden></label>'+
+    '<div class="muted small center" style="margin:8px 0 14px">Choose the payslip .htm file. It is read on this phone only.</div>';
+  const list=S.payslips.slice().sort((a,b)=>a.month<b.month?1:-1);
+  h+='<section class="card" style="padding:6px 16px">';
+  if(!list.length)h+='<div class="empty">No payslips imported yet.</div>';
+  list.forEach(p=>{
+    const ot=sumBy(p.earn,isOT),dd=sumBy(p.ded,isAbs)+sumBy(p.ded,isUnpaid)+sumBy(p.ded,isSickL);
+    h+='<button class="row" data-a="payopen" data-m="'+p.month+'"><span><b>'+esc(monthTitle(p.month))+'</b><div class="muted small">Net '+m2(p.net!=null?p.net:p.netIncome)+'</div></span><span class="r">'+
+      (ot?'<span class="tag ok">Overtime '+m2(ot)+'</span>':'')+(dd?'<span class="tag bad">Deducted '+m2(dd)+'</span>':'')+'</span></button>';
+  });
+  return h+'</section>';
+}
+function payLines(items){
+  const v=items.filter(x=>x.amount!==0);
+  if(!v.length)return '<div class="muted small">None</div>';
+  return v.map(x=>'<div class="line"><span>'+labelHtml(x.label)+'</span><b>'+m2(x.amount)+'</b></div>').join('');
+}
+function verdict(paid,app){
+  if(paid>0&&app)return ['info','Both show it'];
+  if(paid>0&&!app)return ['warn','Payslip only'];
+  if(!paid&&app)return ['warn','App only'];
+  return ['ok','None on both'];
+}
+const vTag=v=>'<span class="tag '+v[0]+'">'+v[1]+'</span>';
+function payCompare(p){
+  const pm=prevMonth(p.month),st=monthStats(pm),title=monthTitle(pm);
+  let h='<h4 style="margin-top:18px">Check against '+esc(title)+'</h4>';
+  if(!st.rows.some(r=>r.rec))return h+'<div class="muted small">No attendance was recorded in the app for '+esc(title)+', so there is nothing to compare.</div>';
+  const otPaid=sumBy(p.earn,isOT),hrs=st.ot;
+  const v1=verdict(otPaid,hrs>0);
+  h+='<div class="line" style="padding-bottom:0"><b>Overtime</b>'+vTag(v1)+'</div>'+
+    '<div class="line" style="padding:2px 0"><span class="muted small">Payslip paid</span><span>'+m2(otPaid)+'</span></div>'+
+    '<div class="line" style="padding:2px 0"><span class="muted small">App counted</span><span>'+hrs+'h (weekdays '+st.otWork+', weekends '+st.otWeekend+', holidays '+st.otHoliday+')</span></div>'+
+    (otPaid>0&&hrs>0?'<div class="line" style="padding:2px 0"><span class="muted small">Average paid per hour</span><span>'+m2(otPaid/hrs)+'</span></div>':'');
+  const abs=sumBy(p.ded,isAbs),unp=sumBy(p.ded,isUnpaid),sick=sumBy(p.ded,isSickL);
+  const appDed=st.unpaid>0||st.deduct>0||st.missing.length>0;
+  const v2=verdict(abs+unp,appDed);
+  h+='<div class="line" style="padding-bottom:0;margin-top:10px"><b>Absence &amp; unpaid deductions</b>'+vTag(v2)+'</div>'+
+    '<div class="line" style="padding:2px 0"><span class="muted small">Payslip deducted</span><span>Absence '+m2(abs)+' · Unpaid days '+m2(unp)+'</span></div>'+
+    '<div class="line" style="padding:2px 0"><span class="muted small">App shows</span><span>Unpaid '+fd(st.unpaid)+' day(s) · Late/early over pool '+fm(st.deduct)+' · No record '+st.missing.length+' day(s)</span></div>';
+  const basic=sumBy(p.earn,isBasic);
+  if(unp>0&&st.unpaid>0)h+='<div class="line" style="padding:2px 0"><span class="muted small">Deducted per unpaid day</span><span>'+m2(unp/st.unpaid)+(basic?' (basic ÷ 30 = '+m2(basic/30)+')':'')+'</span></div>';
+  if(sick>0||st.sick>0){
+    h+='<div class="line" style="padding:2px 0;margin-top:8px"><span class="muted small">Sick leave</span><span>Payslip deducted '+m2(sick)+' · app '+fd(st.sick)+' day(s)</span></div>';
+  }
+  return h;
+}
+function payDetail(month){
+  const p=S.payslips.find(x=>x.month===month);if(!p)return;
+  let h='<h3>Payslip – '+esc(monthTitle(p.month))+'</h3>';
+  if(!p.ok)h+='<div class="prev" style="background:var(--warn-soft);color:var(--warn);margin:0 0 12px">The lines do not add up to the printed totals — check the file.</div>';
+  h+='<div class="line"><span>Total earnings</span><b>'+m2(p.totEarn)+'</b></div>'+
+    '<div class="line"><span>Total deductions</span><b>'+m2(p.totDed)+'</b></div>'+
+    '<div class="line t"><span><b>Net income</b></span><b>'+m2(p.netIncome)+'</b></div>'+
+    (p.net!=null&&p.net!==p.netIncome?'<div class="line"><span>After transfers &amp; payment notes</span><b>'+m2(p.net)+'</b></div>':'')+
+    '<h4 style="margin-top:18px">Earnings</h4>'+payLines(p.earn)+
+    '<h4 style="margin-top:18px">Deductions</h4>'+payLines(p.ded);
+  if(p.orders.some(x=>x.amount!==0))h+='<h4 style="margin-top:18px">Payment notes</h4>'+payLines(p.orders);
+  h+=payCompare(p)+
+    '<div class="btns"><button class="btn ghost" data-a="close">Close</button></div>'+
+    '<div class="btns"><button class="btn danger" data-a="paydel" data-m="'+p.month+'">Remove this payslip</button></div>';
+  openModal(h);
 }
 
 /* ================= events ================= */
@@ -662,6 +817,8 @@ document.addEventListener('click',ev=>{
     case 'delday':{const d=draft._orig;ask('Delete the record for '+dayShort(d)+'?','Delete').then(ok=>{if(ok){delete S.days[d];save();closeModal();render();toast('Deleted')}});break}
     case 'ask-yes':{const r=resolver;resolver=null;closeModal();if(r)r(true);break}
     case 'ask-no':{const r=resolver;resolver=null;closeModal();if(r)r(false);break}
+    case 'payopen':payDetail(t.dataset.m);break;
+    case 'paydel':{const m=t.dataset.m;ask('Remove the '+monthTitle(m)+' payslip from this phone?','Remove').then(ok=>{if(ok){S.payslips=S.payslips.filter(x=>x.month!==m);save();closeModal();render();toast('Removed')}});break}
     case 'addhol':holForm(null);break;
     case 'edithol':holForm(id);break;
     case 'savehol':saveHol(id);break;
@@ -672,7 +829,7 @@ document.addEventListener('click',ev=>{
     case 'delper':S.periods=S.periods.filter(h=>h.id!==id);save();closeModal();render();toast('Deleted');break;
     case 'csv':{const pre=ui.month+'-';showExport('CSV – '+monthTitle(ui.month),toCsv(Object.keys(S.days).filter(d=>d.indexOf(pre)===0)),'attendance-'+ui.month+'.csv','text/csv');break}
     case 'csvall':showExport('CSV – all days',toCsv(Object.keys(S.days)),'attendance-all.csv','text/csv');break;
-    case 'backup':showExport('Backup',JSON.stringify({app:'attendance',version:1,days:S.days,periods:S.periods,holidays:S.holidays,settings:S.settings}),'attendance-backup.json','application/json');break;
+    case 'backup':showExport('Backup',JSON.stringify({app:'attendance',version:1,days:S.days,periods:S.periods,holidays:S.holidays,payslips:S.payslips,settings:S.settings}),'attendance-backup.json','application/json');break;
     case 'restore':openModal('<h3>Restore backup</h3><div class="muted small">Paste your backup text. This replaces all current data.</div><textarea id="imp" placeholder="Paste backup here"></textarea><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="doimport">Restore</button></div>');break;
     case 'doimport':doImport();break;
     case 'copy':copyText();break;
@@ -683,6 +840,7 @@ document.addEventListener('click',ev=>{
 });
 document.addEventListener('change',ev=>{
   const t=ev.target;
+  if(t.id==='payfile'){const f=t.files;importPayslips(f);t.value='';return}
   if(t.id==='mp'){if(t.value){ui.month=t.value;render()}return}
   if(t.id==='ly'){ui.year=+t.value;render();return}
   if(t.id==='lt'){ui.ltype=t.value;render();return}
@@ -711,7 +869,7 @@ document.addEventListener('input',ev=>{
 window.addEventListener('popstate',()=>{if(view!=='home'){view='home';render()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!draft&&$('#modal').classList.contains('show')===false)render()});
 
-window.__app={calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
+window.__app={parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
