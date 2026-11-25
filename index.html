@@ -1395,6 +1395,8 @@ document.addEventListener('visibilitychange',()=>{
 });
 setInterval(checkOt,20000);setTimeout(checkOt,800);
 
+/* Balances adjusted before the app tracked the date: treat the adjustment as made today. */
+if(!S.adj.asOf&&(Object.keys(S.adj.years).length||Object.keys(S.adj.months).length)){S.adj.asOf=todayStr();save()}
 buildTabs();
 /* ---- ripple on taps ---- */
 document.addEventListener('pointerdown',ev=>{
