@@ -12,14 +12,15 @@
   --bg:#f3f6f8;--card:#fff;--text:#0f172a;--muted:#5b6b80;--line:#e5eaf0;
   --accent:#0f766e;--on-accent:#fff;--soft:#d9f2ee;--danger:#dc2626;--on-danger:#fff;--danger-soft:#fee2e2;
   --warn:#b45309;--warn-soft:#fef3c7;--ok:#15803d;--ok-soft:#dcfce7;--info:#1d4ed8;--info-soft:#dbeafe;
-  --danger-fg:#b91c1c;--hdr-bg:#0b5f58;--hdr-fg:#fff;--toast-bg:#0f172a;--toast-fg:#fff;--outline:#79868f;color-scheme:light;
+  --danger-fg:#b91c1c;--dot:#16a34a;--pill-shadow:0 10px 22px rgba(15,23,42,.16),0 3px 7px rgba(15,23,42,.10),inset 0 1px 0 rgba(255,255,255,.9);--pill-on-shadow:0 4px 10px rgba(15,23,42,.35);--hdr-bg:#0b5f58;--hdr-fg:#fff;--toast-bg:#0f172a;--toast-fg:#fff;--outline:#79868f;color-scheme:light;
   --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.05)}
-:root[data-theme=dark]{--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--dot:#3ddc97;--pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--pill-on-shadow:0 4px 12px rgba(0,0,0,.55);--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--dot:#3ddc97;--pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--pill-on-shadow:0 4px 12px rgba(0,0,0,.55);--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 #top{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:env(safe-area-inset-top)}
 header{display:flex;align-items:center;gap:10px;padding:14px 16px 8px;min-height:72px}
+header h1 .dot{color:var(--dot)}
 header h1{flex:1;margin:0;font-size:32px;line-height:1.1;font-weight:800;letter-spacing:-.6px;color:var(--text)}
 header button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--card);color:var(--text);width:50px;height:50px;border-radius:17px;font-size:22px;cursor:pointer;flex:0 0 auto}
 header button.hide{display:none}
@@ -28,11 +29,11 @@ main{max-width:620px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-i
 @keyframes pgL{from{opacity:0;transform:translateX(44px)}to{opacity:1;transform:none}}
 @keyframes pgR{from{opacity:0;transform:translateX(-44px)}to{opacity:1;transform:none}}
 #view.snap{transition:transform .22s ease}
-#tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--line);border-radius:26px;margin:4px 14px 10px;padding:6px}
+#tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--line);border-radius:26px;margin:6px 14px 16px;padding:6px;box-shadow:var(--pill-shadow)}
 #tabs::-webkit-scrollbar{display:none}
 .tab{position:relative;overflow:hidden;flex:0 0 auto;border:0;background:transparent;color:var(--muted);padding:11px 18px;border-radius:21px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:background .28s,color .28s,transform .2s}
 .tab:active{transform:scale(.96)}
-.tab.on{background:var(--text);color:var(--bg)}
+.tab.on{background:var(--text);color:var(--bg);box-shadow:var(--pill-on-shadow)}
 .rip{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(1);opacity:0}}
 header #gear{margin-left:2px}header #gear.hide{display:none}
@@ -576,7 +577,7 @@ function vSettings(){
 
 function render(){
   closeMs();
-  $('#title').textContent=tabIdx(view)>=0?'Timesheet':TITLES[view];
+  if(tabIdx(view)>=0)$('#title').innerHTML='Timesheet<span class="dot">.</span>';else $('#title').textContent=TITLES[view];
   $('#back').classList.toggle('hide',tabIdx(view)>=0);
   $('#gear').classList.toggle('hide',view==='settings');
   document.querySelectorAll('.tab').forEach(b=>{const on=b.dataset.tab===view;b.classList.toggle('on',on);if(on){b.setAttribute('aria-current','page');const t=$('#tabs');t.scrollTo({left:b.offsetLeft-(t.clientWidth-b.offsetWidth)/2})}else b.removeAttribute('aria-current')});
@@ -893,6 +894,7 @@ function applyTheme(){
   /* always set explicitly so it works even where the WebView does not report the device mode */
   root.setAttribute('data-theme',dark?'dark':'light');
   const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',dark?'#0b1220':'#f3f6f8');
+  try{if(window.Android&&Android.setBars)Android.setBars(dark?'#0b1220':'#f3f6f8',!dark)}catch(e){};
 }
 window.onDeviceTheme=applyTheme;
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyTheme()});

@@ -204,6 +204,28 @@ public class MainActivity extends Activity {
 
     /** Functions the page can call as Android.xxx(). */
     private class Bridge {
+        /** Paints the phone's status and navigation bars like the page and picks light or dark icons. */
+        @JavascriptInterface
+        public void setBars(final String color, final boolean darkIcons) {
+            runOnUiThread(() -> {
+                try {
+                    android.view.Window w = getWindow();
+                    int c = android.graphics.Color.parseColor(color);
+                    w.setStatusBarColor(c);
+                    w.setNavigationBarColor(c);
+                    if (Build.VERSION.SDK_INT >= 23) {
+                        android.view.View d = w.getDecorView();
+                        int f = d.getSystemUiVisibility();
+                        f = darkIcons ? (f | android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) : (f & ~android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                        if (Build.VERSION.SDK_INT >= 26) {
+                            f = darkIcons ? (f | android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) : (f & ~android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                        }
+                        d.setSystemUiVisibility(f);
+                    }
+                } catch (Exception ignored) {}
+            });
+        }
+
         @JavascriptInterface
         public boolean isDark() {
             int m = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
