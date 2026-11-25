@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,9 +20,13 @@ import android.webkit.WebViewClient;
 import com.google.android.gms.auth.api.identity.AuthorizationResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.common.api.ApiException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 
@@ -218,6 +223,63 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void storeBackup(String json) {
             try { DriveSync.saveSnapshot(MainActivity.this, json); } catch (Exception ignored) { }
+        }
+
+        /** Replaces the list of upcoming reminders/alarms: JSON array of {t, id, k, title, text}. */
+        @JavascriptInterface
+        public void setPlan(String json) {
+            try { Reminders.setPlan(MainActivity.this, json); } catch (Exception ignored) { }
+        }
+
+        @JavascriptInterface
+        public String notifStatus() {
+            if (Build.VERSION.SDK_INT >= 33
+                    && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                return "denied";
+            }
+            return "granted";
+        }
+
+        @JavascriptInterface
+        public void askNotifications() {
+            runOnUiThread(() -> {
+                if (Build.VERSION.SDK_INT >= 33
+                        && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 77);
+                }
+            });
+        }
+
+        /** Downloads a web page as text (for the holiday calendar) and hands it to window.onNetText(id, ok, text). */
+        @JavascriptInterface
+        public void fetchText(final String id, final String url) {
+            new Thread(() -> {
+                String out = "";
+                boolean ok = false;
+                HttpURLConnection c = null;
+                try {
+                    c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setConnectTimeout(15000);
+                    c.setReadTimeout(25000);
+                    c.setInstanceFollowRedirects(true);
+                    c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) TimeSheet");
+                    int code = c.getResponseCode();
+                    if (code >= 200 && code < 300) {
+                        try (InputStream in = c.getInputStream(); ByteArrayOutputStream bo = new ByteArrayOutputStream()) {
+                            byte[] buf = new byte[8192];
+                            int n;
+                            while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+                            out = new String(bo.toByteArray(), StandardCharsets.UTF_8);
+                            ok = true;
+                        }
+                    }
+                } catch (Exception ignored) {
+                } finally {
+                    if (c != null) c.disconnect();
+                }
+                final String js = "window.onNetText&&window.onNetText(" + JSONObject.quote(id) + "," + ok + "," + JSONObject.quote(out) + ")";
+                runOnUiThread(() -> web.evaluateJavascript(js, null));
+            }).start();
         }
 
         @JavascriptInterface

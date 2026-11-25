@@ -87,6 +87,8 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 .chk{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .chk label{margin:0;display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text)}
 .chk input{width:auto;margin:0}
+.chkline{display:flex;align-items:center;gap:10px;color:var(--text);font-size:15px;font-weight:600;margin:0 0 6px}
+.chkline input{width:auto;margin:0}
 </style>
 </head>
 <body>
@@ -121,7 +123,7 @@ const monthTitle=ym=>{const p=ym.split('-');return MONTHS[+p[1]-1]+' '+p[0]};
 /* ================= data ================= */
 const KEY='attendance.v1';
 let mem=null;
-function defaults(){return {days:{},periods:[],holidays:[],payslips:[],settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2}}}
+function defaults(){return {days:{},periods:[],holidays:[],payslips:[],skipHol:[],holLast:0,settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2,remindOn:true,remindIn:'08:15',remindOut:'',alarmDefault:'06:15'}}}
 function load(){
   const d=defaults();let raw=null;
   try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
@@ -131,12 +133,14 @@ function load(){
     if(Array.isArray(p.periods))d.periods=p.periods;
     if(Array.isArray(p.holidays))d.holidays=p.holidays;
     if(Array.isArray(p.payslips))d.payslips=p.payslips;
+    if(Array.isArray(p.skipHol))d.skipHol=p.skipHol;
+    if(typeof p.holLast==='number')d.holLast=p.holLast;
     if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
   }catch(e){}}
   return d;
 }
 let S=load();
-function save(){const s=JSON.stringify(S);try{localStorage.setItem(KEY,s)}catch(e){mem=s}}
+function save(){const s=JSON.stringify(S);try{localStorage.setItem(KEY,s)}catch(e){mem=s}syncNative()}
 
 /* ================= calendar rules ================= */
 const holidayOf=d=>S.holidays.find(h=>d>=h.from&&d<=(h.to||h.from));
@@ -212,6 +216,8 @@ function tags(rec,c){
   if(c.credit)t.push(['ok','+1 leave day']);
   if(c.noOut)t.push(['warn','No clock-out']);
   if(c.incomplete)t.push(['warn','Incomplete']);
+  if(c.kind!=='workday'&&!rec.in&&!rec.out)t.push(['info','Planned work']);
+  if(rec.alarm)t.push(['info','⏰ '+rec.alarm]);
   if(!t.length&&(rec.in||rec.out))t.push(['mute',(rec.in||'?')+' – '+(rec.out||'?')]);
   return t.map(x=>'<span class="tag '+x[0]+'">'+esc(x[1])+'</span>').join('');
 }
@@ -298,7 +304,7 @@ function vHome(){
     '<div class="stat"><b>'+fd(ys.sickLeft)+'</b><span>Sick days left</span></div>'+
     '<div class="stat"><b>'+fm(ms.left)+'</b><span>Permission left this month</span></div></div>';
   h+='<div class="menu">'+
-    menuBtn('log','🗓','Daily Log')+menuBtn('leaves','🌴','Leaves')+menuBtn('perm','⏱','Permissions & Trips')+
+    menuBtn('log','🗓','Daily Log')+'<button data-a="plan"><span class="ic">⏰</span>Plan a Work Day<span class="go">›</span></button>'+menuBtn('leaves','🌴','Leaves')+menuBtn('perm','⏱','Permissions & Trips')+
     menuBtn('ot','➕','Overtime')+menuBtn('report','📊','Monthly Report')+menuBtn('pay','💵','Payslips')+menuBtn('setup','📅','Holidays & Schedules')+menuBtn('settings','⚙️','Settings')+'</div>';
   return h;
 }
@@ -427,8 +433,12 @@ function vSetup(){
   let h='<div class="filters one"><label>Show'+sel('st',tabs,ui.stab)+'</label></div><section class="card" style="padding:6px 16px">';
   if(ui.stab==='holidays'){
     const l=S.holidays.slice().sort((a,b)=>a.from<b.from?-1:1);
-    if(!l.length)h+='<div class="empty">No holidays added yet.</div>';
-    l.forEach(x=>{h+='<button class="row" data-a="edithol" data-id="'+x.id+'"><span><b>'+esc(x.name||'Holiday')+'</b><div class="muted small">'+dayShort(x.from)+(x.to&&x.to!==x.from?' → '+dayShort(x.to):'')+'</div></span><span class="go muted">›</span></button>'});
+    const last=S.holLast?new Date(S.holLast).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'never';
+    h='<div class="filters one"><label>Show'+sel('st',tabs,ui.stab)+'</label></div>'+
+      '<section class="card"><div class="line" style="padding:0"><span><b>Official holidays (Egypt)</b><div class="muted small">Updated from the internet · last '+last+'</div></span><button class="btn sm ghost" data-a="holsync">Update now</button></div></section>'+
+      '<section class="card" style="padding:6px 16px">';
+    if(!l.length)h+='<div class="empty">No holidays yet.<br>Tap “Update now” to load them.</div>';
+    l.forEach(x=>{h+='<button class="row" data-a="edithol" data-id="'+x.id+'"><span><b>'+esc(x.name||'Holiday')+'</b><div class="muted small">'+dayShort(x.from)+(x.to&&x.to!==x.from?' → '+dayShort(x.to):'')+'</div></span>'+(x.auto?'<span class="tag mute">Auto</span>':'')+'</button>'});
     h+='</section><button class="btn full" data-a="addhol">Add holiday</button>';
   }else{
     const l=S.periods.slice().sort((a,b)=>a.from<b.from?-1:1);
@@ -447,6 +457,13 @@ function vSettings(){
     '<label>Casual (inside annual)<input type="number" step="0.5" min="0" data-set="casual" value="'+s.casual+'"></label></div>'+
     '<div class="two"><label>Sick leave (days)<input type="number" step="1" min="0" data-set="sick" value="'+s.sick+'"></label>'+
     '<label>Permission (hours/month)<input type="number" step="0.5" min="0" data-set="permHours" value="'+s.permHours+'"></label></div></section>'+
+    '<section class="card"><h3>Reminders &amp; alarms</h3>'+
+    '<label class="chkline"><input type="checkbox" data-flag="remindOn"'+(s.remindOn?' checked':'')+'> Daily clock in / clock out reminders</label>'+
+    '<div class="two"><label>Morning reminder<input type="time" data-set="remindIn" value="'+esc(s.remindIn)+'"></label>'+
+    '<label>Afternoon reminder<input type="time" data-set="remindOut" value="'+esc(s.remindOut)+'"></label></div>'+
+    '<div class="muted small" style="margin-top:6px">Leave the afternoon time empty to be reminded at your finish time. No reminders on weekends, holidays or leave days.</div>'+
+    '<label>Default alarm for planned work days<input type="time" data-set="alarmDefault" value="'+esc(s.alarmDefault)+'"></label>'+
+    '<button class="btn ghost full" style="margin-top:14px" data-a="testnotif">Send a test notification</button></section>'+
     '<section class="card"><h3>Data</h3><div class="muted small">Everything is stored on this phone only.</div>'+
     '<div class="btns" style="margin-top:12px"><button class="btn ghost" data-a="backup">Back up</button><button class="btn ghost" data-a="restore">Restore</button></div>'+
     '<div class="btns"><button class="btn ghost" data-a="csvall">Export all (CSV)</button><button class="btn danger" data-a="wipe">Erase all</button></div></section>';
@@ -493,12 +510,20 @@ function openDay(date,opts){
   draft.perms=draft.perms||[];draft.trips=draft.trips||[];
   draft._new=!ex;draft._orig=date;
   if(opts&&opts.type&&draft._new)draft.type=opts.type;
+  autoAlarm();
   if(opts&&opts.perm)draft.perms.push({from:'',to:''});
   if(opts&&opts.trip)draft.trips.push({from:'',to:''});
   renderDay();
 }
 function clean(d){
-  return {date:d.date,type:d.type,in:d.in||'',out:d.out||'',perms:d.perms.filter(x=>x.from||x.to),trips:d.trips.filter(x=>x.from||x.to),holidayMode:d.holidayMode||'ot',note:(d.note||'').trim()};
+  const r={date:d.date,type:d.type,in:d.in||'',out:d.out||'',perms:d.perms.filter(x=>x.from||x.to),trips:d.trips.filter(x=>x.from||x.to),holidayMode:d.holidayMode||'ot',note:(d.note||'').trim()};
+  if(d.date>=todayStr()&&TIME.test(d.alarm||''))r.alarm=d.alarm;
+  return r;
+}
+function autoAlarm(){
+  /* New off-day in the future: offer the default alarm time (user can change or clear it). */
+  if(!draft||!draft._new||draft._alarmTouched)return;
+  draft.alarm=(draft.date>=todayStr()&&kindOf(draft.date)!=='workday')?S.settings.alarmDefault:'';
 }
 function listBlock(key,title){
   const l=draft[key];
@@ -524,6 +549,10 @@ function renderDay(){
     h+='<div class="two"><label>Clock in<input type="time" data-k="in" value="'+esc(d.in)+'"></label><label>Clock out<input type="time" data-k="out" value="'+esc(d.out)+'"></label></div>';
     if(workday){h+=listBlock('perms','Permissions')+listBlock('trips','Business trips')}
     if(kind==='holiday')h+='<label>If you worked this holiday, count it as<select data-k="holidayMode"><option value="leave"'+(d.holidayMode==='leave'?' selected':'')+'>+1 annual leave day</option><option value="ot"'+(d.holidayMode!=='leave'?' selected':'')+'>Overtime</option></select></label>';
+  }
+  if(!leave&&d.date>=todayStr()){
+    h+='<label>Wake-up alarm (optional)<input type="time" data-k="alarm" value="'+esc(d.alarm||'')+'"></label>'+
+       '<div class="muted small" style="margin-top:6px">'+(workday?'Rings at this time on '+esc(dayShort(d.date))+'.':'Planning to work on this day off? Keep an alarm time and save — clear it for no alarm.')+'</div>';
   }
   h+='<label>Note<input data-k="note" maxlength="80" value="'+esc(d.note||'')+'"></label><div class="prev" id="dprev"></div>'+
      '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveday">Save</button></div>'+
@@ -553,7 +582,7 @@ function saveDay(){
   const d=clean(draft),kind=kindOf(d.date);
   if(!d.date){toast('Choose a date');return}
   const leave=kind==='workday'&&['annual','casual','sick','unpaid'].includes(d.type);
-  if(leave){d.in='';d.out='';d.perms=[];d.trips=[]}
+  if(leave){d.in='';d.out='';d.perms=[];d.trips=[];delete d.alarm}
   if(!leave){
     if(d.in&&!TIME.test(d.in)||d.out&&!TIME.test(d.out)){toast('Check the times');return}
     if(kind==='workday'&&d.in&&d.out&&tm(d.out)<=tm(d.in)){toast('Clock-out must be after clock-in');return}
@@ -583,6 +612,8 @@ function saveHol(id){
   const f=$('#h-from').value,t=$('#h-to').value,n=$('#h-name').value.trim();
   if(!f){toast('Choose a start date');return}
   if(t&&t<f){toast('End date is before start date');return}
+  const prev=id?S.holidays.find(h=>h.id===id):null;
+  if(prev&&prev.auto&&S.skipHol.indexOf(holKey(prev))<0)S.skipHol.push(holKey(prev)); /* editing makes it your own */
   const rec={id:id||uid(),name:n,from:f,to:t||f};
   S.holidays=id?S.holidays.map(h=>h.id===id?rec:h):S.holidays.concat(rec);
   save();closeModal();render();toast('Saved');
@@ -643,7 +674,9 @@ function doImport(){
 }
 function setSetting(k,v){
   const s=S.settings;
-  if(k==='start'||k==='end'){if(!TIME.test(v))return;s[k]=v}
+  if(k==='remindOut'){s.remindOut=TIME.test(v)?v:''}
+  else if(k==='remindIn'||k==='alarmDefault'){if(!TIME.test(v))return;s[k]=v}
+  else if(k==='start'||k==='end'){if(!TIME.test(v))return;s[k]=v}
   else{const n=parseFloat(v);if(isNaN(n)||n<0)return;s[k]=n}
   save();toast('Saved');
 }
@@ -799,6 +832,142 @@ function payDetail(month){
   openModal(h);
 }
 
+/* ================= reminders, alarms & phone sync ================= */
+const hasNative=()=>!!(window.Android&&typeof window.Android.setPlan==='function');
+const atTime=(dt,t)=>new Date(dt.getFullYear(),dt.getMonth(),dt.getDate(),+t.slice(0,2),+t.slice(3,5)).getTime();
+function planItems(){
+  const out=[],now=Date.now(),s=S.settings;
+  for(let i=0;i<45;i++){
+    const dt=new Date();dt.setHours(0,0,0,0);dt.setDate(dt.getDate()+i);
+    const d=ymd(dt),kind=kindOf(d),rec=S.days[d];
+    if(rec&&TIME.test(rec.alarm||'')){
+      const t=atTime(dt,rec.alarm);
+      if(t>now)out.push({t:t,id:'alarm-'+d,k:'alarm',title:'⏰ Work day alarm',text:'Time to get up — you planned to work on '+dayShort(d)+'.'});
+    }
+    if(!s.remindOn||kind!=='workday')continue;
+    if(rec&&['annual','casual','sick','unpaid'].includes(rec.type))continue;
+    const sch=schedule(d);
+    let tin=s.remindIn;
+    if(rec&&rec.type==='halfAM')tin='12:45';
+    if(!(rec&&rec.in)){const t=atTime(dt,tin);if(t>now)out.push({t:t,id:'in-'+d,k:'remind',title:'Clock in',text:'Don\'t forget to clock in.'})}
+    let tout=s.remindOut||sch.end;
+    if(rec&&rec.type==='halfPM'&&!s.remindOut)tout='13:00';
+    if(!(rec&&rec.out)){const t=atTime(dt,tout);if(t>now)out.push({t:t,id:'out-'+d,k:'remind',title:'Clock out',text:'Don\'t forget to clock out.'})}
+  }
+  return out;
+}
+let syncT=null,askedNotif=false;
+function syncNative(){
+  if(!hasNative())return;
+  clearTimeout(syncT);
+  syncT=setTimeout(()=>{
+    try{
+      const items=planItems();
+      window.Android.setPlan(JSON.stringify(items));
+      if(items.length&&!askedNotif&&typeof window.Android.notifStatus==='function'&&window.Android.notifStatus()!=='granted'){
+        askedNotif=true;window.Android.askNotifications();
+      }
+    }catch(e){}
+  },400);
+}
+function testNotification(){
+  if(!hasNative()){toast('Notifications work in the installed app');return}
+  try{
+    if(window.Android.notifStatus()!=='granted'){window.Android.askNotifications();toast('Allow notifications, then try again');return}
+    const items=planItems();
+    items.push({t:Date.now()+5000,id:'test',k:'remind',title:'Test reminder',text:'Notifications are working.'});
+    window.Android.setPlan(JSON.stringify(items));
+    toast('A test notification will appear in 5 seconds');
+  }catch(e){toast('Could not send the test')}
+}
+function planForm(){
+  const dt=new Date();dt.setDate(dt.getDate()+1);
+  for(let i=0;i<14&&kindOf(ymd(dt))==='workday';i++)dt.setDate(dt.getDate()+1);
+  openModal('<h3>Plan a work day</h3><div class="muted small">Pick the day you will work (for example, a weekend) and when the alarm should ring.</div>'+
+    '<label>Date<input type="date" id="pl-date" value="'+ymd(dt)+'" min="'+todayStr()+'"></label>'+
+    '<label>Alarm time<input type="time" id="pl-time" value="'+esc(S.settings.alarmDefault)+'"></label>'+
+    '<div class="muted small" style="margin-top:6px">Clear the time if you do not want an alarm.</div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveplan">Save</button></div>');
+}
+function savePlan(){
+  const d=$('#pl-date').value,t=$('#pl-time').value;
+  if(!d){toast('Choose a date');return}
+  if(d<todayStr()){toast('Choose today or a future day');return}
+  if(t&&!TIME.test(t)){toast('Check the alarm time');return}
+  const rec=S.days[d]||blank(d);
+  if(t)rec.alarm=t;else delete rec.alarm;
+  S.days[d]=rec;ui.month=d.slice(0,7);
+  save();closeModal();render();
+  toast(t?'Alarm set for '+dayShort(d)+' at '+t:'Work day planned for '+dayShort(d));
+}
+
+/* ================= official holidays from the internet ================= */
+const HOL_URLS=[
+  'https://calendar.google.com/calendar/ical/en.eg.official%23holiday%40group.v.calendar.google.com/public/basic.ics',
+  'https://ics.calendarlabs.com/44/9a1d2a85/Egypt_Holidays.ics'
+];
+const netCb={};
+window.onNetText=function(id,ok,text){const cb=netCb[id];delete netCb[id];if(cb)cb(ok,text)};
+function netFetch(url,cb){
+  if(window.Android&&typeof window.Android.fetchText==='function'){
+    const id=uid();netCb[id]=cb;
+    setTimeout(()=>{if(netCb[id]){delete netCb[id];cb(false,'')}},45000);
+    window.Android.fetchText(id,url);return;
+  }
+  fetch(url).then(r=>r.ok?r.text():Promise.reject()).then(t=>cb(true,t),()=>cb(false,''));
+}
+const isoD=s=>s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);
+function addDaysStr(s,n){const d=parseYmd(s);d.setDate(d.getDate()+n);return ymd(d)}
+function parseIcs(text){
+  const lines=String(text||'').replace(/\r?\n[ \t]/g,'').split(/\r?\n/),ev=[];let cur=null;
+  lines.forEach(l=>{
+    if(l==='BEGIN:VEVENT')cur={};
+    else if(l==='END:VEVENT'){if(cur&&cur.from)ev.push(cur);cur=null}
+    else if(cur){
+      if(/^DTSTART/.test(l)){const m=l.match(/(\d{8})/);if(m)cur.from=isoD(m[1])}
+      else if(/^DTEND/.test(l)){const m=l.match(/(\d{8})/);if(m)cur.endEx=isoD(m[1])}
+      else if(/^SUMMARY/.test(l))cur.name=l.replace(/^SUMMARY[^:]*:/,'').replace(/\\,/g,',').replace(/\\;/g,';').replace(/\\n/gi,' ').trim();
+    }
+  });
+  return ev.map(e=>{
+    let to=e.endEx?addDaysStr(e.endEx,-1):e.from;if(to<e.from)to=e.from;
+    return {name:e.name||'Holiday',from:e.from,to:to};
+  });
+}
+const holKey=h=>h.from+'|'+h.name;
+function mergeHolidays(events){
+  const y=new Date().getFullYear(),lo=y+'-01-01',hi=(y+1)+'-12-31';
+  const old={};S.holidays.forEach(h=>{if(h.auto)old[holKey(h)]=1});
+  S.holidays=S.holidays.filter(h=>!(h.auto&&h.from>=lo&&h.from<=hi));
+  let added=0;
+  events.forEach(e=>{
+    if(e.from<lo||e.from>hi)return;
+    const h={id:uid(),name:e.name,from:e.from,to:e.to,auto:true},k=holKey(h);
+    if(S.skipHol.indexOf(k)>=0)return;
+    if(S.holidays.some(x=>!x.auto&&x.from===h.from))return;
+    if(S.holidays.some(x=>holKey(x)===k))return;
+    S.holidays.push(h);if(!old[k])added++;
+  });
+  return added;
+}
+let holBusy=false;
+function updateHolidays(silent){
+  if(holBusy)return;holBusy=true;
+  if(!silent)toast('Checking for official holidays…');
+  let i=0;
+  const next=()=>{
+    if(i>=HOL_URLS.length){holBusy=false;if(!silent)toast('Could not reach the holiday calendar. Check your internet and try again.');return}
+    netFetch(HOL_URLS[i++],(ok,txt)=>{
+      const ev=ok?parseIcs(txt):[];
+      if(ev.length){
+        const n=mergeHolidays(ev);S.holLast=Date.now();save();holBusy=false;render();
+        if(!silent||n)toast(n?'Holidays updated — '+n+' new':'Holidays are up to date');
+      }else next();
+    });
+  };
+  next();
+}
+
 /* ================= events ================= */
 document.addEventListener('click',ev=>{
   const g=ev.target.closest('[data-go]');if(g){go(g.dataset.go);return}
@@ -819,13 +988,21 @@ document.addEventListener('click',ev=>{
     case 'delday':{const d=draft._orig;ask('Delete the record for '+dayShort(d)+'?','Delete').then(ok=>{if(ok){delete S.days[d];save();closeModal();render();toast('Deleted')}});break}
     case 'ask-yes':{const r=resolver;resolver=null;closeModal();if(r)r(true);break}
     case 'ask-no':{const r=resolver;resolver=null;closeModal();if(r)r(false);break}
+    case 'plan':planForm();break;
+    case 'saveplan':savePlan();break;
+    case 'testnotif':testNotification();break;
+    case 'holsync':updateHolidays(false);break;
     case 'payimport':$('#payfile').click();break;
     case 'payopen':payDetail(t.dataset.m);break;
     case 'paydel':{const m=t.dataset.m;ask('Remove the '+monthTitle(m)+' payslip from this phone?','Remove').then(ok=>{if(ok){S.payslips=S.payslips.filter(x=>x.month!==m);save();closeModal();render();toast('Removed')}});break}
     case 'addhol':holForm(null);break;
     case 'edithol':holForm(id);break;
     case 'savehol':saveHol(id);break;
-    case 'delhol':S.holidays=S.holidays.filter(h=>h.id!==id);save();closeModal();render();toast('Deleted');break;
+    case 'delhol':{
+      const h=S.holidays.find(x=>x.id===id);
+      if(h&&h.auto&&S.skipHol.indexOf(holKey(h))<0)S.skipHol.push(holKey(h)); /* keep it removed after the next update */
+      S.holidays=S.holidays.filter(x=>x.id!==id);save();closeModal();render();toast('Deleted');break;
+    }
     case 'addper':perForm(null);break;
     case 'editper':perForm(id);break;
     case 'saveper':savePer(id);break;
@@ -850,6 +1027,7 @@ document.addEventListener('change',ev=>{
   if(t.id==='pt'){ui.ptype=t.value;render();return}
   if(t.id==='st'){ui.stab=t.value;render();return}
   if(t.dataset.set){setSetting(t.dataset.set,t.value);return}
+  if(t.dataset.flag){S.settings[t.dataset.flag]=t.checked;save();toast(t.checked?'Reminders on':'Reminders off');return}
   if(t.dataset.wd!==undefined){
     const i=+t.dataset.wd,w=S.settings.workDays.filter(x=>x!==i);
     if(t.checked)w.push(i);S.settings.workDays=w.sort();save();toast('Saved');return;
@@ -858,23 +1036,29 @@ document.addEventListener('change',ev=>{
   if(t.id==='d-date'){
     const nd=t.value;if(!nd)return;
     if(nd!==draft._orig&&S.days[nd]){const keep=nd;closeModal();openDay(keep);toast('That day already has a record — opened it');return}
-    draft.date=nd;renderDay();return;
+    draft.date=nd;autoAlarm();renderDay();return;
   }
   if(t.id==='d-type'){draft.type=t.value;renderDay()}
 });
 document.addEventListener('input',ev=>{
   const t=ev.target;if(!draft||!$('#sheet').contains(t))return;
-  if(t.dataset.k)draft[t.dataset.k]=t.value;
+  if(t.dataset.k){draft[t.dataset.k]=t.value;if(t.dataset.k==='alarm')draft._alarmTouched=true}
   else if(t.dataset.list)draft[t.dataset.list][+t.dataset.i][t.dataset.f]=t.value;
   else return;
   previewDay();
 });
 window.addEventListener('popstate',()=>{if(view!=='home'){view='home';render()}});
 /* Only the home screen refreshes on resume; redrawing other screens could swallow a file picked from the chooser. */
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='home'&&!$('#modal').classList.contains('show'))render()});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  syncNative();
+  if(view==='home'&&!$('#modal').classList.contains('show'))render();
+});
 
-window.__app={parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
+window.__app={planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
+syncNative();
+if(hasNative()&&Date.now()-S.holLast>7*864e5)setTimeout(()=>updateHolidays(true),2500); /* refresh official holidays about once a week */
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
