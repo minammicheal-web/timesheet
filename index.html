@@ -662,10 +662,11 @@ function listBlock(key,title){
   return h;
 }
 const LEAVE=['annual','casual','sick','unpaid'];
-const typeOpts=kind=>TYPE_ORDER.filter(k=>kind==='workday'||(k!=='halfAM'&&k!=='halfPM')).map(k=>[k,TYPE_LABEL[k]]);
+const isRange=t=>LEAVE.indexOf(t)>=0||t==='hol';
+const typeOpts=kind=>TYPE_ORDER.filter(k=>kind==='workday'||(k!=='halfAM'&&k!=='halfPM')).map(k=>[k,TYPE_LABEL[k]]).concat([['hol','Official holiday']]).sort((a,b)=>a[1].localeCompare(b[1]));
 function ensureEnd(){
   if(!draft)return;
-  if(LEAVE.indexOf(draft.type)>=0){if(!draft.endDate||draft.endDate<draft.date)draft.endDate=draft.date}
+  if(isRange(draft.type)){if(!draft.endDate||draft.endDate<draft.date)draft.endDate=draft.date}
   else delete draft.endDate;
 }
 /* Working days between From and To: weekends and holidays in the middle are skipped, not counted. */
@@ -696,10 +697,11 @@ function renderDay(){
   closeMs();
   ensureEnd();
   const d=draft,kind=kindOf(d.date),workday=kind==='workday';
-  const leave=LEAVE.indexOf(d.type)>=0;
-  let h='<h3>'+(d._new?(leave?'Add leave':'Add day'):(leave?'Edit leave':'Edit day'))+'</h3>';
+  const hol=d.type==='hol',leave=LEAVE.indexOf(d.type)>=0,range=leave||hol;
+  let h='<h3>'+(hol?'Add official holiday':d._new?(leave?'Add leave':'Add day'):(leave?'Edit leave':'Edit day'))+'</h3>';
   h+=msel('d-type','Day type',typeOpts(kind),d.type);
-  if(leave){
+  if(hol)h+='<label>Holiday name<input data-k="hname" maxlength="40" placeholder="e.g. Revolution Day" value="'+esc(d.hname||'')+'"></label>';
+  if(range){
     h+='<div class="two"><label>From<input type="date" id="d-date" value="'+d.date+'"></label><label>To<input type="date" id="d-end" value="'+d.endDate+'" min="'+d.date+'"></label></div>'+
        '<div class="muted small" style="margin-top:6px">Pick the first and last day. Weekends and holidays in between are skipped automatically.</div>';
   }else{
@@ -709,24 +711,25 @@ function renderDay(){
     if(d.type==='halfAM')h+='<div class="muted small" style="margin-top:6px">Expected to arrive by 1:00 PM</div>';
     if(d.type==='halfPM')h+='<div class="muted small" style="margin-top:6px">Expected to stay until 1:00 PM</div>';
   }
-  if(!leave){
+  if(!range){
     if(workday&&d.type==='work'){const sc=schedule(d.date);
       h+='<label class="chkline" style="margin-top:12px"><input type="checkbox" id="d-normal"'+(d.in===sc.start&&d.out===sc.end?' checked':'')+'> <span>Normal workday ('+esc(sc.start)+' – '+esc(sc.end)+')</span></label>';}
     h+='<div class="two"><label>Clock in<input type="time" data-k="in" value="'+esc(d.in)+'"></label><label>Clock out<input type="time" data-k="out" value="'+esc(d.out)+'"></label></div>';
     if(workday){h+=listBlock('perms','Left and came back (permission)')+'<div class="muted small">Went out in the middle of the day? Add it here, e.g. out 12:00 and back 1:30 PM. Keep clock in at the start and clock out at the end of the day.</div>'+listBlock('trips','Business trips')}
     if(kind==='holiday')h+=msel('d-hm','If you worked this holiday, count it as',sortOpts([['leave','+1 annual leave day'],['ot','Overtime']]),d.holidayMode==='leave'?'leave':'ot');
   }
-  if(!leave&&d.date>=todayStr()){
+  if(!range&&d.date>=todayStr()){
     h+='<label>Wake-up alarm (optional)<input type="time" data-k="alarm" value="'+esc(d.alarm||'')+'"></label>'+
        '<div class="muted small" style="margin-top:6px">'+(workday?'Rings at this time on '+esc(dayShort(d.date))+'.':'Planning to work on this day off? Keep an alarm time and save — clear it for no alarm.')+'</div>';
   }
-  h+='<label>Note<input data-k="note" maxlength="80" value="'+esc(d.note||'')+'"></label><div class="prev" id="dprev"></div>'+
+  h+=(hol?'':'<label>Note<input data-k="note" maxlength="80" value="'+esc(d.note||'')+'"></label>')+'<div class="prev" id="dprev"></div>'+
      '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveday">Save</button></div>'+
      (d._new?'':'<div class="btns"><button class="btn danger" data-a="delday">Delete this day</button></div>');
   openModal(h);previewDay();
 }
 function previewDay(){
   const p=$('#dprev');if(!p||!draft)return;
+  if(draft.type==='hol'){p.innerHTML='Will be added to the Holidays list: '+esc(dayShort(draft.date))+(draft.endDate&&draft.endDate!==draft.date?' → '+esc(dayShort(draft.endDate)):'');return}
   if(LEAVE.indexOf(draft.type)>=0){p.innerHTML=leavePreview();return}
   const c=calc(clean(draft)),L=[];
   if(c.kind==='workday'){
@@ -769,6 +772,13 @@ function askBal(){
     '<div class="sub" style="margin-top:6px"><button class="link" data-a="bal-back">Back to the day</button></div>');
 }
 function saveDay(bal){
+  if(draft.type==='hol'){
+    const f=draft.date,t=(draft.endDate&&draft.endDate>=f)?draft.endDate:f,n=(draft.hname||'').trim()||'Holiday';
+    if(!f){toast('Choose a date');return}
+    if(!S.holidays.some(h=>h.from===f&&h.to===t&&h.name===n))S.holidays=S.holidays.concat({id:uid(),name:n,from:f,to:t});
+    ui.month=f.slice(0,7);ui.stab='holidays';
+    save();closeModal();render();toast('Holiday added to the Holidays list');return;
+  }
   const d=clean(draft),kind=kindOf(d.date);
   if(!d.date){toast('Choose a date');return}
   const leave=LEAVE.indexOf(d.type)>=0;
@@ -1392,7 +1402,7 @@ document.addEventListener('change',ev=>{
   if(!draft)return;
   if(t.id==='d-date'){
     const nd=t.value;if(!nd)return;
-    if(LEAVE.indexOf(draft.type)<0&&nd!==draft._orig&&S.days[nd]){const keep=nd;closeModal();openDay(keep);toast('That day already has a record — opened it');return}
+    if(!isRange(draft.type)&&nd!==draft._orig&&S.days[nd]){const keep=nd;closeModal();openDay(keep);toast('That day already has a record — opened it');return}
     draft.date=nd;
     if(kindOf(nd)!=='workday'&&(draft.type==='halfAM'||draft.type==='halfPM'))draft.type='work';
     autoAlarm();renderDay();return;
