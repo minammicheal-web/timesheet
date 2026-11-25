@@ -145,7 +145,7 @@ const monthTitle=ym=>{const p=ym.split('-');return MONTHS[+p[1]-1]+' '+p[0]};
 /* ================= data ================= */
 const KEY='attendance.v1';
 let mem=null;
-function defaults(){return {days:{},periods:[],holidays:[],payslips:[],skipHol:[],holLast:0,settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2,remindOn:true,remindIn:'08:15',remindOut:'',alarmDefault:'06:15'}}}
+function defaults(){return {days:{},periods:[],holidays:[],payslips:[],skipHol:[],holLast:0,settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2,grace:10,remindOn:true,remindIn:'08:15',remindOut:'',alarmDefault:'06:15'}}}
 function load(){
   const d=defaults();let raw=null;
   try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
@@ -183,6 +183,9 @@ function union(list){
 const covered=(un,a,b)=>un.reduce((s,x)=>s+Math.max(0,Math.min(x[1],b)-Math.max(x[0],a)),0);
 const ranges=list=>(list||[]).map(x=>[tm(x.from),tm(x.to)]).filter(x=>x[0]===x[0]&&x[1]===x[1]&&x[1]>x[0]);
 
+/* Up to this many minutes late / early is accepted. Beyond it, the whole time counts, rounded up to 30 minutes. */
+const graceMin=()=>Math.max(0,Math.round(+S.settings.grace||0));
+
 /* The core of all rules: one day record -> results */
 function calc(rec){
   const date=rec.date,kind=kindOf(date),sch=schedule(date),type=rec.type||'work';
@@ -211,11 +214,11 @@ function calc(rec){
   const cov=union(perms.concat(trips));
   if(hasIn){
     const a=tm(rec.in);
-    if(a>expS){r.lateRaw=Math.max(0,a-expS-covered(cov,expS,a));r.late=Math.ceil(r.lateRaw/30)*30}
+    if(a>expS){r.lateRaw=Math.max(0,a-expS-covered(cov,expS,a));r.late=r.lateRaw<=graceMin()?0:Math.ceil(r.lateRaw/30)*30}
   }
   if(hasOut){
     const b=tm(rec.out);
-    if(b<expE){r.earlyRaw=Math.max(0,expE-b-covered(cov,b,expE));r.early=Math.ceil(r.earlyRaw/30)*30}
+    if(b<expE){r.earlyRaw=Math.max(0,expE-b-covered(cov,b,expE));r.early=r.earlyRaw<=graceMin()?0:Math.ceil(r.earlyRaw/30)*30}
     else if(b>expE&&type==='work'){r.otMin=b-expE;r.ot=Math.floor(r.otMin/60)}
   }
   if(hasIn&&!hasOut)r.noOut=true;
@@ -515,7 +518,9 @@ function vSettings(){
     '<section class="card"><h3>Yearly entitlements</h3><div class="two"><label>Annual leave (days)<input type="number" step="0.5" min="0" data-set="annual" value="'+s.annual+'"></label>'+
     '<label>Casual (inside annual)<input type="number" step="0.5" min="0" data-set="casual" value="'+s.casual+'"></label></div>'+
     '<div class="two"><label>Sick leave (days)<input type="number" step="1" min="0" data-set="sick" value="'+s.sick+'"></label>'+
-    '<label>Permission (hours/month)<input type="number" step="0.5" min="0" data-set="permHours" value="'+s.permHours+'"></label></div></section>'+
+    '<label>Permission (hours/month)<input type="number" step="0.5" min="0" data-set="permHours" value="'+s.permHours+'"></label></div>'+
+    '<label>Grace for late / early (minutes)<input type="number" step="1" min="0" max="60" data-set="grace" value="'+s.grace+'"></label>'+
+    '<div class="muted small" style="margin-top:6px">Arriving late or leaving early by up to this many minutes is accepted. Beyond it, the full time counts, rounded up to 30 minutes.</div></section>'+
     '<section class="card"><h3>Reminders &amp; alarms</h3>'+
     '<label class="chkline"><input type="checkbox" data-flag="remindOn"'+(s.remindOn?' checked':'')+'> Daily clock in / clock out reminders</label>'+
     '<div class="two"><label>Morning reminder<input type="time" data-set="remindIn" value="'+esc(s.remindIn)+'"></label>'+
@@ -664,8 +669,8 @@ function previewDay(){
     if(['annual','casual','sick','unpaid'].includes(draft.type))L.push(TYPE_LABEL[draft.type]+' — 1 day');
     else{
       if(draft.type==='halfAM'||draft.type==='halfPM')L.push('Half day — 0.5 annual day');
-      L.push('Late: '+(c.late?fm(c.late)+' (actual '+fm(c.lateRaw)+')':'none'));
-      L.push('Early leaving: '+(c.early?fm(c.early)+' (actual '+fm(c.earlyRaw)+')':'none'));
+      L.push('Late: '+(c.late?fm(c.late)+' (actual '+fm(c.lateRaw)+')':(c.lateRaw?'none (within the '+graceMin()+'-minute grace)':'none')));
+      L.push('Early leaving: '+(c.early?fm(c.early)+' (actual '+fm(c.earlyRaw)+')':(c.earlyRaw?'none (within the '+graceMin()+'-minute grace)':'none')));
       if(c.perm)L.push('Permission: '+fm(c.perm));
       if(c.tripMin)L.push('Business trip: '+fm(c.tripMin));
       L.push('Overtime: '+(c.ot?c.ot+'h':'none'));
