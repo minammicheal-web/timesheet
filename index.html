@@ -101,6 +101,12 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 .chk label{margin:0;display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text)}
 .chk input{width:auto;margin:0}
 /* Material-style dropdown (outlined field + elevated menu) */
+.myear{display:flex;align-items:center;justify-content:space-between;margin-top:8px}.myear b{font-size:20px}
+.yb{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:24px;cursor:pointer;position:relative;overflow:hidden}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.mcell{position:relative;overflow:hidden;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:16px;padding:15px 0;font:inherit;font-weight:700;cursor:pointer}
+.mcell.cur{border-color:var(--accent);color:var(--accent)}
+.mcell.sel{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .ms{position:relative;margin-top:14px;text-align:left}
 .filters .ms{margin-top:0}
 .ms-l{position:absolute;left:12px;top:-8px;padding:0 4px;font-size:12px;font-weight:600;color:var(--muted);z-index:1;letter-spacing:.2px;pointer-events:none;transition:color .15s}
@@ -333,7 +339,20 @@ function go(v){
   if(tabIdx(v)>=0){switchTab(v);return}
   prevView=view;view=v;try{history.pushState({v:v},'')}catch(e){}render();window.scrollTo(0,0);
 }
-const monthPicker=()=>'<div class="filters one"><label>Month<input type="month" id="mp" value="'+ui.month+'"></label></div>';
+const monthPicker=()=>'<div class="filters one"><div class="ms" data-mp="1"><span class="ms-l">Month</span><button type="button" class="ms-b" data-a="mpopen"><span class="ms-v">'+esc(monthTitle(ui.month))+'</span>'+ARROW+'</button></div></div>';
+/* Material-style month picker: year stepper and a 3 x 4 grid of months, in the app's own theme */
+function monthSheet(y){
+  const sel=ui.month,cur=todayStr().slice(0,7);
+  let g='';
+  for(let i=0;i<12;i++){
+    const ym=y+'-'+pad(i+1);
+    g+='<button type="button" class="mcell'+(ym===sel?' sel':'')+(ym===cur?' cur':'')+'" data-a="mppick" data-ym="'+ym+'">'+MONTHS[i].slice(0,3)+'</button>';
+  }
+  openModal('<h3 style="margin-bottom:4px">Select month</h3>'+
+    '<div class="myear"><button type="button" class="yb" data-a="mpyear" data-y="'+(y-1)+'" aria-label="Previous year">‹</button><b>'+y+'</b><button type="button" class="yb" data-a="mpyear" data-y="'+(y+1)+'" aria-label="Next year">›</button></div>'+
+    '<div class="mgrid">'+g+'</div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="mppick" data-ym="'+cur+'">This month</button></div>');
+}
 /* ---- Material-style dropdown: field + floating menu (replaces the phone's plain select dialog) ---- */
 const ARROW='<svg class="ms-ar" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>';
 const CHECK='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" fill="currentColor"/></svg>';
@@ -1330,6 +1349,9 @@ document.addEventListener('click',ev=>{
   const t=ev.target.closest('[data-a]');if(!t)return;
   const a=t.dataset.a,id=t.dataset.id;
   switch(a){
+    case 'mpopen':monthSheet(+ui.month.slice(0,4));break;
+    case 'mpyear':monthSheet(+t.dataset.y);break;
+    case 'mppick':ui.month=t.dataset.ym;closeModal();render();break;
     case 'msopen':{const box=t.closest('.ms');if(msBox===box)closeMs();else openMs(box);break}
     case 'mspick':{const box=msBox;if(!box)break;const sid=box.dataset.ms,v=t.dataset.v;closeMs();applySelect(sid,v);break}
     case 'in':clockIn();break;
@@ -1392,7 +1414,6 @@ document.addEventListener('click',ev=>{
 document.addEventListener('change',ev=>{
   const t=ev.target;
   if(t.id==='payfile'){const f=t.files;importPayslips(f);t.value='';return}
-  if(t.id==='mp'){if(t.value){ui.month=t.value;render()}return}
   if(t.dataset.set){setSetting(t.dataset.set,t.value);return}
   if(t.dataset.flag){S.settings[t.dataset.flag]=t.checked;save();toast(t.checked?'Reminders on':'Reminders off');return}
   if(t.dataset.wd!==undefined){
@@ -1453,7 +1474,7 @@ if(!S.adj.asOf&&(Object.keys(S.adj.years).length||Object.keys(S.adj.months).leng
 buildTabs();
 /* ---- ripple on taps ---- */
 document.addEventListener('pointerdown',ev=>{
-  const b=ev.target.closest('.tab,.btn,.menu button,header button');if(!b||b.disabled)return;
+  const b=ev.target.closest('.tab,.btn,.menu button,header button,.mcell,.yb');if(!b||b.disabled)return;
   const r=b.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2.2,x=ev.clientX-r.left-sz/2,y=ev.clientY-r.top-sz/2;
   const e=document.createElement('span');e.className='rip';e.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+x+'px;top:'+y+'px';
   b.appendChild(e);setTimeout(()=>e.remove(),650);
@@ -1481,7 +1502,7 @@ document.addEventListener('pointerdown',ev=>{
   document.addEventListener('touchcancel',()=>{on=false;el().style.transform=''},{passive:true});
 })();
 applyTheme();
-window.__app={stepOut:stepOut,backIn:backIn,checkOt:checkOt,otSnooze:otSnooze,adjust:{setLeft:setLeft,setPermLeft:setPermLeft},planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
+window.__app={setMonth:ym=>{ui.month=ym;render()},stepOut:stepOut,backIn:backIn,checkOt:checkOt,otSnooze:otSnooze,adjust:{setLeft:setLeft,setPermLeft:setPermLeft},planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
 syncNative();
 if(hasNative()&&Date.now()-S.holLast>7*864e5)setTimeout(()=>updateHolidays(true),2500); /* refresh official holidays about once a week */
