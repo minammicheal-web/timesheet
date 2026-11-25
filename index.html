@@ -151,6 +151,15 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offse
 .row.selm .cbx{animation:cbIn .22s cubic-bezier(.2,.8,.2,1)}
 .row.picked{background:var(--soft)}
 @keyframes cbIn{from{transform:scale(0);opacity:0}to{transform:none;opacity:1}}
+/* Floating "+ Add" button, bottom right (same as the expenses app) */
+.fab{position:fixed;right:max(18px,calc(50vw - 292px));bottom:calc(18px + env(safe-area-inset-bottom));z-index:4;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);
+  font:800 17px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 24px;min-height:58px;cursor:pointer;overflow:hidden;
+  box-shadow:0 10px 22px rgba(15,23,42,.28),0 3px 7px rgba(15,23,42,.18);transition:transform .15s,box-shadow .15s;animation:fabIn .28s cubic-bezier(.2,.8,.2,1)}
+.fab:active{transform:scale(.96);box-shadow:0 5px 12px rgba(15,23,42,.26),0 2px 4px rgba(15,23,42,.16)}
+:root[data-theme=dark] .fab{box-shadow:0 10px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.45)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .fab{box-shadow:0 10px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.45)}}
+@keyframes fabIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+body.fabon main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 body.selon main{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 #selbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--card);border-top:1px solid var(--line);border-radius:20px 20px 0 0;
   box-shadow:0 -8px 24px rgba(15,23,42,.14);padding:10px 14px calc(14px + env(safe-area-inset-bottom));animation:sbUp .26s cubic-bezier(.2,.8,.2,1)}
@@ -164,10 +173,11 @@ body.selon main{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
-<div id="top"><header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="act" class="hide" aria-label="Add">+</button><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
+<div id="top"><header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
 <nav id="tabs" aria-label="Sections"></nav></div>
 <main id="view"></main>
 <div id="modal"><div id="sheet"></div></div>
+<button class="fab" id="fab" hidden aria-label="Add a day">+ Add</button>
 <div id="toast"></div>
 <input type="file" id="payfile" accept=".htm,.html,text/html,*/*" multiple hidden>
 
@@ -499,6 +509,8 @@ function selBar(){
   let bar=$('#selbar');
   if(view!=='log')sel=null;
   document.body.classList.toggle('selon',!!sel);
+  $('#fab').hidden=view!=='log'||!!sel;
+  document.body.classList.toggle('fabon',!$('#fab').hidden);
   if(!sel){if(bar)bar.remove();return}
   if(!bar){
     bar=document.createElement('div');bar.id='selbar';
@@ -757,7 +769,6 @@ function render(){
   $('#back').classList.toggle('hide',tabIdx(view)>=0);
   $('#gear').classList.toggle('hide',view==='settings');
   document.querySelectorAll('.tab').forEach(b=>{const on=b.dataset.tab===view;b.classList.toggle('on',on);if(on){b.setAttribute('aria-current','page');const t=$('#tabs');t.scrollTo({left:b.offsetLeft-(t.clientWidth-b.offsetWidth)/2})}else b.removeAttribute('aria-current')});
-  $('#act').classList.toggle('hide',view!=='log');
   $('#view').innerHTML=({home:vHome,log:vLog,leaves:vLeaves,perm:vPerm,ot:vOt,report:vReport,pay:vPay,setup:vSetup,settings:vSettings})[view]();
   if(view==='log'&&!sel){const t=$('#todayrow');if(t&&ui.month===todayStr().slice(0,7))t.scrollIntoView({block:'center'})}
   selBar();
@@ -1501,7 +1512,7 @@ function updateHolidays(silent){
 document.addEventListener('click',ev=>{
   const g=ev.target.closest('[data-go]');if(g){if(sel){sel=null;selPushed=false}go(g.dataset.go);return}
   if(ev.target.closest('#back')){view=prevView||'home';render();window.scrollTo(0,0);return}
-  if(ev.target.id==='act'){openDay(todayStr());return}
+  if(ev.target.closest('#fab')){openDay(todayStr());return}
   if(ev.target.id==='msmask'){closeMs();return}
   if(ev.target.id==='modal'){closeModal();return}
   const t=ev.target.closest('[data-a]');if(!t)return;
@@ -1641,7 +1652,7 @@ if(!S.adj.asOf&&(Object.keys(S.adj.years).length||Object.keys(S.adj.months).leng
 buildTabs();
 /* ---- ripple on taps ---- */
 document.addEventListener('pointerdown',ev=>{
-  const b=ev.target.closest('.tab,.btn,.menu button,header button,.mcell,.yb,.row.selm,.sb-x');if(!b||b.disabled)return;
+  const b=ev.target.closest('.tab,.btn,.menu button,header button,.mcell,.yb,.row.selm,.sb-x,.fab');if(!b||b.disabled)return;
   const r=b.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2.2,x=ev.clientX-r.left-sz/2,y=ev.clientY-r.top-sz/2;
   const e=document.createElement('span');e.className='rip';e.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+x+'px;top:'+y+'px';
   b.appendChild(e);setTimeout(()=>e.remove(),650);
@@ -1649,7 +1660,7 @@ document.addEventListener('pointerdown',ev=>{
 /* ---- swipe the screen left/right to move between tabs ---- */
 (function(){
   let sx=0,sy=0,mode=0,on=false;const el=()=>$('#view');
-  const blocked=t=>$('#modal').classList.contains('show')||$('#msmenu')||sel||t.closest('input,textarea,select,.ms,#top');
+  const blocked=t=>$('#modal').classList.contains('show')||$('#msmenu')||sel||t.closest('input,textarea,select,.ms,#top,.fab');
   document.addEventListener('touchstart',ev=>{
     on=false;mode=0;if(ev.touches.length!==1||tabIdx(view)<0||blocked(ev.target))return;
     sx=ev.touches[0].clientX;sy=ev.touches[0].clientY;on=true;el().classList.remove('snap');
