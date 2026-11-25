@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b5f58">
+<meta name="theme-color" content="#f3f6f8">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <title>Attendance &amp; Leave</title>
@@ -18,23 +18,21 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--hdr-bg);color:var(--hdr-fg);display:flex;align-items:center;gap:8px;
-  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;min-height:56px}
-header h1{flex:1;margin:0;font-size:18px;font-weight:700}
-header button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;border:0;background:rgba(255,255,255,.18);color:inherit;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer}
-header button.hide{visibility:hidden}
-main{max-width:620px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom));touch-action:pan-y;overflow-x:hidden}
+#top{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:env(safe-area-inset-top)}
+header{display:flex;align-items:center;gap:10px;padding:14px 16px 8px;min-height:72px}
+header h1{flex:1;margin:0;font-size:32px;line-height:1.1;font-weight:800;letter-spacing:-.6px;color:var(--text)}
+header button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--card);color:var(--text);width:50px;height:50px;border-radius:17px;font-size:22px;cursor:pointer;flex:0 0 auto}
+header button.hide{display:none}
+main{max-width:620px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-inset-bottom));touch-action:pan-y;overflow-x:hidden}
 #view.anim-l{animation:pgL .32s cubic-bezier(.2,.8,.2,1)}#view.anim-r{animation:pgR .32s cubic-bezier(.2,.8,.2,1)}
 @keyframes pgL{from{opacity:0;transform:translateX(44px)}to{opacity:1;transform:none}}
 @keyframes pgR{from{opacity:0;transform:translateX(-44px)}to{opacity:1;transform:none}}
 #view.snap{transition:transform .22s ease}
-#tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;
-  background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+#tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--line);border-radius:26px;margin:4px 14px 10px;padding:6px}
 #tabs::-webkit-scrollbar{display:none}
-.tab{position:relative;overflow:hidden;flex:0 0 auto;min-width:78px;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:6px 6px 5px;border-radius:16px;font:inherit;font-size:11px;font-weight:600;cursor:pointer}
-.tab .ti{width:54px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;transition:background .28s,transform .3s cubic-bezier(.3,1.5,.5,1)}
-.tab.on{color:var(--accent)}.tab.on .ti{background:var(--soft);transform:scale(1.1)}
+.tab{position:relative;overflow:hidden;flex:0 0 auto;border:0;background:transparent;color:var(--muted);padding:11px 18px;border-radius:21px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:background .28s,color .28s,transform .2s}
+.tab:active{transform:scale(.96)}
+.tab.on{background:var(--text);color:var(--bg)}
 .rip{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(1);opacity:0}}
 header #gear{margin-left:2px}header #gear.hide{display:none}
@@ -92,7 +90,7 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 #modal{position:fixed;inset:0;z-index:20;background:rgba(2,6,23,.55);display:none;align-items:flex-end;justify-content:center}
 #modal.show{display:flex}
 #sheet{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:var(--toast-bg);color:var(--toast-fg);
+#toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:var(--toast-bg);color:var(--toast-fg);
   padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.show{opacity:1}
 .prev{background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
@@ -129,9 +127,9 @@ main .ms-l{background:var(--bg)}
 </style>
 </head>
 <body>
-<header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="act" class="hide" aria-label="Add">+</button><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
+<div id="top"><header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="act" class="hide" aria-label="Add">+</button><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
+<nav id="tabs" aria-label="Sections"></nav></div>
 <main id="view"></main>
-<nav id="tabs" aria-label="Sections"></nav>
 <div id="modal"><div id="sheet"></div></div>
 <div id="toast"></div>
 <input type="file" id="payfile" accept=".htm,.html,text/html,*/*" multiple hidden>
@@ -321,7 +319,7 @@ function ask(msg,ok){return new Promise(res=>{
 const TABS=[['home','🏠','Home'],['log','🗓','Log'],['leaves','🌴','Leaves'],['perm','⏱','Permits'],['ot','➕','Overtime'],['report','📊','Report'],['pay','💵','Payslips'],['setup','📅','Holidays']];
 const tabIdx=v=>TABS.findIndex(t=>t[0]===v);
 let prevView='home';
-function buildTabs(){$('#tabs').innerHTML=TABS.map(t=>'<button class="tab" data-tab="'+t[0]+'" data-go="'+t[0]+'"><span class="ti">'+t[1]+'</span>'+t[2]+'</button>').join('')}
+function buildTabs(){$('#tabs').innerHTML=TABS.map(t=>'<button class="tab" data-tab="'+t[0]+'" data-go="'+t[0]+'">'+t[2]+'</button>').join('')}
 function switchTab(v,dir){
   if(v===view)return;
   const from=tabIdx(view),to=tabIdx(v);
@@ -578,7 +576,7 @@ function vSettings(){
 
 function render(){
   closeMs();
-  $('#title').textContent=TITLES[view];
+  $('#title').textContent=tabIdx(view)>=0?'Timesheet':TITLES[view];
   $('#back').classList.toggle('hide',tabIdx(view)>=0);
   $('#gear').classList.toggle('hide',view==='settings');
   document.querySelectorAll('.tab').forEach(b=>{const on=b.dataset.tab===view;b.classList.toggle('on',on);if(on){b.setAttribute('aria-current','page');const t=$('#tabs');t.scrollTo({left:b.offsetLeft-(t.clientWidth-b.offsetWidth)/2})}else b.removeAttribute('aria-current')});
@@ -894,7 +892,7 @@ function applyTheme(){
   const dark=t==='dark'||(t!=='light'&&deviceDark());
   /* always set explicitly so it works even where the WebView does not report the device mode */
   root.setAttribute('data-theme',dark?'dark':'light');
-  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',dark?'#0e3b37':'#0b5f58');
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',dark?'#0b1220':'#f3f6f8');
 }
 window.onDeviceTheme=applyTheme;
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyTheme()});
@@ -1448,7 +1446,7 @@ document.addEventListener('pointerdown',ev=>{
 /* ---- swipe the screen left/right to move between tabs ---- */
 (function(){
   let sx=0,sy=0,mode=0,on=false;const el=()=>$('#view');
-  const blocked=t=>$('#modal').classList.contains('show')||$('#msmenu')||t.closest('input,textarea,select,.ms,#tabs,header');
+  const blocked=t=>$('#modal').classList.contains('show')||$('#msmenu')||t.closest('input,textarea,select,.ms,#top');
   document.addEventListener('touchstart',ev=>{
     on=false;mode=0;if(ev.touches.length!==1||tabIdx(view)<0||blocked(ev.target))return;
     sx=ev.touches[0].clientX;sy=ev.touches[0].clientY;on=true;el().classList.remove('snap');
