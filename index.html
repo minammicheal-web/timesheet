@@ -3,24 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#0b5f58">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <title>Attendance &amp; Leave</title>
 <style>
 :root{
-  --bg:#f3f6f8;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e5eaf0;
-  --accent:#0f766e;--on-accent:#fff;--soft:#d9f2ee;--danger:#dc2626;--danger-soft:#fee2e2;
+  --bg:#f3f6f8;--card:#fff;--text:#0f172a;--muted:#5b6b80;--line:#e5eaf0;
+  --accent:#0f766e;--on-accent:#fff;--soft:#d9f2ee;--danger:#dc2626;--on-danger:#fff;--danger-soft:#fee2e2;
   --warn:#b45309;--warn-soft:#fef3c7;--ok:#15803d;--ok-soft:#dcfce7;--info:#1d4ed8;--info-soft:#dbeafe;
+  --danger-fg:#b91c1c;--hdr-bg:#0b5f58;--hdr-fg:#fff;--toast-bg:#0f172a;--toast-fg:#fff;--outline:#79868f;color-scheme:light;
   --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.05)}
-@media (prefers-color-scheme:dark){
-  :root{--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#8da0b8;--line:#23304a;
-    --accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--danger-soft:#3b1717;
-    --warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none}
-}
+:root[data-theme=dark]{--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;gap:8px;
+header{position:sticky;top:0;z-index:5;background:var(--hdr-bg);color:var(--hdr-fg);display:flex;align-items:center;gap:8px;
   padding:calc(10px + env(safe-area-inset-top)) 12px 10px;min-height:56px}
 header h1{flex:1;margin:0;font-size:18px;font-weight:700}
 header button{border:0;background:rgba(255,255,255,.18);color:inherit;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer}
@@ -32,13 +30,13 @@ main{max-width:620px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-i
 h3{margin:0 0 12px;font-size:18px}
 h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
 label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 0}
-input,select,textarea{width:100%;margin-top:5px;padding:12px 12px;border-radius:8px;border:1px solid #79868f;
+input,select,textarea{width:100%;margin-top:5px;padding:12px 12px;border-radius:8px;border:1px solid var(--outline);
   background:transparent;color:var(--text);font:inherit}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent)}
 textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 .btn{display:inline-block;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:var(--on-accent)}
 .btn.ghost{background:var(--soft);color:var(--accent)}
-.btn.danger{background:var(--danger);color:#fff}
+.btn.danger{background:var(--danger);color:var(--on-danger)}
 .btn.big{width:100%;padding:18px;font-size:19px}
 .btn.full{width:100%}
 .btn[disabled]{opacity:.5}
@@ -61,14 +59,14 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 .row{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:none;border:0;
   border-top:1px solid var(--line);padding:11px 0;color:inherit;font:inherit;cursor:pointer}
 .row:first-child{border-top:0}
-.row.off{opacity:.55;padding:8px 0}
+.row.off{padding:8px 0}.row.off .d{color:var(--muted);font-weight:600}
 .row .d{font-weight:700;min-width:84px}
 .row .r{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
 .row.today .d{color:var(--accent)}
 .tag{display:inline-block;border-radius:8px;padding:2px 8px;font-size:12px;font-weight:700;white-space:nowrap}
-.tag.bad{background:var(--danger-soft);color:var(--danger)}.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.bad{background:var(--danger-soft);color:var(--danger-fg)}.tag.ok{background:var(--ok-soft);color:var(--ok)}
 .tag.info{background:var(--info-soft);color:var(--info)}.tag.warn{background:var(--warn-soft);color:var(--warn)}
-.tag.mute{background:var(--line);color:var(--muted)}
+.tag.mute{background:var(--line);color:var(--text)}
 .line{display:flex;justify-content:space-between;gap:10px;padding:7px 0}
 .line.t{border-top:1px solid var(--line);margin-top:4px;padding-top:11px}
 .empty{text-align:center;color:var(--muted);padding:22px 8px}
@@ -78,7 +76,7 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 #modal{position:fixed;inset:0;z-index:20;background:rgba(2,6,23,.55);display:none;align-items:flex-end;justify-content:center}
 #modal.show{display:flex}
 #sheet{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-#toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:#0f172a;color:#fff;
+#toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:var(--toast-bg);color:var(--toast-fg);
   padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.show{opacity:1}
 .prev{background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
@@ -93,7 +91,7 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 .ms-l{position:absolute;left:12px;top:-8px;padding:0 4px;font-size:12px;font-weight:600;color:var(--muted);z-index:1;letter-spacing:.2px;pointer-events:none;transition:color .15s}
 main .ms-l{background:var(--bg)}
 #sheet .ms-l{background:var(--card)}
-.ms-b{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:54px;padding:0 10px 0 16px;border:1px solid #79868f;border-radius:8px;
+.ms-b{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:54px;padding:0 10px 0 16px;border:1px solid var(--outline);border-radius:8px;
   background:transparent;color:var(--text);font:inherit;font-size:16px;text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s}
 .ms-b:active{background:var(--soft)}
 .ms-b.open{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
@@ -109,6 +107,7 @@ main .ms-l{background:var(--bg)}
   font:inherit;font-size:16px;text-align:left;cursor:pointer}
 #msmenu .mi:active{background:var(--soft)}
 #msmenu .mi.sel{background:var(--soft);color:var(--accent);font-weight:600}
+.chk label:has(input:checked){background:var(--soft);border-color:var(--accent);color:var(--accent)}
 .chkline{display:flex;align-items:center;gap:10px;color:var(--text);font-size:15px;font-weight:600;margin:0 0 6px}
 .chkline input{width:auto;margin:0}
 </style>
@@ -145,7 +144,7 @@ const monthTitle=ym=>{const p=ym.split('-');return MONTHS[+p[1]-1]+' '+p[0]};
 /* ================= data ================= */
 const KEY='attendance.v1';
 let mem=null;
-function defaults(){return {days:{},periods:[],holidays:[],payslips:[],skipHol:[],holLast:0,settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2,grace:10,remindOn:true,remindIn:'08:15',remindOut:'',alarmDefault:'06:15'}}}
+function defaults(){return {days:{},periods:[],holidays:[],payslips:[],skipHol:[],holLast:0,adj:{years:{},months:{}},settings:{theme:'auto',start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2,grace:10,remindOn:true,remindIn:'08:15',remindOut:'',alarmDefault:'06:15'}}}
 function load(){
   const d=defaults();let raw=null;
   try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
@@ -155,6 +154,7 @@ function load(){
     if(Array.isArray(p.periods))d.periods=p.periods;
     if(Array.isArray(p.holidays))d.holidays=p.holidays;
     if(Array.isArray(p.payslips))d.payslips=p.payslips;
+    if(p.adj&&typeof p.adj==='object'){d.adj.years=p.adj.years||{};d.adj.months=p.adj.months||{}}
     if(Array.isArray(p.skipHol))d.skipHol=p.skipHol;
     if(typeof p.holLast==='number')d.holLast=p.holLast;
     if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
@@ -262,7 +262,7 @@ function monthStats(ym){
     }else if(kind==='workday'&&d<now)st.missing.push(d);
     st.rows.push({d:d,rec:rec,c:c,kind:kind});
   }
-  st.used=st.late+st.early+st.perm;st.free=Math.round(S.settings.permHours*60);
+  st.used=st.late+st.early+st.perm;st.base=Math.round(S.settings.permHours*60);st.free=Math.max(0,st.base+(+S.adj.months[ym]||0));
   st.deduct=Math.max(0,st.used-st.free);st.left=Math.max(0,st.free-st.used);
   st.ot=st.otWork+st.otWeekend+st.otHoliday;
   return st;
@@ -275,11 +275,13 @@ function yearStats(y){
     s.annualUsed+=c.leave.annual;s.casualUsed+=c.leave.casual;s.halfDays+=c.leave.half;
     s.sickUsed+=c.leave.sick;s.unpaid+=c.leave.unpaid;s.credits+=c.credit;
   });
-  s.allowance=S.settings.annual+s.credits;
+  const aj=S.adj.years[y]||{};
+  s.adjAnnual=+aj.annual||0;s.adjCasual=+aj.casual||0;s.adjSick=+aj.sick||0;
+  s.allowance=S.settings.annual+s.credits+s.adjAnnual;
   s.totalUsed=s.annualUsed+s.casualUsed+s.halfDays*0.5;
   s.left=s.allowance-s.totalUsed;
-  s.casualLeft=S.settings.casual-s.casualUsed;
-  s.sickLeft=S.settings.sick-s.sickUsed;
+  s.casualAllow=S.settings.casual+s.adjCasual;s.casualLeft=s.casualAllow-s.casualUsed;
+  s.sickAllow=S.settings.sick+s.adjSick;s.sickLeft=s.sickAllow-s.sickUsed;
   return s;
 }
 
@@ -333,6 +335,7 @@ function applySelect(id,v){
     case 'st':ui.stab=v;render();break;
     case 'd-type':if(draft){draft.type=v;renderDay()}break;
     case 'd-hm':if(draft){draft.holidayMode=v;renderDay()}break;
+    case 'theme':S.settings.theme=v;applyTheme();save();render();break;
   }
 }
 const sortOpts=a=>a.slice().sort((x,y)=>x[1].localeCompare(y[1]));
@@ -400,9 +403,10 @@ function vLeaves(){
     '<div class="line"><span>Annual leave</span><b>'+fd(ys.left)+' left of '+fd(ys.allowance)+'</b></div>'+
     '<div class="bar"><i style="width:'+Math.min(100,ys.allowance?used/ys.allowance*100:0)+'%"></i></div>'+
     '<div class="muted small" style="margin:4px 0 8px">Used '+fd(used)+' ('+fd(ys.annualUsed)+' annual, '+fd(ys.casualUsed)+' casual, '+fd(ys.halfDays*0.5)+' half days)'+(ys.credits?' · includes +'+ys.credits+' holiday credit':'')+'</div>'+
-    '<div class="line"><span>Casual leave</span><b>'+fd(ys.casualLeft)+' left of '+S.settings.casual+'</b></div>'+
-    '<div class="line"><span>Sick leave</span><b>'+fd(ys.sickLeft)+' left of '+S.settings.sick+'</b></div>'+
-    '<div class="line"><span>Unpaid leave taken</span><b>'+fd(ys.unpaid)+'</b></div></section>';
+    '<div class="line"><span>Casual leave</span><b>'+fd(ys.casualLeft)+' left of '+fd(ys.casualAllow)+'</b></div>'+
+    '<div class="line"><span>Sick leave</span><b>'+fd(ys.sickLeft)+' left of '+fd(ys.sickAllow)+'</b></div>'+
+    '<div class="line"><span>Unpaid leave taken</span><b>'+fd(ys.unpaid)+'</b></div>'+
+    ((ys.adjAnnual||ys.adjCasual||ys.adjSick)?'<div class="muted small" style="margin-top:4px">Manually adjusted: annual '+sgn(ys.adjAnnual)+', casual '+sgn(ys.adjCasual)+', sick '+sgn(ys.adjSick)+' days</div>':'')+'</section>';
   const list=[];
   Object.keys(S.days).sort().forEach(d=>{
     if(d.indexOf(ui.year+'-')!==0)return;
@@ -430,7 +434,7 @@ function vPerm(){
   const pct=st.free?Math.min(100,st.used/st.free*100):0;
   h+='<section class="card"><h4>Free permission pool</h4><div class="line" style="padding-top:0"><span>Used (late + early + permissions)</span><b>'+fm(st.used)+' of '+fm(st.free)+'</b></div>'+
     '<div class="bar'+(st.deduct?' red':'')+'"><i style="width:'+pct+'%"></i></div>'+
-    (st.deduct?'<div class="line t"><span style="color:var(--danger)">Salary deduction time</span><b style="color:var(--danger)">'+fm(st.deduct)+'</b></div>':
+    (st.deduct?'<div class="line t"><span style="color:var(--danger-fg)">Salary deduction time</span><b style="color:var(--danger-fg)">'+fm(st.deduct)+'</b></div>':
       '<div class="muted small" style="margin-top:6px">'+fm(st.left)+' left this month</div>')+'</section>';
   const items=[];
   st.rows.forEach(r=>{if(!r.rec)return;
@@ -478,7 +482,7 @@ function vReport(){
     '<div class="line"><span>Early leaving ('+st.earlyDays+' day'+(st.earlyDays===1?'':'s')+')</span><b>'+fm(st.early)+'</b></div>'+
     '<div class="line"><span>Permissions taken</span><b>'+fm(st.perm)+'</b></div>'+
     '<div class="line t"><span><b>Total against your '+fm(st.free)+'</b></span><b>'+fm(st.used)+'</b></div>'+
-    '<div class="line"><span style="color:'+(st.deduct?'var(--danger)':'inherit')+'">Salary deduction time</span><b style="color:'+(st.deduct?'var(--danger)':'inherit')+'">'+fm(st.deduct)+'</b></div></section>'+
+    '<div class="line"><span style="color:'+(st.deduct?'var(--danger-fg)':'inherit')+'">Salary deduction time</span><b style="color:'+(st.deduct?'var(--danger-fg)':'inherit')+'">'+fm(st.deduct)+'</b></div></section>'+
    '<section class="card"><h4>Overtime</h4>'+
     '<div class="line"><span>Total overtime</span><b>'+st.ot+'h</b></div>'+
     '<div class="muted small">Weekdays '+st.otWork+'h · Weekends '+st.otWeekend+'h · Holidays '+st.otHoliday+'h'+(st.credit?' · +'+st.credit+' leave day from holiday':'')+'</div></section>'+
@@ -513,7 +517,9 @@ function vSetup(){
 
 function vSettings(){
   const s=S.settings,dn=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  return '<section class="card"><h3>Working hours</h3><div class="two"><label>Start<input type="time" data-set="start" value="'+s.start+'"></label><label>Finish<input type="time" data-set="end" value="'+s.end+'"></label></div>'+
+  return '<section class="card"><h3>Appearance</h3>'+msel('theme','Theme',sortOpts([['auto','Follow device'],['dark','Dark'],['light','Light']]),s.theme||'auto')+'</section>'+
+    '<div class="menu" style="margin-bottom:14px"><button data-a="adjust"><span class="ic">⚖️</span>Adjust balances<span class="go">›</span></button></div>'+
+    '<section class="card"><h3>Working hours</h3><div class="two"><label>Start<input type="time" data-set="start" value="'+s.start+'"></label><label>Finish<input type="time" data-set="end" value="'+s.end+'"></label></div>'+
     '<label>Working days</label><div class="chk">'+dn.map((n,i)=>'<label><input type="checkbox" data-wd="'+i+'"'+(s.workDays.includes(i)?' checked':'')+'>'+n.slice(0,3)+'</label>').join('')+'</div></section>'+
     '<section class="card"><h3>Yearly entitlements</h3><div class="two"><label>Annual leave (days)<input type="number" step="0.5" min="0" data-set="annual" value="'+s.annual+'"></label>'+
     '<label>Casual (inside annual)<input type="number" step="0.5" min="0" data-set="casual" value="'+s.casual+'"></label></div>'+
@@ -782,6 +788,7 @@ function doImport(){
   const d=defaults();d.days=p.days;
   if(Array.isArray(p.periods))d.periods=p.periods;if(Array.isArray(p.holidays))d.holidays=p.holidays;
   if(Array.isArray(p.payslips))d.payslips=p.payslips;
+  if(p.adj&&typeof p.adj==='object'){d.adj.years=p.adj.years||{};d.adj.months=p.adj.months||{}}
   if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
   S=d;save();closeModal();render();toast('Restored '+Object.keys(S.days).length+' days');
 }
@@ -794,6 +801,71 @@ function setSetting(k,v){
   save();toast('Saved');
 }
 
+/* ================= appearance ================= */
+const darkMQ=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+function applyTheme(){
+  const t=S.settings.theme,root=document.documentElement;
+  if(t==='dark'||t==='light')root.setAttribute('data-theme',t);else root.removeAttribute('data-theme');
+  const dark=t==='dark'||(t!=='light'&&darkMQ&&darkMQ.matches);
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',dark?'#0e3b37':'#0b5f58');
+}
+if(darkMQ&&darkMQ.addEventListener)darkMQ.addEventListener('change',applyTheme);
+
+/* ================= balance adjustment ================= */
+const r2=n=>Math.round(n*100)/100;
+function adjustForm(){
+  const now=new Date(),y=now.getFullYear(),ym=y+'-'+pad(now.getMonth()+1);
+  const ys=yearStats(y),ms=monthStats(ym);
+  openModal('<h3>Adjust balances</h3><div class="muted small">Type what you have left right now and the app adjusts its count to match. '+
+    'Yearly leaves for '+y+' and permission for '+esc(monthTitle(ym))+'.</div>'+
+    '<div class="two"><label>Annual days left<input type="number" id="aj-annual" step="0.5" value="'+r2(ys.left)+'"></label>'+
+    '<label>Casual days left<input type="number" id="aj-casual" step="0.5" value="'+r2(ys.casualLeft)+'"></label></div>'+
+    '<div class="two"><label>Sick days left<input type="number" id="aj-sick" step="1" value="'+r2(ys.sickLeft)+'"></label>'+
+    '<label>Permission left (hours)<input type="number" id="aj-perm" step="0.25" min="0" value="'+r2(ms.left/60)+'"></label></div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveadj">Apply</button></div>'+
+    '<div class="sub" style="margin-top:8px"><button class="link" data-a="resetyear">Reset yearly leaves</button><button class="link" data-a="resetmonth">Reset monthly permission</button></div>');
+}
+/* Sets what is left, by storing the difference from what the recorded days alone would give. */
+function setLeft(kind,v,y){
+  const ys=yearStats(y);
+  const base={annual:ys.left-ys.adjAnnual,casual:ys.casualLeft-ys.adjCasual,sick:ys.sickLeft-ys.adjSick}[kind];
+  const aj=S.adj.years[y]||(S.adj.years[y]={});
+  const d=r2(v-base);
+  if(d===0)delete aj[kind];else aj[kind]=d;
+  if(!Object.keys(aj).length)delete S.adj.years[y];
+}
+function setPermLeft(hours,ym){
+  const ms=monthStats(ym),want=Math.round(hours*60)+ms.used;
+  const d=want-ms.base;
+  if(d===0)delete S.adj.months[ym];else S.adj.months[ym]=d;
+}
+function saveAdjust(){
+  const y=new Date().getFullYear(),ym=y+'-'+pad(new Date().getMonth()+1);
+  const get=id=>{const v=parseFloat($('#'+id).value);return isNaN(v)?null:v};
+  const a=get('aj-annual'),c=get('aj-casual'),k=get('aj-sick'),p=get('aj-perm');
+  if(a!==null)setLeft('annual',a,y);
+  if(c!==null)setLeft('casual',c,y);
+  if(k!==null)setLeft('sick',k,y);
+  if(p!==null&&p>=0)setPermLeft(p,ym);
+  save();closeModal();render();toast('Balances adjusted');
+}
+function resetYear(){
+  const y=new Date().getFullYear();
+  ask('Reset yearly leaves for '+y+' to annual '+S.settings.annual+', casual '+S.settings.casual+' and sick '+S.settings.sick+' days? Days already in your log stay there but will not reduce the new balance.','Reset').then(ok=>{
+    if(!ok)return;
+    const ys=yearStats(y);
+    setLeft('annual',S.settings.annual+ys.credits,y);setLeft('casual',S.settings.casual,y);setLeft('sick',S.settings.sick,y);
+    save();render();toast('Yearly leaves reset');
+  });
+}
+function resetMonth(){
+  const ym=todayStr().slice(0,7);
+  ask('Reset this month\'s permission to the full '+fm(Math.round(S.settings.permHours*60))+'?','Reset').then(ok=>{
+    if(!ok)return;
+    setPermLeft(S.settings.permHours,ym);save();render();toast('Monthly permission reset');
+  });
+}
+
 /* ================= payslips ================= */
 const normAr=s=>String(s||'').replace(/[ً-ٰٟـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
 const cellText=td=>td.textContent.replace(/ /g,' ').replace(/\s+/g,' ').trim();
@@ -803,6 +875,7 @@ function num(s){
   const m=t.match(/^(\d+(?:\.\d+)?)-$/);
   return m?-parseFloat(m[1]):null;
 }
+const sgn=n=>(n>0?'+':'')+fd(n);
 const m2=n=>(n==null?0:n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const EN_RAW={
   'المرتب الأساسي':'Basic salary','علاوة السنة الحالية':'Current-year raise','علاوة سنوات سابقة':'Previous-years raise',
@@ -1104,6 +1177,10 @@ document.addEventListener('click',ev=>{
     case 'delday':{const d=draft._orig;ask('Delete the record for '+dayShort(d)+'?','Delete').then(ok=>{if(ok){delete S.days[d];save();closeModal();render();toast('Deleted')}});break}
     case 'ask-yes':{const r=resolver;resolver=null;closeModal();if(r)r(true);break}
     case 'ask-no':{const r=resolver;resolver=null;closeModal();if(r)r(false);break}
+    case 'adjust':adjustForm();break;
+    case 'saveadj':saveAdjust();break;
+    case 'resetyear':resetYear();break;
+    case 'resetmonth':resetMonth();break;
     case 'plan':planForm();break;
     case 'saveplan':savePlan();break;
     case 'testnotif':testNotification();break;
@@ -1125,7 +1202,7 @@ document.addEventListener('click',ev=>{
     case 'delper':S.periods=S.periods.filter(h=>h.id!==id);save();closeModal();render();toast('Deleted');break;
     case 'csv':{const pre=ui.month+'-';showExport('CSV – '+monthTitle(ui.month),toCsv(Object.keys(S.days).filter(d=>d.indexOf(pre)===0)),'attendance-'+ui.month+'.csv','text/csv');break}
     case 'csvall':showExport('CSV – all days',toCsv(Object.keys(S.days)),'attendance-all.csv','text/csv');break;
-    case 'backup':showExport('Backup',JSON.stringify({app:'attendance',version:1,days:S.days,periods:S.periods,holidays:S.holidays,payslips:S.payslips,settings:S.settings}),'attendance-backup.json','application/json');break;
+    case 'backup':showExport('Backup',JSON.stringify({app:'attendance',version:1,days:S.days,periods:S.periods,holidays:S.holidays,payslips:S.payslips,adj:S.adj,settings:S.settings}),'attendance-backup.json','application/json');break;
     case 'restore':openModal('<h3>Restore backup</h3><div class="muted small">Paste your backup text. This replaces all current data.</div><textarea id="imp" placeholder="Paste backup here"></textarea><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="doimport">Restore</button></div>');break;
     case 'doimport':doImport();break;
     case 'copy':copyText();break;
@@ -1172,7 +1249,8 @@ document.addEventListener('visibilitychange',()=>{
   if(view==='home'&&!$('#modal').classList.contains('show'))render();
 });
 
-window.__app={planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
+applyTheme();
+window.__app={adjust:{setLeft:setLeft,setPermLeft:setPermLeft},planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
 syncNative();
 if(hasNative()&&Date.now()-S.holLast>7*864e5)setTimeout(()=>updateHolidays(true),2500); /* refresh official holidays about once a week */
