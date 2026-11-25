@@ -94,6 +94,7 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 <main id="view"></main>
 <div id="modal"><div id="sheet"></div></div>
 <div id="toast"></div>
+<input type="file" id="payfile" accept=".htm,.html,text/html,*/*" multiple hidden>
 
 <script>
 (function(){
@@ -714,6 +715,7 @@ function parsePayslip(html){
 }
 function importPayslips(files){
   const list=Array.prototype.slice.call(files||[]);if(!list.length)return;
+  toast('Reading '+list.length+' file'+(list.length>1?'s':'')+'…');
   let done=0,good=0,last=null;
   list.forEach(f=>{
     const fr=new FileReader();
@@ -733,7 +735,7 @@ function importPayslips(files){
   }
 }
 function vPay(){
-  let h='<label class="btn full" style="text-align:center;margin:0">Import payslip<input type="file" id="payfile" accept=".htm,.html,text/html" multiple hidden></label>'+
+  let h='<button class="btn full" data-a="payimport">Import payslip</button>'+
     '<div class="muted small center" style="margin:8px 0 14px">Choose the payslip .htm file. It is read on this phone only.</div>';
   const list=S.payslips.slice().sort((a,b)=>a.month<b.month?1:-1);
   h+='<section class="card" style="padding:6px 16px">';
@@ -817,6 +819,7 @@ document.addEventListener('click',ev=>{
     case 'delday':{const d=draft._orig;ask('Delete the record for '+dayShort(d)+'?','Delete').then(ok=>{if(ok){delete S.days[d];save();closeModal();render();toast('Deleted')}});break}
     case 'ask-yes':{const r=resolver;resolver=null;closeModal();if(r)r(true);break}
     case 'ask-no':{const r=resolver;resolver=null;closeModal();if(r)r(false);break}
+    case 'payimport':$('#payfile').click();break;
     case 'payopen':payDetail(t.dataset.m);break;
     case 'paydel':{const m=t.dataset.m;ask('Remove the '+monthTitle(m)+' payslip from this phone?','Remove').then(ok=>{if(ok){S.payslips=S.payslips.filter(x=>x.month!==m);save();closeModal();render();toast('Removed')}});break}
     case 'addhol':holForm(null);break;
@@ -867,7 +870,8 @@ document.addEventListener('input',ev=>{
   previewDay();
 });
 window.addEventListener('popstate',()=>{if(view!=='home'){view='home';render()}});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!draft&&$('#modal').classList.contains('show')===false)render()});
+/* Only the home screen refreshes on resume; redrawing other screens could swallow a file picked from the chooser. */
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='home'&&!$('#modal').classList.contains('show'))render()});
 
 window.__app={parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
