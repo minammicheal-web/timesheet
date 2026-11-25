@@ -32,8 +32,8 @@ main{max-width:620px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-i
 h3{margin:0 0 12px;font-size:18px}
 h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
 label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 0}
-input,select,textarea{width:100%;margin-top:5px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
-  background:var(--bg);color:var(--text);font:inherit}
+input,select,textarea{width:100%;margin-top:5px;padding:12px 12px;border-radius:8px;border:1px solid #79868f;
+  background:transparent;color:var(--text);font:inherit}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent)}
 textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 .btn{display:inline-block;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:var(--on-accent)}
@@ -87,6 +87,28 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 .chk{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .chk label{margin:0;display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text)}
 .chk input{width:auto;margin:0}
+/* Material-style dropdown (outlined field + elevated menu) */
+.ms{position:relative;margin-top:14px;text-align:left}
+.filters .ms{margin-top:0}
+.ms-l{position:absolute;left:12px;top:-8px;padding:0 4px;font-size:12px;font-weight:600;color:var(--muted);z-index:1;letter-spacing:.2px;pointer-events:none;transition:color .15s}
+main .ms-l{background:var(--bg)}
+#sheet .ms-l{background:var(--card)}
+.ms-b{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:54px;padding:0 10px 0 16px;border:1px solid #79868f;border-radius:8px;
+  background:transparent;color:var(--text);font:inherit;font-size:16px;text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.ms-b:active{background:var(--soft)}
+.ms-b.open{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.ms-b.open+.x,.ms:has(.ms-b.open) .ms-l{color:var(--accent)}
+.ms-v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-ar{flex:none;color:var(--muted);transition:transform .2s}
+.ms-b.open .ms-ar{transform:rotate(180deg);color:var(--accent)}
+#msmask{position:fixed;inset:0;z-index:40;background:transparent}
+#msmenu{position:fixed;z-index:41;background:var(--card);border-radius:8px;padding:8px 0;overflow-y:auto;transform-origin:top center;
+  box-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);animation:msIn .14s ease-out}
+@keyframes msIn{from{opacity:0;transform:scaleY(.92)}to{opacity:1;transform:none}}
+#msmenu .mi{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:48px;padding:0 16px;border:0;background:none;color:var(--text);
+  font:inherit;font-size:16px;text-align:left;cursor:pointer}
+#msmenu .mi:active{background:var(--soft)}
+#msmenu .mi.sel{background:var(--soft);color:var(--accent);font-weight:600}
 .chkline{display:flex;align-items:center;gap:10px;color:var(--text);font-size:15px;font-weight:600;margin:0 0 6px}
 .chkline input{width:auto;margin:0}
 </style>
@@ -264,15 +286,52 @@ const now0=new Date();
 const ui={month:now0.getFullYear()+'-'+pad(now0.getMonth()+1),year:now0.getFullYear(),ltype:'all',ptype:'all',stab:'holidays'};
 let toastT,resolver=null,draft=null,exportData={};
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
-function openModal(h){$('#sheet').innerHTML=h;$('#modal').classList.add('show')}
-function closeModal(){$('#modal').classList.remove('show');$('#sheet').innerHTML='';draft=null;resolver=null}
+function openModal(h){closeMs();$('#sheet').innerHTML=h;$('#modal').classList.add('show')}
+function closeModal(){closeMs();$('#modal').classList.remove('show');$('#sheet').innerHTML='';draft=null;resolver=null}
 function ask(msg,ok){return new Promise(res=>{
   openModal('<h3>'+esc(msg)+'</h3><div class="btns"><button class="btn ghost" data-a="ask-no">Cancel</button><button class="btn danger" data-a="ask-yes">'+esc(ok||'Confirm')+'</button></div>');
   resolver=res;
 })}
 function go(v){view=v;try{history.pushState({v:v},'')}catch(e){}render();window.scrollTo(0,0)}
 const monthPicker=()=>'<div class="filters one"><label>Month<input type="month" id="mp" value="'+ui.month+'"></label></div>';
-const sel=(id,opts,cur)=>'<select id="'+id+'">'+opts.map(o=>'<option value="'+esc(o[0])+'"'+(o[0]===cur?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>';
+/* ---- Material-style dropdown: field + floating menu (replaces the phone's plain select dialog) ---- */
+const ARROW='<svg class="ms-ar" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>';
+const CHECK='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" fill="currentColor"/></svg>';
+function msel(id,label,opts,cur){
+  const o=opts.filter(x=>x[0]===cur)[0]||opts[0];
+  return '<div class="ms" data-ms="'+id+'" data-opts="'+esc(JSON.stringify(opts))+'" data-cur="'+esc(o?o[0]:'')+'"><span class="ms-l">'+esc(label)+'</span>'+
+    '<button type="button" class="ms-b" data-a="msopen" aria-haspopup="listbox"><span class="ms-v">'+esc(o?o[1]:'')+'</span>'+ARROW+'</button></div>';
+}
+let msBox=null;
+function closeMs(){
+  const a=$('#msmask'),b=$('#msmenu');if(a)a.remove();if(b)b.remove();
+  if(msBox){const bt=$('.ms-b',msBox);if(bt)bt.classList.remove('open')}
+  msBox=null;
+}
+function openMs(box){
+  closeMs();
+  const opts=JSON.parse(box.dataset.opts),cur=box.dataset.cur,btn=$('.ms-b',box),r=btn.getBoundingClientRect();
+  const mask=document.createElement('div');mask.id='msmask';
+  const m=document.createElement('div');m.id='msmenu';m.setAttribute('role','listbox');
+  m.innerHTML=opts.map(o=>'<button type="button" role="option" class="mi'+(o[0]===cur?' sel':'')+'" data-a="mspick" data-v="'+esc(o[0])+'"><span>'+esc(o[1])+'</span>'+(o[0]===cur?CHECK:'')+'</button>').join('');
+  document.body.appendChild(mask);document.body.appendChild(m);
+  const vh=window.innerHeight,want=Math.min(m.scrollHeight,Math.round(vh*0.55));
+  let top=r.bottom+4;
+  if(top+want>vh-8)top=Math.max(8,r.top-want-4);
+  m.style.left=r.left+'px';m.style.width=r.width+'px';m.style.top=top+'px';m.style.maxHeight=Math.min(want,vh-16)+'px';
+  btn.classList.add('open');msBox=box;
+  const s=$('.sel',m);if(s)m.scrollTop=Math.max(0,s.offsetTop-m.clientHeight/2+24);
+}
+function applySelect(id,v){
+  switch(id){
+    case 'ly':ui.year=+v;render();break;
+    case 'lt':ui.ltype=v;render();break;
+    case 'pt':ui.ptype=v;render();break;
+    case 'st':ui.stab=v;render();break;
+    case 'd-type':if(draft){draft.type=v;renderDay()}break;
+    case 'd-hm':if(draft){draft.holidayMode=v;renderDay()}break;
+  }
+}
 const sortOpts=a=>a.slice().sort((x,y)=>x[1].localeCompare(y[1]));
 
 /* ================= views ================= */
@@ -332,7 +391,7 @@ function vLeaves(){
   const ys=yearStats(ui.year);
   const years=[];for(let y=now0.getFullYear()+1;y>=now0.getFullYear()-4;y--)years.push([String(y),String(y)]);
   const opts=[['all','All leaves']].concat(sortOpts([['annual','Annual leave'],['casual','Casual leave'],['credit','Holiday credit (+1 day)'],['halfAM','Morning half day'],['halfPM','Night half day'],['sick','Sick leave'],['unpaid','Unpaid leave']]));
-  let h='<div class="filters"><label>Year'+sel('ly',years,String(ui.year))+'</label><label>Type'+sel('lt',opts,ui.ltype)+'</label></div>';
+  let h='<div class="filters">'+msel('ly','Year',years,String(ui.year))+msel('lt','Type',opts,ui.ltype)+'</div>';
   const used=ys.totalUsed;
   h+='<section class="card"><h4>Balances for '+ui.year+'</h4>'+
     '<div class="line"><span>Annual leave</span><b>'+fd(ys.left)+' left of '+fd(ys.allowance)+'</b></div>'+
@@ -364,7 +423,7 @@ function vLeaves(){
 function vPerm(){
   const st=monthStats(ui.month);
   const opts=[['all','All'],['perm','Permissions'],['trip','Business trips']];
-  let h=monthPicker()+'<div class="filters one"><label>Show'+sel('pt',sortOpts(opts),ui.ptype)+'</label></div>';
+  let h=monthPicker()+'<div class="filters one">'+msel('pt','Show',sortOpts(opts),ui.ptype)+'</div>';
   const pct=st.free?Math.min(100,st.used/st.free*100):0;
   h+='<section class="card"><h4>Free permission pool</h4><div class="line" style="padding-top:0"><span>Used (late + early + permissions)</span><b>'+fm(st.used)+' of '+fm(st.free)+'</b></div>'+
     '<div class="bar'+(st.deduct?' red':'')+'"><i style="width:'+pct+'%"></i></div>'+
@@ -430,11 +489,11 @@ function vReport(){
 
 function vSetup(){
   const tabs=sortOpts([['holidays','Holidays'],['periods','Special schedules']]);
-  let h='<div class="filters one"><label>Show'+sel('st',tabs,ui.stab)+'</label></div><section class="card" style="padding:6px 16px">';
+  let h='<div class="filters one">'+msel('st','Show',tabs,ui.stab)+'</div><section class="card" style="padding:6px 16px">';
   if(ui.stab==='holidays'){
     const l=S.holidays.slice().sort((a,b)=>a.from<b.from?-1:1);
     const last=S.holLast?new Date(S.holLast).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'never';
-    h='<div class="filters one"><label>Show'+sel('st',tabs,ui.stab)+'</label></div>'+
+    h='<div class="filters one">'+msel('st','Show',tabs,ui.stab)+'</div>'+
       '<section class="card"><div class="line" style="padding:0"><span><b>Official holidays (Egypt)</b><div class="muted small">Updated from the internet · last '+last+'</div></span><button class="btn sm ghost" data-a="holsync">Update now</button></div></section>'+
       '<section class="card" style="padding:6px 16px">';
     if(!l.length)h+='<div class="empty">No holidays yet.<br>Tap “Update now” to load them.</div>';
@@ -470,6 +529,7 @@ function vSettings(){
 }
 
 function render(){
+  closeMs();
   $('#title').textContent=TITLES[view];
   $('#back').classList.toggle('hide',view==='home');
   $('#act').classList.toggle('hide',view!=='log');
@@ -534,21 +594,58 @@ function listBlock(key,title){
   });
   return h;
 }
+const LEAVE=['annual','casual','sick','unpaid'];
+const typeOpts=kind=>TYPE_ORDER.filter(k=>kind==='workday'||(k!=='halfAM'&&k!=='halfPM')).map(k=>[k,TYPE_LABEL[k]]);
+function ensureEnd(){
+  if(!draft)return;
+  if(LEAVE.indexOf(draft.type)>=0){if(!draft.endDate||draft.endDate<draft.date)draft.endDate=draft.date}
+  else delete draft.endDate;
+}
+/* Working days between From and To: weekends and holidays in the middle are skipped, not counted. */
+function leaveSpan(){
+  const a=draft.date,b=(draft.endDate&&draft.endDate>=a)?draft.endDate:a;
+  const days=[];let skipped=0,n=0;
+  const cur=parseYmd(a),end=parseYmd(b);
+  while(cur<=end&&n<400){const s=ymd(cur);if(kindOf(s)==='workday')days.push(s);else skipped++;cur.setDate(cur.getDate()+1);n++}
+  return {a:a,b:b,days:days,skipped:skipped};
+}
+function leavePreview(){
+  const sp=leaveSpan(),n=sp.days.length,L=[];
+  if(!n)return 'No working days in this range — weekends and holidays are skipped.';
+  L.push('<b>'+esc(TYPE_LABEL[draft.type])+': '+n+' working day'+(n>1?'s':'')+'</b>'+(sp.skipped?' (skipping '+sp.skipped+' weekend/holiday day'+(sp.skipped>1?'s':'')+')':''));
+  const rep=sp.days.filter(d=>{const x=S.days[d];return x&&(x.type!==draft.type||x.in||x.out)}).length;
+  if(rep)L.push('Replaces '+rep+' existing record'+(rep>1?'s':''));
+  if(draft.type!=='unpaid'){
+    const keep=S.days,tmp=Object.assign({},S.days);sp.days.forEach(d=>{delete tmp[d]});
+    S.days=tmp;const ys=yearStats(+sp.a.slice(0,4));S.days=keep;
+    const warn=v=>v<0?' ⚠ over your balance':'';
+    if(draft.type==='annual')L.push('Annual days left after: '+fd(ys.left-n)+warn(ys.left-n));
+    if(draft.type==='casual'){L.push('Casual days left after: '+fd(ys.casualLeft-n)+warn(ys.casualLeft-n));L.push('Annual days left after: '+fd(ys.left-n)+warn(ys.left-n))}
+    if(draft.type==='sick')L.push('Sick days left after: '+fd(ys.sickLeft-n)+warn(ys.sickLeft-n));
+  }
+  return L.join('<br>');
+}
 function renderDay(){
+  closeMs();
+  ensureEnd();
   const d=draft,kind=kindOf(d.date),workday=kind==='workday';
-  const leave=workday&&['annual','casual','sick','unpaid'].includes(d.type);
-  let h='<h3>'+(d._new?'Add day':'Edit day')+'</h3><label style="margin-top:0">Date<input type="date" id="d-date" value="'+d.date+'"></label>';
-  const kl=kind==='weekend'?'Weekend':kind==='holiday'?esc(holidayOf(d.date).name||'Holiday'):'Workday';
-  h+='<div class="muted small" style="margin-top:6px">'+esc(dayLong(d.date))+' · '+kl+'</div>';
-  if(workday){
-    h+='<label>Day type<select id="d-type">'+TYPE_ORDER.map(k=>'<option value="'+k+'"'+(k===d.type?' selected':'')+'>'+TYPE_LABEL[k]+'</option>').join('')+'</select></label>';
+  const leave=LEAVE.indexOf(d.type)>=0;
+  let h='<h3>'+(d._new?(leave?'Add leave':'Add day'):(leave?'Edit leave':'Edit day'))+'</h3>';
+  h+=msel('d-type','Day type',typeOpts(kind),d.type);
+  if(leave){
+    h+='<div class="two"><label>From<input type="date" id="d-date" value="'+d.date+'"></label><label>To<input type="date" id="d-end" value="'+d.endDate+'" min="'+d.date+'"></label></div>'+
+       '<div class="muted small" style="margin-top:6px">Pick the first and last day. Weekends and holidays in between are skipped automatically.</div>';
+  }else{
+    h+='<label>Date<input type="date" id="d-date" value="'+d.date+'"></label>';
+    const kl=kind==='weekend'?'Weekend':kind==='holiday'?esc(holidayOf(d.date).name||'Holiday'):'Workday';
+    h+='<div class="muted small" style="margin-top:6px">'+esc(dayLong(d.date))+' · '+kl+'</div>';
     if(d.type==='halfAM')h+='<div class="muted small" style="margin-top:6px">Expected to arrive by 1:00 PM</div>';
     if(d.type==='halfPM')h+='<div class="muted small" style="margin-top:6px">Expected to stay until 1:00 PM</div>';
   }
   if(!leave){
     h+='<div class="two"><label>Clock in<input type="time" data-k="in" value="'+esc(d.in)+'"></label><label>Clock out<input type="time" data-k="out" value="'+esc(d.out)+'"></label></div>';
     if(workday){h+=listBlock('perms','Permissions')+listBlock('trips','Business trips')}
-    if(kind==='holiday')h+='<label>If you worked this holiday, count it as<select data-k="holidayMode"><option value="leave"'+(d.holidayMode==='leave'?' selected':'')+'>+1 annual leave day</option><option value="ot"'+(d.holidayMode!=='leave'?' selected':'')+'>Overtime</option></select></label>';
+    if(kind==='holiday')h+=msel('d-hm','If you worked this holiday, count it as',sortOpts([['leave','+1 annual leave day'],['ot','Overtime']]),d.holidayMode==='leave'?'leave':'ot');
   }
   if(!leave&&d.date>=todayStr()){
     h+='<label>Wake-up alarm (optional)<input type="time" data-k="alarm" value="'+esc(d.alarm||'')+'"></label>'+
@@ -561,6 +658,7 @@ function renderDay(){
 }
 function previewDay(){
   const p=$('#dprev');if(!p||!draft)return;
+  if(LEAVE.indexOf(draft.type)>=0){p.innerHTML=leavePreview();return}
   const c=calc(clean(draft)),L=[];
   if(c.kind==='workday'){
     if(['annual','casual','sick','unpaid'].includes(draft.type))L.push(TYPE_LABEL[draft.type]+' — 1 day');
@@ -581,8 +679,18 @@ function previewDay(){
 function saveDay(){
   const d=clean(draft),kind=kindOf(d.date);
   if(!d.date){toast('Choose a date');return}
-  const leave=kind==='workday'&&['annual','casual','sick','unpaid'].includes(d.type);
-  if(leave){d.in='';d.out='';d.perms=[];d.trips=[];delete d.alarm}
+  const leave=LEAVE.indexOf(d.type)>=0;
+  if(leave){
+    if(draft.endDate&&draft.endDate<d.date){toast('The end date is before the start date');return}
+    const sp=leaveSpan();
+    if(!sp.days.length){toast('No working days in that range — weekends and holidays are skipped');return}
+    if(draft._orig&&S.days[draft._orig]&&sp.days.indexOf(draft._orig)<0)delete S.days[draft._orig];
+    sp.days.forEach(x=>{S.days[x]={date:x,type:d.type,in:'',out:'',perms:[],trips:[],holidayMode:'ot',note:d.note}});
+    ui.month=sp.days[0].slice(0,7);
+    save();closeModal();render();
+    toast(TYPE_LABEL[d.type]+' saved — '+sp.days.length+' working day'+(sp.days.length>1?'s':'')+(sp.skipped?' ('+sp.skipped+' day'+(sp.skipped>1?'s':'')+' off skipped)':''));
+    return;
+  }
   if(!leave){
     if(d.in&&!TIME.test(d.in)||d.out&&!TIME.test(d.out)){toast('Check the times');return}
     if(kind==='workday'&&d.in&&d.out&&tm(d.out)<=tm(d.in)){toast('Clock-out must be after clock-in');return}
@@ -973,10 +1081,13 @@ document.addEventListener('click',ev=>{
   const g=ev.target.closest('[data-go]');if(g){go(g.dataset.go);return}
   if(ev.target.id==='back'){view='home';render();window.scrollTo(0,0);return}
   if(ev.target.id==='act'){openDay(todayStr());return}
+  if(ev.target.id==='msmask'){closeMs();return}
   if(ev.target.id==='modal'){closeModal();return}
   const t=ev.target.closest('[data-a]');if(!t)return;
   const a=t.dataset.a,id=t.dataset.id;
   switch(a){
+    case 'msopen':{const box=t.closest('.ms');if(msBox===box)closeMs();else openMs(box);break}
+    case 'mspick':{const box=msBox;if(!box)break;const sid=box.dataset.ms,v=t.dataset.v;closeMs();applySelect(sid,v);break}
     case 'in':clockIn();break;
     case 'out':clockOut();break;
     case 'editday':openDay(t.dataset.d);break;
@@ -1022,10 +1133,6 @@ document.addEventListener('change',ev=>{
   const t=ev.target;
   if(t.id==='payfile'){const f=t.files;importPayslips(f);t.value='';return}
   if(t.id==='mp'){if(t.value){ui.month=t.value;render()}return}
-  if(t.id==='ly'){ui.year=+t.value;render();return}
-  if(t.id==='lt'){ui.ltype=t.value;render();return}
-  if(t.id==='pt'){ui.ptype=t.value;render();return}
-  if(t.id==='st'){ui.stab=t.value;render();return}
   if(t.dataset.set){setSetting(t.dataset.set,t.value);return}
   if(t.dataset.flag){S.settings[t.dataset.flag]=t.checked;save();toast(t.checked?'Reminders on':'Reminders off');return}
   if(t.dataset.wd!==undefined){
@@ -1035,10 +1142,12 @@ document.addEventListener('change',ev=>{
   if(!draft)return;
   if(t.id==='d-date'){
     const nd=t.value;if(!nd)return;
-    if(nd!==draft._orig&&S.days[nd]){const keep=nd;closeModal();openDay(keep);toast('That day already has a record — opened it');return}
-    draft.date=nd;autoAlarm();renderDay();return;
+    if(LEAVE.indexOf(draft.type)<0&&nd!==draft._orig&&S.days[nd]){const keep=nd;closeModal();openDay(keep);toast('That day already has a record — opened it');return}
+    draft.date=nd;
+    if(kindOf(nd)!=='workday'&&(draft.type==='halfAM'||draft.type==='halfPM'))draft.type='work';
+    autoAlarm();renderDay();return;
   }
-  if(t.id==='d-type'){draft.type=t.value;renderDay()}
+  if(t.id==='d-end'){draft.endDate=t.value||draft.date;renderDay();return}
 });
 document.addEventListener('input',ev=>{
   const t=ev.target;if(!draft||!$('#sheet').contains(t))return;
@@ -1047,7 +1156,10 @@ document.addEventListener('input',ev=>{
   else return;
   previewDay();
 });
-window.addEventListener('popstate',()=>{if(view!=='home'){view='home';render()}});
+window.addEventListener('popstate',()=>{closeMs();if(view!=='home'){view='home';render()}});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeMs()});
+window.addEventListener('resize',closeMs);
+document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&t.id==='msmenu')return;closeMs()},true);
 /* Only the home screen refreshes on resume; redrawing other screens could swallow a file picked from the chooser. */
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
