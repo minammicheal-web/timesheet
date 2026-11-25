@@ -6,508 +6,714 @@
 <meta name="theme-color" content="#0f766e">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
-<title>Time Sheet</title>
+<title>Attendance &amp; Leave</title>
 <style>
 :root{
-  --bg:#f3f6f8;--card:#ffffff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;
-  --accent:#0f766e;--on-accent:#ffffff;--accent-soft:#d9f2ee;--danger:#dc2626;--warn:#b45309;--warn-soft:#fef3c7;
-  --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 14px rgba(15,23,42,.05);
-}
+  --bg:#f3f6f8;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e5eaf0;
+  --accent:#0f766e;--on-accent:#fff;--soft:#d9f2ee;--danger:#dc2626;--danger-soft:#fee2e2;
+  --warn:#b45309;--warn-soft:#fef3c7;--ok:#15803d;--ok-soft:#dcfce7;--info:#1d4ed8;--info-soft:#dbeafe;
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.05)}
 @media (prefers-color-scheme:dark){
   :root{--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#8da0b8;--line:#23304a;
-    --accent:#2dd4bf;--on-accent:#04201c;--accent-soft:#12332f;--danger:#f87171;--warn:#fbbf24;--warn-soft:#3a2d0b;
-    --shadow:none}
+    --accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--danger-soft:#3b1717;
+    --warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none}
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);
-  font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--accent);color:var(--on-accent);
-  padding:calc(12px + env(safe-area-inset-top)) 16px 12px;font-weight:700;font-size:18px;letter-spacing:.2px}
-main{max-width:640px;margin:0 auto;padding:14px 14px calc(90px + env(safe-area-inset-bottom))}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;background:var(--card);
-  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;border:0;background:none;color:var(--muted);padding:9px 0 8px;font-size:11px;font-weight:600;cursor:pointer}
-nav button span{display:block;font-size:20px;line-height:1.1}
-nav button.on{color:var(--accent)}
-.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.hero{text-align:center}
-.timer{font-size:48px;font-weight:700;font-variant-numeric:tabular-nums;margin:6px 0 2px;letter-spacing:1px}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;gap:8px;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;min-height:56px}
+header h1{flex:1;margin:0;font-size:18px;font-weight:700}
+header button{border:0;background:rgba(255,255,255,.18);color:inherit;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer}
+header button.hide{visibility:hidden}
+main{max-width:620px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.center{text-align:center}
 .muted{color:var(--muted)}.small{font-size:13px}
 h3{margin:0 0 12px;font-size:18px}
-h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
-label{display:block;text-align:left;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0}
+h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 0}
 input,select,textarea{width:100%;margin-top:5px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
   background:var(--bg);color:var(--text);font:inherit}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent)}
 textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
-.btn{display:inline-block;border:0;border-radius:12px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;
-  background:var(--accent);color:var(--on-accent)}
-.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn{display:inline-block;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:var(--on-accent)}
+.btn.ghost{background:var(--soft);color:var(--accent)}
 .btn.danger{background:var(--danger);color:#fff}
-.btn.big{width:100%;padding:16px;font-size:18px;margin-top:12px}
-.btn.sm{padding:8px 12px;font-size:14px}
+.btn.big{width:100%;padding:18px;font-size:19px}
+.btn.full{width:100%}
+.btn[disabled]{opacity:.5}
 .btns{display:flex;gap:10px;margin-top:16px}.btns .btn{flex:1}
+.link{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:8px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
-.bar i{display:block;height:100%;background:var(--accent);border-radius:6px}
-.row{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;text-align:left;
-  background:none;border:0;border-top:1px solid var(--line);padding:11px 0;color:inherit;font:inherit;cursor:pointer}
-.row:first-of-type{border-top:0}
-.dur{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.dayhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-.dayhead b{font-size:15px}
-.badge{display:inline-block;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:1px 7px;font-size:12px;font-weight:700;margin-left:6px}
-.month{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.month b{font-size:17px}
-.month button{border:0;background:var(--card);border:1px solid var(--line);color:var(--text);width:42px;height:42px;border-radius:12px;font-size:18px;cursor:pointer}
+.timer{font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;margin:2px 0}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:var(--shadow)}
-.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
-.stat span{font-size:12px;color:var(--muted);font-weight:600}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:22px}.stat span{font-size:12px;color:var(--muted);font-weight:600}
+.menu{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.menu button{display:flex;align-items:center;gap:14px;width:100%;border:0;border-top:1px solid var(--line);background:none;color:inherit;
+  padding:15px 16px;font:inherit;font-weight:600;text-align:left;cursor:pointer}
+.menu button:first-child{border-top:0}
+.menu .ic{width:36px;height:36px;border-radius:10px;background:var(--soft);display:grid;place-items:center;font-size:18px}
+.menu .go{margin-left:auto;color:var(--muted);font-size:20px}
+.bar{height:9px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:6px}
+.bar.red i{background:var(--danger)}
+.row{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:none;border:0;
+  border-top:1px solid var(--line);padding:11px 0;color:inherit;font:inherit;cursor:pointer}
+.row:first-child{border-top:0}
+.row.off{opacity:.55;padding:8px 0}
+.row .d{font-weight:700;min-width:84px}
+.row .r{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
+.row.today .d{color:var(--accent)}
+.tag{display:inline-block;border-radius:8px;padding:2px 8px;font-size:12px;font-weight:700;white-space:nowrap}
+.tag.bad{background:var(--danger-soft);color:var(--danger)}.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.info{background:var(--info-soft);color:var(--info)}.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.mute{background:var(--line);color:var(--muted)}
 .line{display:flex;justify-content:space-between;gap:10px;padding:7px 0}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
-.chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border-radius:20px;padding:6px 8px 6px 12px;font-weight:600;font-size:14px}
-.chip button{border:0;background:none;color:inherit;font-size:16px;cursor:pointer;padding:0 4px}
-.addrow{display:flex;gap:8px}.addrow input{margin-top:0}
-.fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:4;width:56px;height:56px;border-radius:28px;
-  border:0;background:var(--accent);color:var(--on-accent);font-size:30px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer}
-.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.line.t{border-top:1px solid var(--line);margin-top:4px;padding-top:11px}
+.empty{text-align:center;color:var(--muted);padding:22px 8px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.filters label{margin:0}
+.filters.one{grid-template-columns:1fr}
 #modal{position:fixed;inset:0;z-index:20;background:rgba(2,6,23,.55);display:none;align-items:flex-end;justify-content:center}
 #modal.show{display:flex}
-#sheet{background:var(--card);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;
-  padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;
-  background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%}
+#sheet{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+#toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:#0f172a;color:#fff;
+  padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.show{opacity:1}
+.prev{background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
+.sub{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.sub h4{margin:0}
+.chk{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chk label{margin:0;display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text)}
+.chk input{width:auto;margin:0}
 </style>
 </head>
 <body>
-<header>Time Sheet</header>
+<header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="act" class="hide" aria-label="Add">+</button></header>
 <main id="view"></main>
-<button class="fab" id="fab" data-a="new" aria-label="Add entry">+</button>
-<nav id="nav">
-  <button data-v="today"><span>⏱</span>Today</button>
-  <button data-v="log"><span>📋</span>Log</button>
-  <button data-v="summary"><span>📊</span>Summary</button>
-  <button data-v="settings"><span>⚙️</span>Settings</button>
-</nav>
 <div id="modal"><div id="sheet"></div></div>
 <div id="toast"></div>
-<noscript>This app needs JavaScript.</noscript>
 
 <script>
 (function(){
 'use strict';
 
-/* ---------- helpers ---------- */
-var $ = function(s,r){return (r||document).querySelector(s)};
-var esc = function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
-var pad = function(n){return String(n).padStart(2,'0')};
-var ymd = function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
-var hm = function(d){return pad(d.getHours())+':'+pad(d.getMinutes())};
-var parseYmd = function(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
-var toMin = function(t){var p=t.split(':').map(Number);return p[0]*60+p[1]};
-var fmt = function(m){m=Math.max(0,Math.round(m));return Math.floor(m/60)+'h '+pad(m%60)+'m'};
-var uid = function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)};
-function rawDur(start,end){var d=toMin(end)-toMin(start);if(d<0)d+=1440;return d}
-function dur(e){return Math.max(0,rawDur(e.start,e.end)-(+e.brk||0))}
-function dayLabel(s){return parseYmd(s).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}
-function monthLabel(){return new Date(ui.y,ui.m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'})}
+/* ================= helpers ================= */
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const hm=d=>pad(d.getHours())+':'+pad(d.getMinutes());
+const parseYmd=s=>{const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
+const TIME=/^\d\d:\d\d$/;
+const tm=t=>{if(!TIME.test(t||''))return NaN;const p=t.split(':');return (+p[0])*60+(+p[1])};
+const fm=m=>{m=Math.round(m);if(m<=0)return '0m';const h=Math.floor(m/60),r=m%60;return h?(r?h+'h '+r+'m':h+'h'):r+'m'};
+const fd=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const todayStr=()=>ymd(new Date());
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const dayShort=s=>parseYmd(s).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const dayLong=s=>parseYmd(s).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const monthTitle=ym=>{const p=ym.split('-');return MONTHS[+p[1]-1]+' '+p[0]};
 
-/* ---------- storage ---------- */
-var KEY='timesheet.data.v1';
-var mem=null;
-function defaults(){
-  return {entries:[],active:null,settings:{target:8,weekStart:1,rate:0,currency:'',projects:['General']}};
-}
+/* ================= data ================= */
+const KEY='attendance.v1';
+let mem=null;
+function defaults(){return {days:{},periods:[],holidays:[],settings:{start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2}}}
 function load(){
-  var d=defaults(),raw=null;
+  const d=defaults();let raw=null;
   try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
-  if(raw){
-    try{
-      var p=JSON.parse(raw);
-      if(p&&Array.isArray(p.entries))d.entries=p.entries.filter(validEntry);
-      if(p&&p.active&&typeof p.active.start==='number')d.active=p.active;
-      if(p&&p.settings)Object.keys(d.settings).forEach(function(k){if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
-      if(!Array.isArray(d.settings.projects)||!d.settings.projects.length)d.settings.projects=['General'];
-    }catch(e){}
-  }
+  if(raw){try{
+    const p=JSON.parse(raw);
+    if(p.days&&typeof p.days==='object')d.days=p.days;
+    if(Array.isArray(p.periods))d.periods=p.periods;
+    if(Array.isArray(p.holidays))d.holidays=p.holidays;
+    if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
+  }catch(e){}}
   return d;
 }
-function validEntry(e){
-  return e&&typeof e.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e.date)&&/^\d{2}:\d{2}$/.test(e.start)&&/^\d{2}:\d{2}$/.test(e.end);
-}
-function save(){
-  var s=JSON.stringify(S);
-  try{localStorage.setItem(KEY,s)}catch(e){mem=s}
-}
-var S=load();
-var view='today';
-var now0=new Date();
-var ui={y:now0.getFullYear(),m:now0.getMonth()};
+let S=load();
+function save(){const s=JSON.stringify(S);try{localStorage.setItem(KEY,s)}catch(e){mem=s}}
 
-/* ---------- calculations ---------- */
-function targetMin(){return Math.round((+S.settings.target||0)*60)}
-function byStart(a,b){return a.start<b.start?-1:a.start>b.start?1:0}
-function monthEntries(){
-  var pre=ui.y+'-'+pad(ui.m+1)+'-';
-  return S.entries.filter(function(e){return e.date.indexOf(pre)===0});
+/* ================= calendar rules ================= */
+const holidayOf=d=>S.holidays.find(h=>d>=h.from&&d<=(h.to||h.from));
+function kindOf(d){
+  if(!S.settings.workDays.includes(parseYmd(d).getDay()))return 'weekend';
+  return holidayOf(d)?'holiday':'workday';
 }
-function dayTotals(list){
-  var t={};
-  list.forEach(function(e){t[e.date]=(t[e.date]||0)+dur(e)});
-  return t;
+function schedule(d){
+  let r={start:S.settings.start,end:S.settings.end,name:''};
+  S.periods.forEach(p=>{if(d>=p.from&&d<=p.to)r={start:p.start,end:p.end,name:p.name}});
+  return r;
 }
-function weekStartOf(d){
-  var diff=(d.getDay()-(+S.settings.weekStart)+7)%7;
-  return new Date(d.getFullYear(),d.getMonth(),d.getDate()-diff);
+function union(list){
+  const v=list.filter(x=>x[1]>x[0]).sort((a,b)=>a[0]-b[0]),out=[];
+  v.forEach(x=>{const l=out[out.length-1];if(l&&x[0]<=l[1])l[1]=Math.max(l[1],x[1]);else out.push([x[0],x[1]])});
+  return out;
 }
-function stats(list){
-  var days=dayTotals(list),tm=targetMin(),total=0,worked=0,ot=0,proj={},weeks={};
-  Object.keys(days).forEach(function(k){
-    var m=days[k];total+=m;if(m>0)worked++;
-    if(tm>0&&m>tm)ot+=m-tm;
-    var w=ymd(weekStartOf(parseYmd(k)));weeks[w]=(weeks[w]||0)+m;
-  });
-  list.forEach(function(e){proj[e.project]=(proj[e.project]||0)+dur(e)});
-  return {total:total,worked:worked,ot:ot,proj:proj,weeks:weeks,days:days};
-}
-function money(mins){
-  var r=+S.settings.rate||0;if(r<=0)return '';
-  return ((mins/60)*r).toFixed(2)+(S.settings.currency?' '+S.settings.currency:'');
-}
-function runningToday(){
-  if(!S.active)return 0;
-  var mid=new Date();mid.setHours(0,0,0,0);
-  return Math.max(0,Math.floor((Date.now()-Math.max(S.active.start,mid.getTime()))/60000));
-}
+const covered=(un,a,b)=>un.reduce((s,x)=>s+Math.max(0,Math.min(x[1],b)-Math.max(x[0],a)),0);
+const ranges=list=>(list||[]).map(x=>[tm(x.from),tm(x.to)]).filter(x=>x[0]===x[0]&&x[1]===x[1]&&x[1]>x[0]);
 
-/* ---------- ui bits ---------- */
-var toastT;
-function toast(msg){
-  var t=$('#toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2300);
-}
-function openModal(html){$('#sheet').innerHTML=html;$('#modal').classList.add('show')}
-function closeModal(){$('#modal').classList.remove('show');$('#sheet').innerHTML='';resolver=null}
-var resolver=null;
-function ask(msg,okLabel){
-  return new Promise(function(res){
-    openModal('<h3>'+esc(msg)+'</h3><div class="btns"><button class="btn ghost" data-a="ask-no">Cancel</button><button class="btn danger" data-a="ask-yes">'+esc(okLabel||'Confirm')+'</button></div>');
-    resolver=res;
-  });
-}
-function copyText(text){
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(function(){toast('Copied')},function(){fallbackCopy()});
-  }else fallbackCopy();
-  function fallbackCopy(){
-    var ta=$('#exp');if(!ta)return;
-    ta.select();
-    try{document.execCommand('copy');toast('Copied')}catch(e){toast('Select the text and copy it')}
+/* The core of all rules: one day record -> results */
+function calc(rec){
+  const date=rec.date,kind=kindOf(date),sch=schedule(date),type=rec.type||'work';
+  const r={kind,sch,type,lateRaw:0,late:0,earlyRaw:0,early:0,perm:0,tripMin:0,ot:0,otMin:0,credit:0,
+    leave:{annual:0,casual:0,sick:0,unpaid:0,half:0},incomplete:false,noOut:false};
+  const perms=ranges(rec.perms),trips=ranges(rec.trips);
+  r.perm=perms.reduce((a,x)=>a+x[1]-x[0],0);
+  r.tripMin=trips.reduce((a,x)=>a+x[1]-x[0],0);
+  const hasIn=TIME.test(rec.in||''),hasOut=TIME.test(rec.out||'');
+  if(kind!=='workday'){                         /* weekend / holiday: whole hours = overtime */
+    if(hasIn&&hasOut){
+      let w=tm(rec.out)-tm(rec.in);if(w<0)w+=1440;
+      r.otMin=w;
+      if(kind==='holiday'&&rec.holidayMode==='leave')r.credit=1;else r.ot=Math.floor(w/60);
+    }else if(hasIn)r.noOut=true;
+    return r;
   }
-}
-function download(name,text,mime){
-  try{
-    var blob=new Blob(['﻿'+text],{type:mime});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);a.download=name;
-    document.body.appendChild(a);a.click();
-    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);
-    toast('Download started');
-  }catch(e){toast('Download not available here — use Copy')}
-}
-var exportData={};
-function showExport(title,text,name,mime){
-  exportData={text:text,name:name,mime:mime};
-  var canShare=!!navigator.share;
-  openModal('<h3>'+esc(title)+'</h3><textarea id="exp" readonly>'+esc(text)+'</textarea>'+
-    '<div class="btns"><button class="btn" data-a="exp-copy">Copy</button>'+
-    (canShare?'<button class="btn ghost" data-a="exp-share">Share</button>':'')+
-    '<button class="btn ghost" data-a="exp-dl">Download</button></div>'+
-    '<div class="btns"><button class="btn ghost" data-a="close">Close</button></div>');
+  if(type==='annual'){r.leave.annual=1;return r}
+  if(type==='casual'){r.leave.casual=1;return r}
+  if(type==='sick'){r.leave.sick=1;return r}
+  if(type==='unpaid'){r.leave.unpaid=1;return r}
+  let expS=tm(sch.start),expE=tm(sch.end);
+  if(type==='halfAM'){expS=13*60;r.leave.half=1}
+  if(type==='halfPM'){expE=13*60;r.leave.half=1}
+  r.expS=expS;r.expE=expE;
+  const cov=union(perms.concat(trips));
+  if(hasIn){
+    const a=tm(rec.in);
+    if(a>expS){r.lateRaw=Math.max(0,a-expS-covered(cov,expS,a));r.late=Math.ceil(r.lateRaw/30)*30}
+  }
+  if(hasOut){
+    const b=tm(rec.out);
+    if(b<expE){r.earlyRaw=Math.max(0,expE-b-covered(cov,b,expE));r.early=Math.ceil(r.earlyRaw/30)*30}
+    else if(b>expE&&type==='work'){r.otMin=b-expE;r.ot=Math.floor(r.otMin/60)}
+  }
+  if(hasIn&&!hasOut)r.noOut=true;
+  if(!hasIn&&!hasOut&&covered(cov,expS,expE)<expE-expS)r.incomplete=true;
+  if(hasIn!==hasOut&&hasOut)r.incomplete=true;
+  return r;
 }
 
-/* ---------- views ---------- */
-function projOptions(sel){
-  var list=S.settings.projects.slice();
-  if(sel&&list.indexOf(sel)<0)list.push(sel);
-  return list.map(function(p){return '<option value="'+esc(p)+'"'+(p===sel?' selected':'')+'>'+esc(p)+'</option>'}).join('');
+const TYPE_LABEL={annual:'Annual leave',casual:'Casual leave',halfAM:'Morning half day',halfPM:'Night half day',sick:'Sick leave',unpaid:'Unpaid leave',work:'Work day'};
+const TYPE_ORDER=Object.keys(TYPE_LABEL).sort((a,b)=>TYPE_LABEL[a].localeCompare(TYPE_LABEL[b]));
+
+function tags(rec,c){
+  const t=[];
+  if(c.kind==='workday'&&c.type!=='work')t.push(['info',TYPE_LABEL[c.type]]);
+  if(c.late)t.push(['bad','Late '+fm(c.late)]);
+  if(c.early)t.push(['bad','Early '+fm(c.early)]);
+  if(c.perm)t.push(['info','Permission '+fm(c.perm)]);
+  if(c.tripMin)t.push(['info','Trip '+fm(c.tripMin)]);
+  if(c.ot)t.push(['ok','Overtime '+c.ot+'h']);
+  if(c.credit)t.push(['ok','+1 leave day']);
+  if(c.noOut)t.push(['warn','No clock-out']);
+  if(c.incomplete)t.push(['warn','Incomplete']);
+  if(!t.length&&(rec.in||rec.out))t.push(['mute',(rec.in||'?')+' – '+(rec.out||'?')]);
+  return t.map(x=>'<span class="tag '+x[0]+'">'+esc(x[1])+'</span>').join('');
 }
-function entryRow(e){
-  return '<button class="row" data-a="edit" data-id="'+esc(e.id)+'"><div><b>'+esc(e.project)+'</b>'+
-    '<div class="muted small">'+e.start+' – '+e.end+(e.brk?' · break '+e.brk+'m':'')+(e.note?' · '+esc(e.note):'')+'</div></div>'+
-    '<div class="dur">'+fmt(dur(e))+'</div></button>';
+
+/* ================= statistics ================= */
+function monthStats(ym){
+  const p=ym.split('-'),y=+p[0],m=+p[1]-1,n=new Date(y,m+1,0).getDate(),now=todayStr();
+  const st={late:0,early:0,perm:0,lateDays:0,earlyDays:0,otWork:0,otWeekend:0,otHoliday:0,credit:0,annual:0,casual:0,half:0,sick:0,unpaid:0,trips:0,missing:[],rows:[]};
+  for(let i=1;i<=n;i++){
+    const d=y+'-'+pad(m+1)+'-'+pad(i),rec=S.days[d],kind=kindOf(d);let c=null;
+    if(rec){
+      c=calc(rec);
+      st.late+=c.late;st.early+=c.early;st.perm+=c.perm;st.trips+=c.tripMin;
+      if(c.late)st.lateDays++;if(c.early)st.earlyDays++;
+      if(kind==='workday')st.otWork+=c.ot;else if(kind==='weekend')st.otWeekend+=c.ot;else st.otHoliday+=c.ot;
+      st.credit+=c.credit;st.annual+=c.leave.annual;st.casual+=c.leave.casual;st.sick+=c.leave.sick;st.unpaid+=c.leave.unpaid;st.half+=c.leave.half;
+    }else if(kind==='workday'&&d<now)st.missing.push(d);
+    st.rows.push({d:d,rec:rec,c:c,kind:kind});
+  }
+  st.used=st.late+st.early+st.perm;st.free=Math.round(S.settings.permHours*60);
+  st.deduct=Math.max(0,st.used-st.free);st.left=Math.max(0,st.free-st.used);
+  st.ot=st.otWork+st.otWeekend+st.otHoliday;
+  return st;
 }
-function vToday(){
-  var now=new Date(),today=ymd(now);
-  var es=S.entries.filter(function(e){return e.date===today}).sort(byStart);
-  var done=es.reduce(function(a,e){return a+dur(e)},0);
-  var total=done+runningToday(),tm=targetMin();
-  var h='<section class="card hero"><div class="muted">'+esc(now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}))+'</div>';
-  if(S.active){
-    var st=new Date(S.active.start);
-    h+='<div class="timer" id="timer">00:00:00</div>'+
-       '<div class="muted">Working since '+hm(st)+' · '+esc(S.active.project)+(S.active.note?' · '+esc(S.active.note):'')+'</div>'+
-       '<label>Break taken (minutes)<input id="brk" type="number" inputmode="numeric" min="0" step="5" value="0"></label>'+
-       '<button class="btn big danger" data-a="out">Clock out</button>';
+function yearStats(y){
+  const s={annualUsed:0,casualUsed:0,halfDays:0,sickUsed:0,unpaid:0,credits:0};
+  Object.keys(S.days).forEach(d=>{
+    if(d.indexOf(y+'-')!==0)return;
+    const c=calc(S.days[d]);
+    s.annualUsed+=c.leave.annual;s.casualUsed+=c.leave.casual;s.halfDays+=c.leave.half;
+    s.sickUsed+=c.leave.sick;s.unpaid+=c.leave.unpaid;s.credits+=c.credit;
+  });
+  s.allowance=S.settings.annual+s.credits;
+  s.totalUsed=s.annualUsed+s.casualUsed+s.halfDays*0.5;
+  s.left=s.allowance-s.totalUsed;
+  s.casualLeft=S.settings.casual-s.casualUsed;
+  s.sickLeft=S.settings.sick-s.sickUsed;
+  return s;
+}
+
+/* ================= ui plumbing ================= */
+let view='home';
+const now0=new Date();
+const ui={month:now0.getFullYear()+'-'+pad(now0.getMonth()+1),year:now0.getFullYear(),ltype:'all',ptype:'all',stab:'holidays'};
+let toastT,resolver=null,draft=null,exportData={};
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+function openModal(h){$('#sheet').innerHTML=h;$('#modal').classList.add('show')}
+function closeModal(){$('#modal').classList.remove('show');$('#sheet').innerHTML='';draft=null;resolver=null}
+function ask(msg,ok){return new Promise(res=>{
+  openModal('<h3>'+esc(msg)+'</h3><div class="btns"><button class="btn ghost" data-a="ask-no">Cancel</button><button class="btn danger" data-a="ask-yes">'+esc(ok||'Confirm')+'</button></div>');
+  resolver=res;
+})}
+function go(v){view=v;try{history.pushState({v:v},'')}catch(e){}render();window.scrollTo(0,0)}
+const monthPicker=()=>'<div class="filters one"><label>Month<input type="month" id="mp" value="'+ui.month+'"></label></div>';
+const sel=(id,opts,cur)=>'<select id="'+id+'">'+opts.map(o=>'<option value="'+esc(o[0])+'"'+(o[0]===cur?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>';
+const sortOpts=a=>a.slice().sort((x,y)=>x[1].localeCompare(y[1]));
+
+/* ================= views ================= */
+const TITLES={home:'Attendance & Leave',log:'Daily Log',leaves:'Leaves',perm:'Permissions & Trips',ot:'Overtime',report:'Monthly Report',setup:'Holidays & Schedules',settings:'Settings'};
+
+function vHome(){
+  const d=todayStr(),rec=S.days[d],kind=kindOf(d),sch=schedule(d),c=rec?calc(rec):null;
+  const ms=monthStats(d.slice(0,7)),ys=yearStats(+d.slice(0,4));
+  let info;
+  if(kind==='weekend')info='Weekend — whole hours worked count as overtime';
+  else if(kind==='holiday')info=esc(holidayOf(d).name||'Holiday')+' — whole hours worked count as overtime';
+  else info='Expected '+sch.start+' – '+sch.end+(sch.name?' · '+esc(sch.name):'');
+  let h='<section class="card center"><div class="muted">'+esc(dayLong(d))+'</div><div class="muted small" style="margin-top:2px">'+info+'</div>';
+  const leaveToday=rec&&kind==='workday'&&['annual','casual','sick','unpaid'].includes(rec.type);
+  if(leaveToday){
+    h+='<div class="timer" style="font-size:26px;margin:14px 0">'+esc(TYPE_LABEL[rec.type])+' today</div>';
+  }else if(!rec||!rec.in){
+    h+='<div class="timer" style="font-size:30px;color:var(--muted);margin:12px 0">Not clocked in</div><button class="btn big" data-a="in">Clock in</button>';
+  }else if(!rec.out){
+    h+='<div class="timer" id="timer">00:00:00</div><div class="muted">Clocked in at '+rec.in+'</div><button class="btn big danger" style="margin-top:12px" data-a="out">Clock out</button>';
   }else{
-    h+='<div class="timer" style="font-size:34px;color:var(--muted)">Not clocked in</div>'+
-       '<label>Project<select id="proj">'+projOptions(S.settings.projects[0])+'</select></label>'+
-       '<label>Note (optional)<input id="note" maxlength="80" placeholder="What are you working on?"></label>'+
-       '<button class="btn big" data-a="in">Clock in</button>';
+    h+='<div class="timer" style="font-size:28px;margin:12px 0">'+rec.in+' – '+rec.out+'</div>';
   }
-  h+='</section>';
-  h+='<section class="card"><div class="line"><span>Today</span><b id="todayTot">'+fmt(total)+'</b></div>';
-  if(tm>0){
-    h+='<div class="bar"><i id="todayBar" style="width:'+Math.min(100,total/tm*100)+'%"></i></div>'+
-       '<div class="muted small" style="margin-top:6px">Target '+fmt(tm)+'</div>';
-  }
-  h+='</section>';
-  h+='<section class="card"><h4>Today\'s entries</h4>'+
-     (es.length?es.map(entryRow).join(''):'<div class="empty" style="padding:10px">Nothing logged yet today.</div>')+
-     '<button class="btn ghost sm" style="margin-top:10px" data-a="new">+ Add entry manually</button></section>';
-  return h;
-}
-function monthNav(){
-  return '<div class="month"><button data-a="prev" aria-label="Previous month">‹</button><b>'+esc(monthLabel())+'</b><button data-a="next" aria-label="Next month">›</button></div>';
-}
-function vLog(){
-  var list=monthEntries(),st=stats(list),tm=targetMin();
-  var h=monthNav();
-  if(!list.length)return h+'<div class="card empty">No entries this month.<br>Tap + to add one.</div>';
-  var dates=Object.keys(st.days).sort().reverse();
-  dates.forEach(function(d){
-    var mins=st.days[d],ot=tm>0&&mins>tm?mins-tm:0;
-    var es=list.filter(function(e){return e.date===d}).sort(byStart);
-    h+='<section class="card"><div class="dayhead"><b>'+esc(dayLabel(d))+'</b><span class="dur">'+fmt(mins)+(ot?'<span class="badge">+'+fmt(ot)+'</span>':'')+'</span></div>'+es.map(entryRow).join('')+'</section>';
-  });
-  return h;
-}
-function vSummary(){
-  var list=monthEntries(),st=stats(list);
-  var h=monthNav();
-  var avg=st.worked?st.total/st.worked:0;
+  if(c){const t=tags(rec,c);if(t)h+='<div style="margin-top:10px">'+t+'</div>'}
+  h+='<div style="margin-top:6px"><button class="link" data-a="editday" data-d="'+d+'">Edit today</button></div></section>';
   h+='<div class="stats">'+
-    '<div class="stat"><b>'+fmt(st.total)+'</b><span>Total hours</span></div>'+
-    '<div class="stat"><b>'+st.worked+'</b><span>Days worked</span></div>'+
-    '<div class="stat"><b>'+fmt(st.ot)+'</b><span>Overtime</span></div>'+
-    '<div class="stat"><b>'+fmt(avg)+'</b><span>Average per day</span></div></div>';
-  var earn=money(st.total);
-  if(earn)h+='<section class="card"><div class="line"><span>Earnings</span><b>'+esc(earn)+'</b></div></section>';
-  var pk=Object.keys(st.proj).sort(function(a,b){return st.proj[b]-st.proj[a]});
-  if(pk.length){
-    h+='<section class="card"><h4>By project</h4>';
-    pk.forEach(function(p){
-      h+='<div style="margin-bottom:10px"><div class="line" style="padding:0"><span>'+esc(p)+'</span><b>'+fmt(st.proj[p])+'</b></div>'+
-         '<div class="bar"><i style="width:'+(st.total?st.proj[p]/st.total*100:0)+'%"></i></div></div>';
-    });
-    h+='</section>';
-  }
-  var wk=Object.keys(st.weeks).sort();
-  if(wk.length){
-    h+='<section class="card"><h4>By week</h4>';
-    wk.forEach(function(w){
-      h+='<div class="line"><span>Week of '+esc(parseYmd(w).toLocaleDateString(undefined,{day:'numeric',month:'short'}))+'</span><b>'+fmt(st.weeks[w])+'</b></div>';
-    });
-    h+='</section>';
-  }
-  h+='<button class="btn big" data-a="csv">Export this month (CSV)</button>';
+    '<div class="stat"><b>'+fd(ys.left)+'</b><span>Annual days left</span></div>'+
+    '<div class="stat"><b>'+fd(ys.casualLeft)+'</b><span>Casual days left</span></div>'+
+    '<div class="stat"><b>'+fd(ys.sickLeft)+'</b><span>Sick days left</span></div>'+
+    '<div class="stat"><b>'+fm(ms.left)+'</b><span>Permission left this month</span></div></div>';
+  h+='<div class="menu">'+
+    menuBtn('log','🗓','Daily Log')+menuBtn('leaves','🌴','Leaves')+menuBtn('perm','⏱','Permissions & Trips')+
+    menuBtn('ot','➕','Overtime')+menuBtn('report','📊','Monthly Report')+menuBtn('setup','📅','Holidays & Schedules')+menuBtn('settings','⚙️','Settings')+'</div>';
   return h;
 }
+const menuBtn=(v,ic,l)=>'<button data-go="'+v+'"><span class="ic">'+ic+'</span>'+l+'<span class="go">›</span></button>';
+
+function vLog(){
+  const st=monthStats(ui.month),now=todayStr();
+  let h=monthPicker()+'<section class="card" style="padding:6px 16px">';
+  st.rows.forEach(r=>{
+    const isToday=r.d===now;
+    if(r.kind!=='workday'&&!r.rec){
+      const lab=r.kind==='weekend'?'Weekend':esc(holidayOf(r.d).name||'Holiday');
+      h+='<button class="row off" data-a="editday" data-d="'+r.d+'"><span class="d">'+dayShort(r.d)+'</span><span class="muted small">'+lab+'</span></button>';
+      return;
+    }
+    let right=r.rec?tags(r.rec,r.c):(r.d<now?'<span class="tag warn">No record</span>':'<span class="tag mute">—</span>');
+    if(r.kind==='holiday'&&r.rec)right='<span class="tag mute">'+esc(holidayOf(r.d).name||'Holiday')+'</span>'+right;
+    if(r.kind==='weekend'&&r.rec)right='<span class="tag mute">Weekend</span>'+right;
+    h+='<button class="row'+(isToday?' today':'')+'" id="'+(isToday?'todayrow':'')+'" data-a="editday" data-d="'+r.d+'"><span class="d">'+dayShort(r.d)+'</span><span class="r">'+right+'</span></button>';
+  });
+  return h+'</section>';
+}
+
+function vLeaves(){
+  const ys=yearStats(ui.year);
+  const years=[];for(let y=now0.getFullYear()+1;y>=now0.getFullYear()-4;y--)years.push([String(y),String(y)]);
+  const opts=[['all','All leaves']].concat(sortOpts([['annual','Annual leave'],['casual','Casual leave'],['credit','Holiday credit (+1 day)'],['halfAM','Morning half day'],['halfPM','Night half day'],['sick','Sick leave'],['unpaid','Unpaid leave']]));
+  let h='<div class="filters"><label>Year'+sel('ly',years,String(ui.year))+'</label><label>Type'+sel('lt',opts,ui.ltype)+'</label></div>';
+  const used=ys.totalUsed;
+  h+='<section class="card"><h4>Balances for '+ui.year+'</h4>'+
+    '<div class="line"><span>Annual leave</span><b>'+fd(ys.left)+' left of '+fd(ys.allowance)+'</b></div>'+
+    '<div class="bar"><i style="width:'+Math.min(100,ys.allowance?used/ys.allowance*100:0)+'%"></i></div>'+
+    '<div class="muted small" style="margin:4px 0 8px">Used '+fd(used)+' ('+fd(ys.annualUsed)+' annual, '+fd(ys.casualUsed)+' casual, '+fd(ys.halfDays*0.5)+' half days)'+(ys.credits?' · includes +'+ys.credits+' holiday credit':'')+'</div>'+
+    '<div class="line"><span>Casual leave</span><b>'+fd(ys.casualLeft)+' left of '+S.settings.casual+'</b></div>'+
+    '<div class="line"><span>Sick leave</span><b>'+fd(ys.sickLeft)+' left of '+S.settings.sick+'</b></div>'+
+    '<div class="line"><span>Unpaid leave taken</span><b>'+fd(ys.unpaid)+'</b></div></section>';
+  const list=[];
+  Object.keys(S.days).sort().forEach(d=>{
+    if(d.indexOf(ui.year+'-')!==0)return;
+    const rec=S.days[d],c=calc(rec);
+    let match=false;
+    if(ui.ltype==='all')match=c.leave.annual||c.leave.casual||c.leave.sick||c.leave.unpaid||c.leave.half||c.credit;
+    else if(ui.ltype==='credit')match=c.credit;
+    else match=(c.kind==='workday'&&rec.type===ui.ltype);
+    if(match)list.push([d,rec,c]);
+  });
+  h+='<section class="card" style="padding:6px 16px">';
+  if(!list.length)h+='<div class="empty">Nothing here for '+ui.year+'.</div>';
+  list.forEach(x=>{
+    let label=x[2].credit?'<span class="tag ok">Holiday credit +1 day</span>':'<span class="tag info">'+esc(TYPE_LABEL[x[1].type])+'</span>';
+    h+='<button class="row" data-a="editday" data-d="'+x[0]+'"><span class="d">'+dayShort(x[0])+'</span><span class="r">'+label+'</span></button>';
+  });
+  h+='</section><button class="btn full" data-a="addleave">Add leave</button>';
+  return h;
+}
+
+function vPerm(){
+  const st=monthStats(ui.month);
+  const opts=[['all','All'],['perm','Permissions'],['trip','Business trips']];
+  let h=monthPicker()+'<div class="filters one"><label>Show'+sel('pt',sortOpts(opts),ui.ptype)+'</label></div>';
+  const pct=st.free?Math.min(100,st.used/st.free*100):0;
+  h+='<section class="card"><h4>Free permission pool</h4><div class="line" style="padding-top:0"><span>Used (late + early + permissions)</span><b>'+fm(st.used)+' of '+fm(st.free)+'</b></div>'+
+    '<div class="bar'+(st.deduct?' red':'')+'"><i style="width:'+pct+'%"></i></div>'+
+    (st.deduct?'<div class="line t"><span style="color:var(--danger)">Salary deduction time</span><b style="color:var(--danger)">'+fm(st.deduct)+'</b></div>':
+      '<div class="muted small" style="margin-top:6px">'+fm(st.left)+' left this month</div>')+'</section>';
+  const items=[];
+  st.rows.forEach(r=>{if(!r.rec)return;
+    (r.rec.perms||[]).forEach(x=>{if(ui.ptype!=='trip')items.push([r.d,'Permission',x])});
+    (r.rec.trips||[]).forEach(x=>{if(ui.ptype!=='perm')items.push([r.d,'Business trip',x])});
+  });
+  h+='<section class="card" style="padding:6px 16px">';
+  if(!items.length)h+='<div class="empty">Nothing recorded this month.</div>';
+  items.forEach(x=>{
+    const mins=tm(x[2].to)-tm(x[2].from);
+    h+='<button class="row" data-a="editday" data-d="'+x[0]+'"><span class="d">'+dayShort(x[0])+'</span><span class="r"><span class="tag info">'+x[1]+'</span><span class="tag mute">'+esc(x[2].from)+' – '+esc(x[2].to)+(mins>0?' · '+fm(mins):'')+'</span></span></button>';
+  });
+  return h+'</section>';
+}
+
+function vOt(){
+  const st=monthStats(ui.month);
+  let h=monthPicker()+'<section class="card"><h4>Overtime hours</h4>'+
+    '<div class="line"><span>Weekdays (after finish time)</span><b>'+st.otWork+'h</b></div>'+
+    '<div class="line"><span>Weekends</span><b>'+st.otWeekend+'h</b></div>'+
+    '<div class="line"><span>Holidays</span><b>'+st.otHoliday+'h</b></div>'+
+    '<div class="line t"><span><b>Total</b></span><b>'+st.ot+'h</b></div>'+
+    (st.credit?'<div class="line"><span>Holidays converted to leave</span><b>+'+st.credit+' day</b></div>':'')+
+    '<div class="muted small" style="margin-top:6px">Only complete hours are counted.</div></section>';
+  const rows=st.rows.filter(r=>r.c&&(r.c.ot||r.c.credit));
+  h+='<section class="card" style="padding:6px 16px">';
+  if(!rows.length)h+='<div class="empty">No overtime this month.</div>';
+  rows.forEach(r=>{
+    const k=r.kind==='workday'?'Weekday':r.kind==='weekend'?'Weekend':'Holiday';
+    h+='<button class="row" data-a="editday" data-d="'+r.d+'"><span class="d">'+dayShort(r.d)+'</span><span class="r"><span class="tag mute">'+k+' · '+fm(r.c.otMin)+' worked</span>'+
+      (r.c.credit?'<span class="tag ok">+1 leave day</span>':'<span class="tag ok">'+r.c.ot+'h</span>')+'</span></button>';
+  });
+  return h+'</section>';
+}
+
+function vReport(){
+  const st=monthStats(ui.month);
+  const leaveTxt=[];
+  if(st.annual)leaveTxt.push(fd(st.annual)+' annual');if(st.casual)leaveTxt.push(fd(st.casual)+' casual');
+  if(st.half)leaveTxt.push(fd(st.half)+' half day'+(st.half>1?'s':''));if(st.sick)leaveTxt.push(fd(st.sick)+' sick');
+  if(st.unpaid)leaveTxt.push(fd(st.unpaid)+' unpaid');
+  let h=monthPicker()+
+   '<section class="card"><h4>Late &amp; early</h4>'+
+    '<div class="line"><span>Late coming ('+st.lateDays+' day'+(st.lateDays===1?'':'s')+')</span><b>'+fm(st.late)+'</b></div>'+
+    '<div class="line"><span>Early leaving ('+st.earlyDays+' day'+(st.earlyDays===1?'':'s')+')</span><b>'+fm(st.early)+'</b></div>'+
+    '<div class="line"><span>Permissions taken</span><b>'+fm(st.perm)+'</b></div>'+
+    '<div class="line t"><span><b>Total against your '+fm(st.free)+'</b></span><b>'+fm(st.used)+'</b></div>'+
+    '<div class="line"><span style="color:'+(st.deduct?'var(--danger)':'inherit')+'">Salary deduction time</span><b style="color:'+(st.deduct?'var(--danger)':'inherit')+'">'+fm(st.deduct)+'</b></div></section>'+
+   '<section class="card"><h4>Overtime</h4>'+
+    '<div class="line"><span>Total overtime</span><b>'+st.ot+'h</b></div>'+
+    '<div class="muted small">Weekdays '+st.otWork+'h · Weekends '+st.otWeekend+'h · Holidays '+st.otHoliday+'h'+(st.credit?' · +'+st.credit+' leave day from holiday':'')+'</div></section>'+
+   '<section class="card"><h4>Leave &amp; trips</h4>'+
+    '<div class="line"><span>Leave taken</span><b>'+(leaveTxt.join(', ')||'None')+'</b></div>'+
+    '<div class="line"><span>Business trip time</span><b>'+fm(st.trips)+'</b></div>'+
+    '<div class="line"><span>Workdays with no record</span><b style="color:'+(st.missing.length?'var(--warn)':'inherit')+'">'+st.missing.length+'</b></div></section>'+
+   '<button class="btn full" data-a="csv">Export month (CSV)</button>';
+  return h;
+}
+
+function vSetup(){
+  const tabs=sortOpts([['holidays','Holidays'],['periods','Special schedules']]);
+  let h='<div class="filters one"><label>Show'+sel('st',tabs,ui.stab)+'</label></div><section class="card" style="padding:6px 16px">';
+  if(ui.stab==='holidays'){
+    const l=S.holidays.slice().sort((a,b)=>a.from<b.from?-1:1);
+    if(!l.length)h+='<div class="empty">No holidays added yet.</div>';
+    l.forEach(x=>{h+='<button class="row" data-a="edithol" data-id="'+x.id+'"><span><b>'+esc(x.name||'Holiday')+'</b><div class="muted small">'+dayShort(x.from)+(x.to&&x.to!==x.from?' → '+dayShort(x.to):'')+'</div></span><span class="go muted">›</span></button>'});
+    h+='</section><button class="btn full" data-a="addhol">Add holiday</button>';
+  }else{
+    const l=S.periods.slice().sort((a,b)=>a.from<b.from?-1:1);
+    if(!l.length)h+='<div class="empty">No special schedules yet.<br>Add one for Ramadan or any period with different hours.</div>';
+    l.forEach(x=>{h+='<button class="row" data-a="editper" data-id="'+x.id+'"><span><b>'+esc(x.name||'Schedule')+'</b><div class="muted small">'+dayShort(x.from)+' → '+dayShort(x.to)+'</div></span><span class="tag info">'+x.start+' – '+x.end+'</span></button>'});
+    h+='</section><button class="btn full" data-a="addper">Add special schedule</button>';
+  }
+  return h;
+}
+
 function vSettings(){
-  var s=S.settings;
-  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  var h='<section class="card"><h3>Work</h3>'+
-    '<label>Daily target (hours)<input type="number" inputmode="decimal" step="0.25" min="0" max="24" data-set="target" value="'+esc(s.target)+'"></label>'+
-    '<div class="muted small">Time beyond this on a single day counts as overtime. Use 0 to switch overtime off.</div>'+
-    '<label>Week starts on<select data-set="weekStart">'+days.map(function(d,i){return '<option value="'+i+'"'+(i==s.weekStart?' selected':'')+'>'+d+'</option>'}).join('')+'</select></label>'+
-    '<div class="two"><label>Hourly rate (optional)<input type="number" inputmode="decimal" step="0.01" min="0" data-set="rate" value="'+esc(s.rate||'')+'" placeholder="0"></label>'+
-    '<label>Currency<input data-set="currency" maxlength="5" value="'+esc(s.currency)+'" placeholder="EGP"></label></div></section>';
-  h+='<section class="card"><h3>Projects</h3><div class="chips">'+
-    s.projects.map(function(p,i){return '<span class="chip">'+esc(p)+(s.projects.length>1?'<button data-a="rmproj" data-i="'+i+'" aria-label="Remove">×</button>':'')+'</span>'}).join('')+'</div>'+
-    '<div class="addrow"><input id="newproj" maxlength="40" placeholder="New project name"><button class="btn" data-a="addproj">Add</button></div></section>';
-  h+='<section class="card"><h3>Data</h3>'+
-    '<div class="muted small" style="margin-bottom:10px">Everything is stored on this device only.</div>'+
-    '<div class="btns" style="margin-top:0"><button class="btn ghost" data-a="backup">Backup</button><button class="btn ghost" data-a="restore">Restore</button></div>'+
+  const s=S.settings,dn=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  return '<section class="card"><h3>Working hours</h3><div class="two"><label>Start<input type="time" data-set="start" value="'+s.start+'"></label><label>Finish<input type="time" data-set="end" value="'+s.end+'"></label></div>'+
+    '<label>Working days</label><div class="chk">'+dn.map((n,i)=>'<label><input type="checkbox" data-wd="'+i+'"'+(s.workDays.includes(i)?' checked':'')+'>'+n.slice(0,3)+'</label>').join('')+'</div></section>'+
+    '<section class="card"><h3>Yearly entitlements</h3><div class="two"><label>Annual leave (days)<input type="number" step="0.5" min="0" data-set="annual" value="'+s.annual+'"></label>'+
+    '<label>Casual (inside annual)<input type="number" step="0.5" min="0" data-set="casual" value="'+s.casual+'"></label></div>'+
+    '<div class="two"><label>Sick leave (days)<input type="number" step="1" min="0" data-set="sick" value="'+s.sick+'"></label>'+
+    '<label>Permission (hours/month)<input type="number" step="0.5" min="0" data-set="permHours" value="'+s.permHours+'"></label></div></section>'+
+    '<section class="card"><h3>Data</h3><div class="muted small">Everything is stored on this phone only.</div>'+
+    '<div class="btns" style="margin-top:12px"><button class="btn ghost" data-a="backup">Back up</button><button class="btn ghost" data-a="restore">Restore</button></div>'+
     '<div class="btns"><button class="btn ghost" data-a="csvall">Export all (CSV)</button><button class="btn danger" data-a="wipe">Erase all</button></div></section>';
-  return h;
 }
+
 function render(){
-  var v=$('#view');
-  v.innerHTML={today:vToday,log:vLog,summary:vSummary,settings:vSettings}[view]();
-  Array.prototype.forEach.call(document.querySelectorAll('#nav button'),function(b){b.classList.toggle('on',b.dataset.v===view)});
-  $('#fab').style.display=view==='log'?'block':'none';
+  $('#title').textContent=TITLES[view];
+  $('#back').classList.toggle('hide',view==='home');
+  $('#act').classList.toggle('hide',view!=='log');
+  $('#view').innerHTML=({home:vHome,log:vLog,leaves:vLeaves,perm:vPerm,ot:vOt,report:vReport,setup:vSetup,settings:vSettings})[view]();
+  if(view==='log'){const t=$('#todayrow');if(t&&ui.month===todayStr().slice(0,7))t.scrollIntoView({block:'center'})}
   tick();
 }
-
-/* ---------- live timer ---------- */
 function tick(){
-  if(!S.active)return;
-  var t=$('#timer');if(!t)return;
-  var sec=Math.max(0,Math.floor((Date.now()-S.active.start)/1000));
+  const t=$('#timer');if(!t)return;
+  const rec=S.days[todayStr()];if(!rec||!rec.in||rec.out)return;
+  const n=new Date(),a=tm(rec.in),b=n.getHours()*60+n.getMinutes();
+  let sec=(b-a)*60+n.getSeconds();if(sec<0)sec=0;
   t.textContent=pad(Math.floor(sec/3600))+':'+pad(Math.floor(sec/60)%60)+':'+pad(sec%60);
-  var es=S.entries.filter(function(e){return e.date===ymd(new Date())});
-  var total=es.reduce(function(a,e){return a+dur(e)},0)+runningToday();
-  var tt=$('#todayTot');if(tt)tt.textContent=fmt(total);
-  var bar=$('#todayBar'),tm=targetMin();
-  if(bar&&tm>0)bar.style.width=Math.min(100,total/tm*100)+'%';
 }
-setInterval(tick,250);
+setInterval(tick,500);
 
-/* ---------- entry form ---------- */
-function entryForm(id){
-  var e=id?S.entries.filter(function(x){return x.id===id})[0]:null;
-  if(id&&!e)return;
-  var v=e||{date:ymd(new Date()),start:'09:00',end:'17:00',brk:0,project:S.settings.projects[0],note:''};
-  openModal('<h3>'+(e?'Edit entry':'New entry')+'</h3>'+
-    '<input type="hidden" id="f-id" value="'+esc(id||'')+'">'+
-    '<label>Date<input type="date" id="f-date" value="'+esc(v.date)+'"></label>'+
-    '<div class="two"><label>Start<input type="time" id="f-start" value="'+esc(v.start)+'"></label>'+
-    '<label>End<input type="time" id="f-end" value="'+esc(v.end)+'"></label></div>'+
-    '<label>Break (minutes)<input type="number" inputmode="numeric" id="f-brk" min="0" step="5" value="'+(+v.brk||0)+'"></label>'+
-    '<label>Project<select id="f-proj">'+projOptions(v.project)+'</select></label>'+
-    '<label>Note<input id="f-note" maxlength="80" value="'+esc(v.note)+'"></label>'+
-    '<div class="muted" id="f-prev" style="margin-top:6px"></div>'+
-    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="save">Save</button></div>'+
-    (e?'<div class="btns"><button class="btn danger" data-a="del" data-id="'+esc(id)+'">Delete entry</button></div>':''));
-  previewForm();
+/* ================= clock in / out ================= */
+function blank(d){return {date:d,type:'work',in:'',out:'',perms:[],trips:[],holidayMode:'ot',note:''}}
+function clockIn(){
+  const d=todayStr();let rec=S.days[d];
+  if(!rec)rec=S.days[d]=blank(d);
+  rec.in=hm(new Date());rec.out='';
+  save();render();toast('Clocked in at '+rec.in);
 }
-function previewForm(){
-  var p=$('#f-prev');if(!p)return;
-  var s=$('#f-start').value,e=$('#f-end').value,b=+$('#f-brk').value||0;
-  if(!s||!e){p.textContent='';return}
-  var d=Math.max(0,rawDur(s,e)-b);
-  p.textContent='Duration: '+fmt(d)+(toMin(e)<toMin(s)?' (ends next day)':'');
+function clockOut(){
+  const d=todayStr(),rec=S.days[d];if(!rec||!rec.in)return;
+  rec.out=hm(new Date());
+  save();render();
+  const c=calc(rec),bits=[];
+  if(c.late)bits.push('late '+fm(c.late));if(c.early)bits.push('early '+fm(c.early));if(c.ot)bits.push('overtime '+c.ot+'h');
+  toast('Clocked out at '+rec.out+(bits.length?' · '+bits.join(', '):''));
 }
-function saveForm(){
-  var id=$('#f-id').value,date=$('#f-date').value,s=$('#f-start').value,e=$('#f-end').value;
-  var b=Math.max(0,Math.round(+$('#f-brk').value||0));
-  if(!date||!s||!e){toast('Please fill in date, start and end');return}
-  if(s===e){toast('Start and end are the same');return}
-  if(b>=rawDur(s,e)){toast('Break is longer than the shift');return}
-  var rec={id:id||uid(),date:date,start:s,end:e,brk:b,project:$('#f-proj').value,note:$('#f-note').value.trim()};
-  if(id){S.entries=S.entries.map(function(x){return x.id===id?rec:x})}else S.entries.push(rec);
-  var d=parseYmd(date);ui.y=d.getFullYear();ui.m=d.getMonth();
+
+/* ================= day editor ================= */
+function openDay(date,opts){
+  const ex=S.days[date];
+  draft=ex?JSON.parse(JSON.stringify(ex)):blank(date);
+  draft.perms=draft.perms||[];draft.trips=draft.trips||[];
+  draft._new=!ex;draft._orig=date;
+  if(opts&&opts.type&&draft._new)draft.type=opts.type;
+  if(opts&&opts.perm)draft.perms.push({from:'',to:''});
+  if(opts&&opts.trip)draft.trips.push({from:'',to:''});
+  renderDay();
+}
+function clean(d){
+  return {date:d.date,type:d.type,in:d.in||'',out:d.out||'',perms:d.perms.filter(x=>x.from||x.to),trips:d.trips.filter(x=>x.from||x.to),holidayMode:d.holidayMode||'ot',note:(d.note||'').trim()};
+}
+function listBlock(key,title){
+  const l=draft[key];
+  let h='<div class="sub"><h4>'+title+'</h4><button class="link" data-a="addrow" data-key="'+key+'">+ Add</button></div>';
+  l.forEach((x,i)=>{
+    h+='<div class="two" style="align-items:end"><label>From<input type="time" data-list="'+key+'" data-i="'+i+'" data-f="from" value="'+esc(x.from)+'"></label>'+
+       '<label>To<div style="display:flex;gap:6px"><input type="time" data-list="'+key+'" data-i="'+i+'" data-f="to" value="'+esc(x.to)+'"><button class="link" data-a="delrow" data-key="'+key+'" data-i="'+i+'" aria-label="Remove">✕</button></div></label></div>';
+  });
+  return h;
+}
+function renderDay(){
+  const d=draft,kind=kindOf(d.date),workday=kind==='workday';
+  const leave=workday&&['annual','casual','sick','unpaid'].includes(d.type);
+  let h='<h3>'+(d._new?'Add day':'Edit day')+'</h3><label style="margin-top:0">Date<input type="date" id="d-date" value="'+d.date+'"></label>';
+  const kl=kind==='weekend'?'Weekend':kind==='holiday'?esc(holidayOf(d.date).name||'Holiday'):'Workday';
+  h+='<div class="muted small" style="margin-top:6px">'+esc(dayLong(d.date))+' · '+kl+'</div>';
+  if(workday){
+    h+='<label>Day type<select id="d-type">'+TYPE_ORDER.map(k=>'<option value="'+k+'"'+(k===d.type?' selected':'')+'>'+TYPE_LABEL[k]+'</option>').join('')+'</select></label>';
+    if(d.type==='halfAM')h+='<div class="muted small" style="margin-top:6px">Expected to arrive by 1:00 PM</div>';
+    if(d.type==='halfPM')h+='<div class="muted small" style="margin-top:6px">Expected to stay until 1:00 PM</div>';
+  }
+  if(!leave){
+    h+='<div class="two"><label>Clock in<input type="time" data-k="in" value="'+esc(d.in)+'"></label><label>Clock out<input type="time" data-k="out" value="'+esc(d.out)+'"></label></div>';
+    if(workday){h+=listBlock('perms','Permissions')+listBlock('trips','Business trips')}
+    if(kind==='holiday')h+='<label>If you worked this holiday, count it as<select data-k="holidayMode"><option value="leave"'+(d.holidayMode==='leave'?' selected':'')+'>+1 annual leave day</option><option value="ot"'+(d.holidayMode!=='leave'?' selected':'')+'>Overtime</option></select></label>';
+  }
+  h+='<label>Note<input data-k="note" maxlength="80" value="'+esc(d.note||'')+'"></label><div class="prev" id="dprev"></div>'+
+     '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveday">Save</button></div>'+
+     (d._new?'':'<div class="btns"><button class="btn danger" data-a="delday">Delete this day</button></div>');
+  openModal(h);previewDay();
+}
+function previewDay(){
+  const p=$('#dprev');if(!p||!draft)return;
+  const c=calc(clean(draft)),L=[];
+  if(c.kind==='workday'){
+    if(['annual','casual','sick','unpaid'].includes(draft.type))L.push(TYPE_LABEL[draft.type]+' — 1 day');
+    else{
+      if(draft.type==='halfAM'||draft.type==='halfPM')L.push('Half day — 0.5 annual day');
+      L.push('Late: '+(c.late?fm(c.late)+' (actual '+fm(c.lateRaw)+')':'none'));
+      L.push('Early leaving: '+(c.early?fm(c.early)+' (actual '+fm(c.earlyRaw)+')':'none'));
+      if(c.perm)L.push('Permission: '+fm(c.perm));
+      if(c.tripMin)L.push('Business trip: '+fm(c.tripMin));
+      L.push('Overtime: '+(c.ot?c.ot+'h':'none'));
+    }
+  }else{
+    L.push(c.credit?'Holiday converted to +1 annual leave day':'Overtime: '+(c.ot?c.ot+'h ('+fm(c.otMin)+' worked)':'none'));
+  }
+  if(c.noOut)L.push('No clock-out yet');
+  p.innerHTML=L.map(esc).join('<br>');
+}
+function saveDay(){
+  const d=clean(draft),kind=kindOf(d.date);
+  if(!d.date){toast('Choose a date');return}
+  const leave=kind==='workday'&&['annual','casual','sick','unpaid'].includes(d.type);
+  if(leave){d.in='';d.out='';d.perms=[];d.trips=[]}
+  if(!leave){
+    if(d.in&&!TIME.test(d.in)||d.out&&!TIME.test(d.out)){toast('Check the times');return}
+    if(kind==='workday'&&d.in&&d.out&&tm(d.out)<=tm(d.in)){toast('Clock-out must be after clock-in');return}
+    if(!d.in&&d.out){toast('Add a clock-in time');return}
+    for(const k of ['perms','trips']){
+      for(const x of d[k]){
+        if(!TIME.test(x.from)||!TIME.test(x.to)||tm(x.to)<=tm(x.from)){toast('Check the '+(k==='perms'?'permission':'trip')+' times');return}
+      }
+    }
+    if(kind!=='workday'){d.type='work';d.perms=[];d.trips=[]}
+  }
+  if(draft._orig!==d.date)delete S.days[draft._orig];
+  S.days[d.date]=d;
+  ui.month=d.date.slice(0,7);
   save();closeModal();render();toast('Saved');
 }
 
-/* ---------- clock in/out ---------- */
-function clockIn(){
-  S.active={start:Date.now(),project:$('#proj').value,note:$('#note').value.trim()};
-  save();render();
+/* ================= holidays & schedules ================= */
+function holForm(id){
+  const x=id?S.holidays.find(h=>h.id===id):{name:'',from:todayStr(),to:''};
+  openModal('<h3>'+(id?'Edit holiday':'Add holiday')+'</h3><label style="margin-top:0">Name<input id="h-name" maxlength="40" value="'+esc(x.name)+'"></label>'+
+    '<div class="two"><label>From<input type="date" id="h-from" value="'+x.from+'"></label><label>To (optional)<input type="date" id="h-to" value="'+esc(x.to||'')+'"></label></div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="savehol" data-id="'+esc(id||'')+'">Save</button></div>'+
+    (id?'<div class="btns"><button class="btn danger" data-a="delhol" data-id="'+id+'">Delete</button></div>':''));
 }
-function clockOut(){
-  var a=S.active;if(!a)return;
-  var st=new Date(a.start),en=new Date();
-  var b=Math.max(0,Math.round(+($('#brk')||{}).value||0));
-  var hrs=(en-st)/3600000;
-  var rec={id:uid(),date:ymd(st),start:hm(st),end:hm(en),brk:0,project:a.project,note:a.note||''};
-  var raw=rawDur(rec.start,rec.end);
-  rec.brk=b<raw?b:0;
-  S.active=null;
-  if(rec.start===rec.end&&hrs<12){toast('Shift under a minute — discarded');save();render();return}
-  S.entries.push(rec);save();render();
-  if(hrs>16){toast('Long shift — please check this entry');entryForm(rec.id)}
-  else toast('Saved '+fmt(dur(rec)));
+function saveHol(id){
+  const f=$('#h-from').value,t=$('#h-to').value,n=$('#h-name').value.trim();
+  if(!f){toast('Choose a start date');return}
+  if(t&&t<f){toast('End date is before start date');return}
+  const rec={id:id||uid(),name:n,from:f,to:t||f};
+  S.holidays=id?S.holidays.map(h=>h.id===id?rec:h):S.holidays.concat(rec);
+  save();closeModal();render();toast('Saved');
+}
+function perForm(id){
+  const x=id?S.periods.find(h=>h.id===id):{name:'',from:todayStr(),to:todayStr(),start:S.settings.start,end:'16:30'};
+  openModal('<h3>'+(id?'Edit schedule':'Add special schedule')+'</h3><label style="margin-top:0">Name<input id="p-name" maxlength="40" placeholder="e.g. Ramadan" value="'+esc(x.name)+'"></label>'+
+    '<div class="two"><label>From date<input type="date" id="p-from" value="'+x.from+'"></label><label>To date<input type="date" id="p-to" value="'+x.to+'"></label></div>'+
+    '<div class="two"><label>Start time<input type="time" id="p-start" value="'+x.start+'"></label><label>Finish time<input type="time" id="p-end" value="'+x.end+'"></label></div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveper" data-id="'+esc(id||'')+'">Save</button></div>'+
+    (id?'<div class="btns"><button class="btn danger" data-a="delper" data-id="'+id+'">Delete</button></div>':''));
+}
+function savePer(id){
+  const r={id:id||uid(),name:$('#p-name').value.trim(),from:$('#p-from').value,to:$('#p-to').value,start:$('#p-start').value,end:$('#p-end').value};
+  if(!r.from||!r.to||!TIME.test(r.start)||!TIME.test(r.end)){toast('Fill in all dates and times');return}
+  if(r.to<r.from){toast('End date is before start date');return}
+  if(tm(r.end)<=tm(r.start)){toast('Finish must be after start');return}
+  S.periods=id?S.periods.map(p=>p.id===id?r:p):S.periods.concat(r);
+  save();closeModal();render();toast('Saved');
 }
 
-/* ---------- export / import ---------- */
-function csvCell(v){v=String(v==null?'':v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
-function toCsv(list){
-  var rows=[['Date','Start','End','Break (min)','Hours','Project','Note']];
-  list.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:byStart(a,b)}).forEach(function(e){
-    rows.push([e.date,e.start,e.end,e.brk||0,(dur(e)/60).toFixed(2),e.project,e.note||'']);
+/* ================= export / backup ================= */
+const csvCell=v=>{v=String(v==null?'':v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+function toCsv(dates){
+  const rows=[['Date','Day','Type','Clock in','Clock out','Late (min)','Early (min)','Permission (min)','Trip (min)','Overtime (h)','Holiday credit','Note']];
+  dates.sort().forEach(d=>{
+    const rec=S.days[d],c=calc(rec);
+    rows.push([d,c.kind,c.kind==='workday'?TYPE_LABEL[c.type]:'Work',rec.in,rec.out,c.late,c.early,c.perm,c.tripMin,c.ot,c.credit,rec.note||'']);
   });
-  return rows.map(function(r){return r.map(csvCell).join(',')}).join('\n');
+  return rows.map(r=>r.map(csvCell).join(',')).join('\n');
 }
-function restoreForm(){
-  openModal('<h3>Restore backup</h3><div class="muted small">Paste the backup text below. This replaces all current data.</div>'+
-    '<textarea id="imp" placeholder="Paste backup here"></textarea>'+
-    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="doimport">Restore</button></div>');
+function showExport(title,text,name,mime){
+  exportData={text:text,name:name,mime:mime};
+  openModal('<h3>'+esc(title)+'</h3><textarea id="exp" readonly>'+esc(text)+'</textarea><div class="btns"><button class="btn" data-a="copy">Copy</button>'+
+    (navigator.share?'<button class="btn ghost" data-a="share">Share</button>':'')+'<button class="btn ghost" data-a="dl">Download</button></div><div class="btns"><button class="btn ghost" data-a="close">Close</button></div>');
+}
+function copyText(){
+  const text=exportData.text,fb=()=>{const ta=$('#exp');ta.select();try{document.execCommand('copy');toast('Copied')}catch(e){toast('Select the text and copy it')}};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(()=>toast('Copied'),fb);else fb();
+}
+function download(){
+  try{const b=new Blob(['\ufeff'+exportData.text],{type:exportData.mime}),a=document.createElement('a');
+    a.href=URL.createObjectURL(b);a.download=exportData.name;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('Download started')}
+  catch(e){toast('Download not available — use Copy')}
 }
 function doImport(){
-  var raw=$('#imp').value.trim(),p;
-  try{p=JSON.parse(raw)}catch(e){toast('That is not a valid backup');return}
-  if(!p||!Array.isArray(p.entries)){toast('That is not a valid backup');return}
-  var d=defaults();
-  d.entries=p.entries.filter(validEntry).map(function(e){return {id:e.id,date:e.date,start:e.start,end:e.end,brk:Math.max(0,+e.brk||0),project:String(e.project||'General'),note:String(e.note||'')}});
-  if(p.settings)Object.keys(d.settings).forEach(function(k){if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
-  if(!Array.isArray(d.settings.projects)||!d.settings.projects.length)d.settings.projects=['General'];
-  S=d;save();closeModal();render();toast('Restored '+S.entries.length+' entries');
+  let p;try{p=JSON.parse($('#imp').value.trim())}catch(e){toast('Not a valid backup');return}
+  if(!p||!p.days||typeof p.days!=='object'){toast('Not a valid backup');return}
+  const d=defaults();d.days=p.days;
+  if(Array.isArray(p.periods))d.periods=p.periods;if(Array.isArray(p.holidays))d.holidays=p.holidays;
+  if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
+  S=d;save();closeModal();render();toast('Restored '+Object.keys(S.days).length+' days');
 }
-
-/* ---------- settings ---------- */
 function setSetting(k,v){
-  var s=S.settings;
-  if(k==='target'){var n=parseFloat(v);s.target=isNaN(n)?8:Math.min(24,Math.max(0,n))}
-  else if(k==='weekStart')s.weekStart=+v;
-  else if(k==='rate'){var r=parseFloat(v);s.rate=isNaN(r)?0:Math.max(0,r)}
-  else if(k==='currency')s.currency=v.trim();
+  const s=S.settings;
+  if(k==='start'||k==='end'){if(!TIME.test(v))return;s[k]=v}
+  else{const n=parseFloat(v);if(isNaN(n)||n<0)return;s[k]=n}
   save();toast('Saved');
 }
 
-/* ---------- events ---------- */
-function changeMonth(d){
-  var x=new Date(ui.y,ui.m+d,1);ui.y=x.getFullYear();ui.m=x.getMonth();render();
-}
-document.addEventListener('click',function(ev){
-  var nb=ev.target.closest('#nav button');
-  if(nb){view=nb.dataset.v;render();window.scrollTo(0,0);return}
+/* ================= events ================= */
+document.addEventListener('click',ev=>{
+  const g=ev.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+  if(ev.target.id==='back'){view='home';render();window.scrollTo(0,0);return}
+  if(ev.target.id==='act'){openDay(todayStr());return}
   if(ev.target.id==='modal'){closeModal();return}
-  var t=ev.target.closest('[data-a]');if(!t)return;
-  var a=t.dataset.a;
+  const t=ev.target.closest('[data-a]');if(!t)return;
+  const a=t.dataset.a,id=t.dataset.id;
   switch(a){
     case 'in':clockIn();break;
     case 'out':clockOut();break;
-    case 'new':entryForm(null);break;
-    case 'edit':entryForm(t.dataset.id);break;
-    case 'save':saveForm();break;
+    case 'editday':openDay(t.dataset.d);break;
+    case 'addleave':openDay(todayStr(),{type:['annual','casual','sick','unpaid','halfAM','halfPM'].includes(ui.ltype)?ui.ltype:'annual'});break;
     case 'close':closeModal();break;
-    case 'del':
-      var id=t.dataset.id;
-      ask('Delete this entry?','Delete').then(function(ok){
-        if(ok){S.entries=S.entries.filter(function(e){return e.id!==id});save();closeModal();render();toast('Deleted')}
-      });break;
-    case 'ask-yes':var r1=resolver;resolver=null;closeModal();if(r1)r1(true);break;
-    case 'ask-no':var r2=resolver;resolver=null;closeModal();if(r2)r2(false);break;
-    case 'prev':changeMonth(-1);break;
-    case 'next':changeMonth(1);break;
-    case 'csv':showExport('CSV – '+monthLabel(),toCsv(monthEntries()),'timesheet-'+ui.y+'-'+pad(ui.m+1)+'.csv','text/csv');break;
-    case 'csvall':showExport('CSV – all entries',toCsv(S.entries),'timesheet-all.csv','text/csv');break;
-    case 'backup':showExport('Backup',JSON.stringify({app:'timesheet',version:1,entries:S.entries,settings:S.settings}),'timesheet-backup.json','application/json');break;
-    case 'restore':restoreForm();break;
+    case 'saveday':saveDay();break;
+    case 'addrow':draft[t.dataset.key].push({from:'',to:''});renderDay();break;
+    case 'delrow':draft[t.dataset.key].splice(+t.dataset.i,1);renderDay();break;
+    case 'delday':{const d=draft._orig;ask('Delete the record for '+dayShort(d)+'?','Delete').then(ok=>{if(ok){delete S.days[d];save();closeModal();render();toast('Deleted')}});break}
+    case 'ask-yes':{const r=resolver;resolver=null;closeModal();if(r)r(true);break}
+    case 'ask-no':{const r=resolver;resolver=null;closeModal();if(r)r(false);break}
+    case 'addhol':holForm(null);break;
+    case 'edithol':holForm(id);break;
+    case 'savehol':saveHol(id);break;
+    case 'delhol':S.holidays=S.holidays.filter(h=>h.id!==id);save();closeModal();render();toast('Deleted');break;
+    case 'addper':perForm(null);break;
+    case 'editper':perForm(id);break;
+    case 'saveper':savePer(id);break;
+    case 'delper':S.periods=S.periods.filter(h=>h.id!==id);save();closeModal();render();toast('Deleted');break;
+    case 'csv':{const pre=ui.month+'-';showExport('CSV – '+monthTitle(ui.month),toCsv(Object.keys(S.days).filter(d=>d.indexOf(pre)===0)),'attendance-'+ui.month+'.csv','text/csv');break}
+    case 'csvall':showExport('CSV – all days',toCsv(Object.keys(S.days)),'attendance-all.csv','text/csv');break;
+    case 'backup':showExport('Backup',JSON.stringify({app:'attendance',version:1,days:S.days,periods:S.periods,holidays:S.holidays,settings:S.settings}),'attendance-backup.json','application/json');break;
+    case 'restore':openModal('<h3>Restore backup</h3><div class="muted small">Paste your backup text. This replaces all current data.</div><textarea id="imp" placeholder="Paste backup here"></textarea><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="doimport">Restore</button></div>');break;
     case 'doimport':doImport();break;
-    case 'exp-copy':copyText(exportData.text);break;
-    case 'exp-dl':download(exportData.name,exportData.text,exportData.mime);break;
-    case 'exp-share':
-      navigator.share({title:exportData.name,text:exportData.text}).catch(function(){});break;
-    case 'addproj':
-      var inp=$('#newproj'),name=inp.value.trim();
-      if(!name)break;
-      if(S.settings.projects.some(function(p){return p.toLowerCase()===name.toLowerCase()})){toast('Project already exists');break}
-      S.settings.projects.push(name);save();render();break;
-    case 'rmproj':
-      if(S.settings.projects.length>1){S.settings.projects.splice(+t.dataset.i,1);save();render()}break;
-    case 'wipe':
-      ask('Erase ALL entries and settings? This cannot be undone.','Erase everything').then(function(ok){
-        if(ok){S=defaults();save();render();toast('All data erased')}
-      });break;
+    case 'copy':copyText();break;
+    case 'dl':download();break;
+    case 'share':navigator.share({title:exportData.name,text:exportData.text}).catch(()=>{});break;
+    case 'wipe':ask('Erase ALL data? This cannot be undone.','Erase everything').then(ok=>{if(ok){S=defaults();save();render();toast('All data erased')}});break;
   }
 });
-document.addEventListener('change',function(ev){
-  var t=ev.target.closest('[data-set]');if(t)setSetting(t.dataset.set,t.value);
+document.addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.id==='mp'){if(t.value){ui.month=t.value;render()}return}
+  if(t.id==='ly'){ui.year=+t.value;render();return}
+  if(t.id==='lt'){ui.ltype=t.value;render();return}
+  if(t.id==='pt'){ui.ptype=t.value;render();return}
+  if(t.id==='st'){ui.stab=t.value;render();return}
+  if(t.dataset.set){setSetting(t.dataset.set,t.value);return}
+  if(t.dataset.wd!==undefined){
+    const i=+t.dataset.wd,w=S.settings.workDays.filter(x=>x!==i);
+    if(t.checked)w.push(i);S.settings.workDays=w.sort();save();toast('Saved');return;
+  }
+  if(!draft)return;
+  if(t.id==='d-date'){
+    const nd=t.value;if(!nd)return;
+    if(nd!==draft._orig&&S.days[nd]){const keep=nd;closeModal();openDay(keep);toast('That day already has a record — opened it');return}
+    draft.date=nd;renderDay();return;
+  }
+  if(t.id==='d-type'){draft.type=t.value;renderDay()}
 });
-document.addEventListener('input',function(ev){
-  if(/^f-(start|end|brk)$/.test(ev.target.id))previewForm();
+document.addEventListener('input',ev=>{
+  const t=ev.target;if(!draft||!$('#sheet').contains(t))return;
+  if(t.dataset.k)draft[t.dataset.k]=t.value;
+  else if(t.dataset.list)draft[t.dataset.list][+t.dataset.i][t.dataset.f]=t.value;
+  else return;
+  previewDay();
 });
-document.addEventListener('visibilitychange',function(){if(!document.hidden){tick();if(view==='today')render()}});
+window.addEventListener('popstate',()=>{if(view!=='home'){view='home';render()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!draft&&$('#modal').classList.contains('show')===false)render()});
 
+window.__app={calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
-
-if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
-  navigator.serviceWorker.register('sw.js').catch(function(){});
-}
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
 </body>
