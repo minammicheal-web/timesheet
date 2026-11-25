@@ -803,12 +803,17 @@ function setSetting(k,v){
 
 /* ================= appearance ================= */
 const darkMQ=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+const deviceDark=()=>{try{if(window.Android&&Android.isDark)return !!Android.isDark()}catch(e){}return !!(darkMQ&&darkMQ.matches)};
 function applyTheme(){
   const t=S.settings.theme,root=document.documentElement;
-  if(t==='dark'||t==='light')root.setAttribute('data-theme',t);else root.removeAttribute('data-theme');
-  const dark=t==='dark'||(t!=='light'&&darkMQ&&darkMQ.matches);
+  const dark=t==='dark'||(t!=='light'&&deviceDark());
+  /* always set explicitly so it works even where the WebView does not report the device mode */
+  root.setAttribute('data-theme',dark?'dark':'light');
   const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',dark?'#0e3b37':'#0b5f58');
 }
+window.onDeviceTheme=applyTheme;
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyTheme()});
+window.addEventListener('focus',applyTheme);
 if(darkMQ&&darkMQ.addEventListener)darkMQ.addEventListener('change',applyTheme);
 
 /* ================= balance adjustment ================= */

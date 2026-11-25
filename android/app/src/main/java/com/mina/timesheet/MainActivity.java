@@ -196,8 +196,20 @@ public class MainActivity extends Activity {
         try { send(new JSONObject().put("type", "error").put("message", msg)); } catch (Exception ignored) { }
     }
 
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration c) {
+        super.onConfigurationChanged(c);
+        if (web != null) web.evaluateJavascript("window.onDeviceTheme&&window.onDeviceTheme()", null);
+    }
+
     /** Functions the page can call as Android.xxx(). */
     private class Bridge {
+        @JavascriptInterface
+        public boolean isDark() {
+            int m = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+            return m == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        }
+
         @JavascriptInterface
         public String saveFile(String name, String text) {
             try {
