@@ -1415,13 +1415,16 @@ document.addEventListener('input',ev=>{
   else return;
   previewDay();
 });
-/* Empty clock-in opens the time picker on AM, clock-out on PM (the normal day's times); change it by hand if needed. */
+/* Empty clock-in opens the time picker on AM, clock-out on PM (the normal day's times). The value is saved right away,
+   so pressing SET without changing it still records it; change or clear it in the picker if needed. */
 function timePre(ev){
   const t=ev.target;if(!draft||!t||!t.matches||!t.matches('input[data-k=in],input[data-k=out]')||t.value)return;
-  const sc=schedule(draft.date);t.value=t.dataset.k==='in'?sc.start:sc.end;t.dataset.pre='1';
+  const sc=schedule(draft.date),k=t.dataset.k;
+  t.value=k==='in'?sc.start:sc.end;draft[k]=t.value;
+  const cb=$('#d-normal');if(cb)cb.checked=draft.in===sc.start&&draft.out===sc.end;
+  previewDay();
 }
 document.addEventListener('pointerdown',timePre,true);document.addEventListener('click',timePre,true);
-document.addEventListener('focusout',ev=>{const t=ev.target;if(t&&t.dataset&&t.dataset.pre==='1'){t.value='';delete t.dataset.pre}},true);
 window.addEventListener('popstate',()=>{closeMs();if(view==='settings'){view=prevView||'home';render()}else if(view!=='home'){view='home';render()}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeMs()});
 window.addEventListener('resize',closeMs);
