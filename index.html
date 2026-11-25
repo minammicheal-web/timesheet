@@ -393,7 +393,10 @@ function vHome(){
   }else if(!rec||!rec.in){
     h+='<div class="timer" style="font-size:30px;color:var(--muted);margin:12px 0">Not clocked in</div><button class="btn big" data-a="in">Clock in</button>';
   }else if(!rec.out){
-    h+='<div class="timer" id="timer">00:00:00</div><div class="muted">Clocked in at '+rec.in+'</div><button class="btn big danger" style="margin-top:12px" data-a="out">Clock out</button>';
+    const op=openPerm(rec);
+    h+='<div class="timer" id="timer">00:00:00</div><div class="muted">Clocked in at '+rec.in+(op?' · out since '+op.from:'')+'</div>';
+    if(op)h+='<button class="btn big" style="margin-top:12px" data-a="backin">Back in</button><div style="margin-top:8px"><button class="link" data-a="out">Clock out for the day</button></div>';
+    else h+='<div class="btns"><button class="btn ghost" data-a="stepout">Step out</button><button class="btn danger" data-a="out">Clock out</button></div>';
   }else{
     h+='<div class="timer" style="font-size:28px;margin:12px 0">'+rec.in+' – '+rec.out+'</div>';
   }
@@ -601,8 +604,25 @@ function clockIn(){
   rec.in=hm(new Date());rec.out='';
   save();render();toast('Clocked in at '+rec.in);
 }
+const openPerm=rec=>(rec.perms||[]).find(x=>x.from&&!x.to);
+function stepOut(){
+  const rec=S.days[todayStr()];if(!rec||!rec.in||rec.out)return;
+  if(!rec.perms)rec.perms=[];
+  if(openPerm(rec))return;
+  rec.perms.push({from:hm(new Date()),to:''});
+  save();render();toast('Stepped out at '+rec.perms[rec.perms.length-1].from+' — tap Back in when you return');
+}
+function backIn(){
+  const rec=S.days[todayStr()];if(!rec)return;
+  const p=openPerm(rec);if(!p)return;
+  p.to=hm(new Date());
+  if(tm(p.to)<=tm(p.from))rec.perms.splice(rec.perms.indexOf(p),1);
+  save();render();
+  const m=ranges([p])[0];toast(m?'Back in — permission '+fm(m[1]-m[0]):'Back in');
+}
 function clockOut(){
   const d=todayStr(),rec=S.days[d];if(!rec||!rec.in)return;
+  const op=openPerm(rec);if(op)rec.perms.splice(rec.perms.indexOf(op),1); /* leaving for the day while stepped out: no permission is recorded for the open gap */
   rec.out=hm(new Date());
   save();render();
   const c=calc(rec),bits=[];
@@ -1303,6 +1323,8 @@ document.addEventListener('click',ev=>{
     case 'msopen':{const box=t.closest('.ms');if(msBox===box)closeMs();else openMs(box);break}
     case 'mspick':{const box=msBox;if(!box)break;const sid=box.dataset.ms,v=t.dataset.v;closeMs();applySelect(sid,v);break}
     case 'in':clockIn();break;
+    case 'stepout':stepOut();break;
+    case 'backin':backIn();break;
     case 'out':clockOut();break;
     case 'editday':openDay(t.dataset.d);break;
     case 'addleave':openDay(todayStr(),{type:['annual','casual','sick','unpaid','halfAM','halfPM'].includes(ui.ltype)?ui.ltype:'annual'});break;
@@ -1446,7 +1468,7 @@ document.addEventListener('pointerdown',ev=>{
   document.addEventListener('touchcancel',()=>{on=false;el().style.transform=''},{passive:true});
 })();
 applyTheme();
-window.__app={checkOt:checkOt,otSnooze:otSnooze,adjust:{setLeft:setLeft,setPermLeft:setPermLeft},planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
+window.__app={stepOut:stepOut,backIn:backIn,checkOt:checkOt,otSnooze:otSnooze,adjust:{setLeft:setLeft,setPermLeft:setPermLeft},planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
 syncNative();
 if(hasNative()&&Date.now()-S.holLast>7*864e5)setTimeout(()=>updateHolidays(true),2500); /* refresh official holidays about once a week */
