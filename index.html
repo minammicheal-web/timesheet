@@ -21,9 +21,23 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-u
 header{position:sticky;top:0;z-index:5;background:var(--hdr-bg);color:var(--hdr-fg);display:flex;align-items:center;gap:8px;
   padding:calc(10px + env(safe-area-inset-top)) 12px 10px;min-height:56px}
 header h1{flex:1;margin:0;font-size:18px;font-weight:700}
-header button{border:0;background:rgba(255,255,255,.18);color:inherit;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer}
+header button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;border:0;background:rgba(255,255,255,.18);color:inherit;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer}
 header button.hide{visibility:hidden}
-main{max-width:620px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-inset-bottom))}
+main{max-width:620px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom));touch-action:pan-y;overflow-x:hidden}
+#view.anim-l{animation:pgL .32s cubic-bezier(.2,.8,.2,1)}#view.anim-r{animation:pgR .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes pgL{from{opacity:0;transform:translateX(44px)}to{opacity:1;transform:none}}
+@keyframes pgR{from{opacity:0;transform:translateX(-44px)}to{opacity:1;transform:none}}
+#view.snap{transition:transform .22s ease}
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;
+  background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+#tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;overflow:hidden;flex:0 0 auto;min-width:78px;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 6px 5px;border-radius:16px;font:inherit;font-size:11px;font-weight:600;cursor:pointer}
+.tab .ti{width:54px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;transition:background .28s,transform .3s cubic-bezier(.3,1.5,.5,1)}
+.tab.on{color:var(--accent)}.tab.on .ti{background:var(--soft);transform:scale(1.1)}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+header #gear{margin-left:2px}header #gear.hide{display:none}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
 .center{text-align:center}
 .muted{color:var(--muted)}.small{font-size:13px}
@@ -34,12 +48,14 @@ input,select,textarea{width:100%;margin-top:5px;padding:12px 12px;border-radius:
   background:transparent;color:var(--text);font:inherit}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent)}
 textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.btn,.menu button{position:relative;overflow:hidden}
 .btn{display:inline-block;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:var(--on-accent)}
 .btn.ghost{background:var(--soft);color:var(--accent)}
 .btn.danger{background:var(--danger);color:var(--on-danger)}
 .btn.big{width:100%;padding:18px;font-size:19px}
 .btn.full{width:100%}
 .btn[disabled]{opacity:.5}
+.btns.col{flex-direction:column}.btns .btn small{display:block;font-weight:500;font-size:12px;opacity:.85;margin-top:2px}
 .btns{display:flex;gap:10px;margin-top:16px}.btns .btn{flex:1}
 .link{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:8px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -76,7 +92,7 @@ textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
 #modal{position:fixed;inset:0;z-index:20;background:rgba(2,6,23,.55);display:none;align-items:flex-end;justify-content:center}
 #modal.show{display:flex}
 #sheet{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-#toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:var(--toast-bg);color:var(--toast-fg);
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:var(--toast-bg);color:var(--toast-fg);
   padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.show{opacity:1}
 .prev{background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
@@ -113,8 +129,9 @@ main .ms-l{background:var(--bg)}
 </style>
 </head>
 <body>
-<header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="act" class="hide" aria-label="Add">+</button></header>
+<header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="act" class="hide" aria-label="Add">+</button><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
 <main id="view"></main>
+<nav id="tabs" aria-label="Sections"></nav>
 <div id="modal"><div id="sheet"></div></div>
 <div id="toast"></div>
 <input type="file" id="payfile" accept=".htm,.html,text/html,*/*" multiple hidden>
@@ -144,7 +161,7 @@ const monthTitle=ym=>{const p=ym.split('-');return MONTHS[+p[1]-1]+' '+p[0]};
 /* ================= data ================= */
 const KEY='attendance.v1';
 let mem=null;
-function defaults(){return {days:{},periods:[],holidays:[],payslips:[],skipHol:[],holLast:0,adj:{years:{},months:{}},settings:{theme:'auto',start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2,grace:10,remindOn:true,remindIn:'08:15',remindOut:'',alarmDefault:'06:15'}}}
+function defaults(){return {days:{},periods:[],holidays:[],payslips:[],skipHol:[],holLast:0,adj:{years:{},months:{},asOf:''},settings:{theme:'auto',start:'08:30',end:'17:30',workDays:[0,1,2,3,4],annual:21,casual:6,sick:90,permHours:2,grace:10,remindOn:true,remindIn:'08:15',remindOut:'',alarmDefault:'06:15'}}}
 function load(){
   const d=defaults();let raw=null;
   try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
@@ -154,7 +171,7 @@ function load(){
     if(Array.isArray(p.periods))d.periods=p.periods;
     if(Array.isArray(p.holidays))d.holidays=p.holidays;
     if(Array.isArray(p.payslips))d.payslips=p.payslips;
-    if(p.adj&&typeof p.adj==='object'){d.adj.years=p.adj.years||{};d.adj.months=p.adj.months||{}}
+    if(p.adj&&typeof p.adj==='object'){d.adj.years=p.adj.years||{};d.adj.months=p.adj.months||{};d.adj.asOf=p.adj.asOf||''}
     if(Array.isArray(p.skipHol))d.skipHol=p.skipHol;
     if(typeof p.holLast==='number')d.holLast=p.holLast;
     if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
@@ -244,25 +261,28 @@ function tags(rec,c){
   if(c.kind!=='workday'&&!rec.in&&!rec.out)t.push(['info','Planned work']);
   if(rec.alarm)t.push(['info','⏰ '+rec.alarm]);
   if(!t.length&&(rec.in||rec.out))t.push(['mute',(rec.in||'?')+' – '+(rec.out||'?')]);
+  if(rec.inBal)t.push(['mute','In your balance']);
+  if(rec.otPlan&&!rec.out)t.push(['info',rec.otPlan.state==='stay'&&rec.otPlan.until?'Overtime until '+rec.otPlan.until:'Overtime planned']);
   return t.map(x=>'<span class="tag '+x[0]+'">'+esc(x[1])+'</span>').join('');
 }
 
 /* ================= statistics ================= */
 function monthStats(ym){
   const p=ym.split('-'),y=+p[0],m=+p[1]-1,n=new Date(y,m+1,0).getDate(),now=todayStr();
-  const st={late:0,early:0,perm:0,lateDays:0,earlyDays:0,otWork:0,otWeekend:0,otHoliday:0,credit:0,annual:0,casual:0,half:0,sick:0,unpaid:0,trips:0,missing:[],rows:[]};
+  const st={late:0,early:0,perm:0,lateDays:0,earlyDays:0,otWork:0,otWeekend:0,otHoliday:0,credit:0,annual:0,casual:0,half:0,sick:0,unpaid:0,trips:0,balUsed:0,missing:[],rows:[]};
   for(let i=1;i<=n;i++){
     const d=y+'-'+pad(m+1)+'-'+pad(i),rec=S.days[d],kind=kindOf(d);let c=null;
     if(rec){
       c=calc(rec);
       st.late+=c.late;st.early+=c.early;st.perm+=c.perm;st.trips+=c.tripMin;
+      if(!rec.inBal)st.balUsed+=c.late+c.early+c.perm;
       if(c.late)st.lateDays++;if(c.early)st.earlyDays++;
       if(kind==='workday')st.otWork+=c.ot;else if(kind==='weekend')st.otWeekend+=c.ot;else st.otHoliday+=c.ot;
       st.credit+=c.credit;st.annual+=c.leave.annual;st.casual+=c.leave.casual;st.sick+=c.leave.sick;st.unpaid+=c.leave.unpaid;st.half+=c.leave.half;
     }else if(kind==='workday'&&d<now)st.missing.push(d);
     st.rows.push({d:d,rec:rec,c:c,kind:kind});
   }
-  st.used=st.late+st.early+st.perm;st.base=Math.round(S.settings.permHours*60);st.free=Math.max(0,st.base+(+S.adj.months[ym]||0));
+  st.used=st.balUsed;st.base=Math.round(S.settings.permHours*60);st.free=Math.max(0,st.base+(+S.adj.months[ym]||0));
   st.deduct=Math.max(0,st.used-st.free);st.left=Math.max(0,st.free-st.used);
   st.ot=st.otWork+st.otWeekend+st.otHoliday;
   return st;
@@ -272,6 +292,7 @@ function yearStats(y){
   Object.keys(S.days).forEach(d=>{
     if(d.indexOf(y+'-')!==0)return;
     const c=calc(S.days[d]);
+    if(S.days[d].inBal){s.unpaid+=c.leave.unpaid;return}
     s.annualUsed+=c.leave.annual;s.casualUsed+=c.leave.casual;s.halfDays+=c.leave.half;
     s.sickUsed+=c.leave.sick;s.unpaid+=c.leave.unpaid;s.credits+=c.credit;
   });
@@ -297,7 +318,22 @@ function ask(msg,ok){return new Promise(res=>{
   openModal('<h3>'+esc(msg)+'</h3><div class="btns"><button class="btn ghost" data-a="ask-no">Cancel</button><button class="btn danger" data-a="ask-yes">'+esc(ok||'Confirm')+'</button></div>');
   resolver=res;
 })}
-function go(v){view=v;try{history.pushState({v:v},'')}catch(e){}render();window.scrollTo(0,0)}
+const TABS=[['home','🏠','Home'],['log','🗓','Log'],['leaves','🌴','Leaves'],['perm','⏱','Permits'],['ot','➕','Overtime'],['report','📊','Report'],['pay','💵','Payslips'],['setup','📅','Holidays']];
+const tabIdx=v=>TABS.findIndex(t=>t[0]===v);
+let prevView='home';
+function buildTabs(){$('#tabs').innerHTML=TABS.map(t=>'<button class="tab" data-tab="'+t[0]+'" data-go="'+t[0]+'"><span class="ti">'+t[1]+'</span>'+t[2]+'</button>').join('')}
+function switchTab(v,dir){
+  if(v===view)return;
+  const from=tabIdx(view),to=tabIdx(v);
+  const d=dir||(from<0||to>from?1:-1);
+  try{if(view==='home')history.pushState({v:v},'');else history.replaceState({v:v},'')}catch(e){}
+  view=v;render();window.scrollTo(0,0);
+  const el=$('#view');el.classList.remove('anim-l','anim-r');void el.offsetWidth;el.classList.add(d>0?'anim-l':'anim-r');
+}
+function go(v){
+  if(tabIdx(v)>=0){switchTab(v);return}
+  prevView=view;view=v;try{history.pushState({v:v},'')}catch(e){}render();window.scrollTo(0,0);
+}
 const monthPicker=()=>'<div class="filters one"><label>Month<input type="month" id="mp" value="'+ui.month+'"></label></div>';
 /* ---- Material-style dropdown: field + floating menu (replaces the phone's plain select dialog) ---- */
 const ARROW='<svg class="ms-ar" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>';
@@ -368,9 +404,7 @@ function vHome(){
     '<div class="stat"><b>'+fd(ys.casualLeft)+'</b><span>Casual days left</span></div>'+
     '<div class="stat"><b>'+fd(ys.sickLeft)+'</b><span>Sick days left</span></div>'+
     '<div class="stat"><b>'+fm(ms.left)+'</b><span>Permission left this month</span></div></div>';
-  h+='<div class="menu">'+
-    menuBtn('log','🗓','Daily Log')+'<button data-a="plan"><span class="ic">⏰</span>Plan a Work Day<span class="go">›</span></button>'+menuBtn('leaves','🌴','Leaves')+menuBtn('perm','⏱','Permissions & Trips')+
-    menuBtn('ot','➕','Overtime')+menuBtn('report','📊','Monthly Report')+menuBtn('pay','💵','Payslips')+menuBtn('setup','📅','Holidays & Schedules')+menuBtn('settings','⚙️','Settings')+'</div>';
+  h+='<div class="menu"><button data-a="plan"><span class="ic">⏰</span>Plan a Work Day<span class="go">›</span></button><button data-a="planot"><span class="ic">🌙</span>Plan Overtime<span class="go">›</span></button></div>';
   return h;
 }
 const menuBtn=(v,ic,l)=>'<button data-go="'+v+'"><span class="ic">'+ic+'</span>'+l+'<span class="go">›</span></button>';
@@ -542,7 +576,9 @@ function vSettings(){
 function render(){
   closeMs();
   $('#title').textContent=TITLES[view];
-  $('#back').classList.toggle('hide',view==='home');
+  $('#back').classList.toggle('hide',tabIdx(view)>=0);
+  $('#gear').classList.toggle('hide',view==='settings');
+  document.querySelectorAll('.tab').forEach(b=>{const on=b.dataset.tab===view;b.classList.toggle('on',on);if(on){b.setAttribute('aria-current','page');const t=$('#tabs');t.scrollTo({left:b.offsetLeft-(t.clientWidth-b.offsetWidth)/2})}else b.removeAttribute('aria-current')});
   $('#act').classList.toggle('hide',view!=='log');
   $('#view').innerHTML=({home:vHome,log:vLog,leaves:vLeaves,perm:vPerm,ot:vOt,report:vReport,pay:vPay,setup:vSetup,settings:vSettings})[view]();
   if(view==='log'){const t=$('#todayrow');if(t&&ui.month===todayStr().slice(0,7))t.scrollIntoView({block:'center'})}
@@ -589,6 +625,7 @@ function openDay(date,opts){
 function clean(d){
   const r={date:d.date,type:d.type,in:d.in||'',out:d.out||'',perms:d.perms.filter(x=>x.from||x.to),trips:d.trips.filter(x=>x.from||x.to),holidayMode:d.holidayMode||'ot',note:(d.note||'').trim()};
   if(d.date>=todayStr()&&TIME.test(d.alarm||''))r.alarm=d.alarm;
+  if(d.otPlan)r.otPlan=d.otPlan;
   return r;
 }
 function autoAlarm(){
@@ -687,7 +724,30 @@ function previewDay(){
   if(c.noOut)L.push('No clock-out yet');
   p.innerHTML=L.map(esc).join('<br>');
 }
-function saveDay(){
+function needsBalChoice(r){
+  const a=S.adj.asOf;if(!a||r.date>a)return false;
+  const c=calc(r);
+  const l=(c.leave.annual||c.leave.casual||c.leave.sick||c.leave.half||c.credit)&&r.date.slice(0,4)===a.slice(0,4);
+  const m=(c.late||c.early||c.perm)&&r.date.slice(0,7)===a.slice(0,7);
+  return !!(l||m);
+}
+/* Past days entered after a balance adjustment: ask whether the typed balance already includes them. */
+function balFlag(recs,bal){
+  const need=recs.filter(needsBalChoice);
+  if(!need.length)return 'ok';
+  let ch=bal;
+  if(ch===undefined&&draft.inBal!==undefined&&recs.length===1)ch=draft.inBal?'in':'out';
+  if(ch===undefined){askBal();return 'ask'}
+  need.forEach(r=>{r.inBal=(ch==='in')});
+  return 'ok';
+}
+function askBal(){
+  openModal('<h3>Is this day already in your balance?</h3><div class="muted small">You adjusted your balances on '+esc(dayShort(S.adj.asOf))+', and this day is on or before that date.</div>'+
+    '<div class="btns col"><button class="btn" data-a="bal-in">Already counted<small>Keep the balance as I typed it</small></button>'+
+    '<button class="btn ghost" data-a="bal-out">Deduct it now<small>Take it off the current balance</small></button></div>'+
+    '<div class="sub" style="margin-top:6px"><button class="link" data-a="bal-back">Back to the day</button></div>');
+}
+function saveDay(bal){
   const d=clean(draft),kind=kindOf(d.date);
   if(!d.date){toast('Choose a date');return}
   const leave=LEAVE.indexOf(d.type)>=0;
@@ -695,8 +755,10 @@ function saveDay(){
     if(draft.endDate&&draft.endDate<d.date){toast('The end date is before the start date');return}
     const sp=leaveSpan();
     if(!sp.days.length){toast('No working days in that range — weekends and holidays are skipped');return}
+    const recsL=sp.days.map(x=>({date:x,type:d.type,in:'',out:'',perms:[],trips:[],holidayMode:'ot',note:d.note}));
+    if(balFlag(recsL,bal)==='ask')return;
     if(draft._orig&&S.days[draft._orig]&&sp.days.indexOf(draft._orig)<0)delete S.days[draft._orig];
-    sp.days.forEach(x=>{S.days[x]={date:x,type:d.type,in:'',out:'',perms:[],trips:[],holidayMode:'ot',note:d.note}});
+    recsL.forEach(r=>{S.days[r.date]=r});
     ui.month=sp.days[0].slice(0,7);
     save();closeModal();render();
     toast(TYPE_LABEL[d.type]+' saved — '+sp.days.length+' working day'+(sp.days.length>1?'s':'')+(sp.skipped?' ('+sp.skipped+' day'+(sp.skipped>1?'s':'')+' off skipped)':''));
@@ -713,6 +775,7 @@ function saveDay(){
     }
     if(kind!=='workday'){d.type='work';d.perms=[];d.trips=[]}
   }
+  if(balFlag([d],bal)==='ask')return;
   if(draft._orig!==d.date)delete S.days[draft._orig];
   S.days[d.date]=d;
   ui.month=d.date.slice(0,7);
@@ -788,7 +851,7 @@ function doImport(){
   const d=defaults();d.days=p.days;
   if(Array.isArray(p.periods))d.periods=p.periods;if(Array.isArray(p.holidays))d.holidays=p.holidays;
   if(Array.isArray(p.payslips))d.payslips=p.payslips;
-  if(p.adj&&typeof p.adj==='object'){d.adj.years=p.adj.years||{};d.adj.months=p.adj.months||{}}
+  if(p.adj&&typeof p.adj==='object'){d.adj.years=p.adj.years||{};d.adj.months=p.adj.months||{};d.adj.asOf=p.adj.asOf||''}
   if(p.settings)Object.keys(d.settings).forEach(k=>{if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
   S=d;save();closeModal();render();toast('Restored '+Object.keys(S.days).length+' days');
 }
@@ -852,6 +915,7 @@ function saveAdjust(){
   if(c!==null)setLeft('casual',c,y);
   if(k!==null)setLeft('sick',k,y);
   if(p!==null&&p>=0)setPermLeft(p,ym);
+  S.adj.asOf=todayStr();
   save();closeModal();render();toast('Balances adjusted');
 }
 function resetYear(){
@@ -860,14 +924,14 @@ function resetYear(){
     if(!ok)return;
     const ys=yearStats(y);
     setLeft('annual',S.settings.annual+ys.credits,y);setLeft('casual',S.settings.casual,y);setLeft('sick',S.settings.sick,y);
-    save();render();toast('Yearly leaves reset');
+    S.adj.asOf=todayStr();save();render();toast('Yearly leaves reset');
   });
 }
 function resetMonth(){
   const ym=todayStr().slice(0,7);
   ask('Reset this month\'s permission to the full '+fm(Math.round(S.settings.permHours*60))+'?','Reset').then(ok=>{
     if(!ok)return;
-    setPermLeft(S.settings.permHours,ym);save();render();toast('Monthly permission reset');
+    setPermLeft(S.settings.permHours,ym);S.adj.asOf=todayStr();save();render();toast('Monthly permission reset');
   });
 }
 
@@ -1035,6 +1099,17 @@ function planItems(){
       const t=atTime(dt,rec.alarm);
       if(t>now)out.push({t:t,id:'alarm-'+d,k:'alarm',title:'⏰ Work day alarm',text:'Time to get up — you planned to work on '+dayShort(d)+'.'});
     }
+    if(kind==='workday'&&rec&&rec.otPlan&&!rec.out&&!['annual','casual','sick','unpaid'].includes(rec.type)){
+      const op=rec.otPlan,endT=schedule(d).end;
+      if(op.state==='ask'){
+        const t=atTime(dt,endT);
+        if(t>now)out.push({t:t,id:'otask-'+d,k:'remind',title:'Going home or staying?',text:'Tap to answer. If you are going home, the app clocks you out at '+endT+'.'});
+      }else if(op.state==='stay'&&TIME.test(op.until||'')){
+        const t=atTime(dt,op.until),pre=t-10*60000;
+        if(pre>now)out.push({t:pre,id:'otprep-'+d,k:'remind',title:'Get ready to leave',text:'You planned to leave at '+op.until+' — about 10 minutes to go.'});
+        if(t>now)out.push({t:t,id:'otout-'+d,k:'remind',title:'Time to clock out',text:'You planned to leave now. Don\'t forget to clock out.'});
+      }
+    }
     if(!s.remindOn||kind!=='workday')continue;
     if(rec&&['annual','casual','sick','unpaid'].includes(rec.type))continue;
     const sch=schedule(d);
@@ -1043,7 +1118,7 @@ function planItems(){
     if(!(rec&&rec.in)){const t=atTime(dt,tin);if(t>now)out.push({t:t,id:'in-'+d,k:'remind',title:'Clock in',text:'Don\'t forget to clock in.'})}
     let tout=s.remindOut||sch.end;
     if(rec&&rec.type==='halfPM'&&!s.remindOut)tout='13:00';
-    if(!(rec&&rec.out)){const t=atTime(dt,tout);if(t>now)out.push({t:t,id:'out-'+d,k:'remind',title:'Clock out',text:'Don\'t forget to clock out.'})}
+    if(!(rec&&rec.out)&&!(rec&&rec.otPlan)){const t=atTime(dt,tout);if(t>now)out.push({t:t,id:'out-'+d,k:'remind',title:'Clock out',text:'Don\'t forget to clock out.'})}
   }
   return out;
 }
@@ -1079,6 +1154,60 @@ function planForm(){
     '<label>Alarm time<input type="time" id="pl-time" value="'+esc(S.settings.alarmDefault)+'"></label>'+
     '<div class="muted small" style="margin-top:6px">Clear the time if you do not want an alarm.</div>'+
     '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveplan">Save</button></div>');
+}
+function otForm(){
+  const d0=todayStr(),rec=S.days[d0],has=rec&&rec.otPlan&&!rec.out;
+  openModal('<h3>Plan overtime</h3><div class="muted small">Staying after '+esc(schedule(d0).end)+'? Choose the day. If you already know when you will leave, enter it and I will remind you 10 minutes before. Leave it empty and I will ask you at finish time whether you are going home or staying.</div>'+
+    '<label>Date<input type="date" id="ot-date" value="'+d0+'" min="'+d0+'"></label>'+
+    '<label>Leave time (optional)<input type="time" id="ot-time" value="'+esc(has&&rec.otPlan.until||'')+'"></label>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveot">Save</button></div>'+
+    (has?'<div class="sub" style="margin-top:6px"><button class="link" data-a="otcancel">Cancel today\'s overtime plan</button></div>':''));
+}
+function saveOt(){
+  const d=$('#ot-date').value,t=$('#ot-time').value;
+  if(!d){toast('Choose a date');return}
+  if(d<todayStr()){toast('Choose today or a future day');return}
+  if(kindOf(d)!=='workday'){toast('That day is already off — every full hour you work counts as overtime');return}
+  const end=schedule(d).end;
+  if(t&&(!TIME.test(t)||tm(t)<=tm(end))){toast('Leave time must be after '+end);return}
+  const rec=S.days[d]||blank(d);
+  rec.otPlan=t?{state:'stay',until:t}:{state:'ask',until:''};
+  S.days[d]=rec;ui.month=d.slice(0,7);
+  save();closeModal();render();
+  toast(t?'Overtime planned until '+t:'I will ask you at '+end);
+}
+function otCancel(){
+  const rec=S.days[todayStr()];if(rec){delete rec.otPlan;save()}
+  closeModal();render();toast('Overtime plan removed');
+}
+/* At finish time on a day with an open overtime plan: ask whether you are going home or staying. */
+const otSnooze={};
+function checkOt(){
+  if($('#modal').classList.contains('show'))return;
+  const d=todayStr(),rec=S.days[d];
+  if(!rec||!rec.otPlan||rec.otPlan.state!=='ask'||rec.out||kindOf(d)!=='workday')return;
+  const end=schedule(d).end,n=new Date();
+  if(n.getHours()*60+n.getMinutes()<tm(end))return;
+  if(otSnooze[d]&&Date.now()-otSnooze[d]<10*60000)return;
+  otSnooze[d]=Date.now();
+  openModal('<h3>It is '+esc(end)+' — going home or staying?</h3><div class="muted small">Going home clocks you out at '+esc(end)+'. Staying lets you set when you will leave, and I remind you 10 minutes before.</div>'+
+    '<div class="btns"><button class="btn" data-a="ot-home">Going home</button><button class="btn ghost" data-a="ot-stay">Staying</button></div>');
+}
+function otHome(){
+  const d=todayStr(),rec=S.days[d];if(!rec){closeModal();return}
+  rec.out=schedule(d).end;rec.otPlan={state:'home',until:''};
+  save();closeModal();render();toast('Clocked out at '+rec.out);
+}
+function otStayAsk(){
+  const end=schedule(todayStr()).end,m=tm(end)+60;
+  openModal('<h3>When will you leave?</h3><label style="margin-top:0">Leave time<input type="time" id="ot-time" value="'+pad(Math.floor(m/60)%24)+':'+pad(m%60)+'"></label>'+
+    '<div class="muted small" style="margin-top:6px">I will remind you 10 minutes before. If you leave earlier, just clock out yourself or enter the time — the reminder then stays quiet.</div>'+
+    '<div class="btns"><button class="btn ghost" data-a="ot-back">Back</button><button class="btn" data-a="ot-stay-save">Save</button></div>');
+}
+function otStaySave(){
+  const d=todayStr(),rec=S.days[d],t=$('#ot-time').value,end=schedule(d).end;
+  if(!TIME.test(t)||tm(t)<=tm(end)){toast('Leave time must be after '+end);return}
+  rec.otPlan={state:'stay',until:t};save();closeModal();render();toast('I will remind you at '+(pad(Math.floor((tm(t)-10)/60))+':'+pad((tm(t)-10)%60)));
 }
 function savePlan(){
   const d=$('#pl-date').value,t=$('#pl-time').value;
@@ -1162,7 +1291,7 @@ function updateHolidays(silent){
 /* ================= events ================= */
 document.addEventListener('click',ev=>{
   const g=ev.target.closest('[data-go]');if(g){go(g.dataset.go);return}
-  if(ev.target.id==='back'){view='home';render();window.scrollTo(0,0);return}
+  if(ev.target.closest('#back')){view=prevView||'home';render();window.scrollTo(0,0);return}
   if(ev.target.id==='act'){openDay(todayStr());return}
   if(ev.target.id==='msmask'){closeMs();return}
   if(ev.target.id==='modal'){closeModal();return}
@@ -1176,7 +1305,17 @@ document.addEventListener('click',ev=>{
     case 'editday':openDay(t.dataset.d);break;
     case 'addleave':openDay(todayStr(),{type:['annual','casual','sick','unpaid','halfAM','halfPM'].includes(ui.ltype)?ui.ltype:'annual'});break;
     case 'close':closeModal();break;
+    case 'planot':otForm();break;
+    case 'saveot':saveOt();break;
+    case 'otcancel':otCancel();break;
+    case 'ot-home':otHome();break;
+    case 'ot-stay':otStayAsk();break;
+    case 'ot-back':otSnooze[todayStr()]=0;closeModal();checkOt();break;
+    case 'ot-stay-save':otStaySave();break;
     case 'saveday':saveDay();break;
+    case 'bal-in':saveDay('in');break;
+    case 'bal-out':saveDay('out');break;
+    case 'bal-back':renderDay();break;
     case 'addrow':draft[t.dataset.key].push({from:'',to:''});renderDay();break;
     case 'delrow':draft[t.dataset.key].splice(+t.dataset.i,1);renderDay();break;
     case 'delday':{const d=draft._orig;ask('Delete the record for '+dayShort(d)+'?','Delete').then(ok=>{if(ok){delete S.days[d];save();closeModal();render();toast('Deleted')}});break}
@@ -1243,7 +1382,7 @@ document.addEventListener('input',ev=>{
   else return;
   previewDay();
 });
-window.addEventListener('popstate',()=>{closeMs();if(view!=='home'){view='home';render()}});
+window.addEventListener('popstate',()=>{closeMs();if(view==='settings'){view=prevView||'home';render()}else if(view!=='home'){view='home';render()}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeMs()});
 window.addEventListener('resize',closeMs);
 document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&t.id==='msmenu')return;closeMs()},true);
@@ -1252,10 +1391,42 @@ document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
   syncNative();
   if(view==='home'&&!$('#modal').classList.contains('show'))render();
+  checkOt();
 });
+setInterval(checkOt,20000);setTimeout(checkOt,800);
 
+buildTabs();
+/* ---- ripple on taps ---- */
+document.addEventListener('pointerdown',ev=>{
+  const b=ev.target.closest('.tab,.btn,.menu button,header button');if(!b||b.disabled)return;
+  const r=b.getBoundingClientRect(),sz=Math.max(r.width,r.height)*2.2,x=ev.clientX-r.left-sz/2,y=ev.clientY-r.top-sz/2;
+  const e=document.createElement('span');e.className='rip';e.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+x+'px;top:'+y+'px';
+  b.appendChild(e);setTimeout(()=>e.remove(),650);
+},{passive:true});
+/* ---- swipe the screen left/right to move between tabs ---- */
+(function(){
+  let sx=0,sy=0,mode=0,on=false;const el=()=>$('#view');
+  const blocked=t=>$('#modal').classList.contains('show')||$('#msmenu')||t.closest('input,textarea,select,.ms,#tabs,header');
+  document.addEventListener('touchstart',ev=>{
+    on=false;mode=0;if(ev.touches.length!==1||tabIdx(view)<0||blocked(ev.target))return;
+    sx=ev.touches[0].clientX;sy=ev.touches[0].clientY;on=true;el().classList.remove('snap');
+  },{passive:true});
+  document.addEventListener('touchmove',ev=>{
+    if(!on)return;const dx=ev.touches[0].clientX-sx,dy=ev.touches[0].clientY-sy;
+    if(!mode){if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.4)mode=1;else if(Math.abs(dy)>12){on=false;return}}
+    if(mode){const i=tabIdx(view),edge=(dx>0&&i===0)||(dx<0&&i===TABS.length-1);el().style.transform='translateX('+(dx*(edge?.12:.35))+'px)'}
+  },{passive:true});
+  document.addEventListener('touchend',ev=>{
+    if(!on||!mode){on=false;return}on=false;
+    const dx=ev.changedTouches[0].clientX-sx,i=tabIdx(view),e=el();
+    const nxt=dx<0?i+1:i-1;
+    if(Math.abs(dx)>70&&nxt>=0&&nxt<TABS.length){e.style.transform='';switchTab(TABS[nxt][0],dx<0?1:-1)}
+    else{e.classList.add('snap');e.style.transform='';setTimeout(()=>e.classList.remove('snap'),260)}
+  },{passive:true});
+  document.addEventListener('touchcancel',()=>{on=false;el().style.transform=''},{passive:true});
+})();
 applyTheme();
-window.__app={adjust:{setLeft:setLeft,setPermLeft:setPermLeft},planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
+window.__app={checkOt:checkOt,otSnooze:otSnooze,adjust:{setLeft:setLeft,setPermLeft:setPermLeft},planItems:planItems,parseIcs:parseIcs,mergeHolidays:mergeHolidays,updateHolidays:updateHolidays,parsePayslip:parsePayslip,payCompare:payCompare,calc:calc,kindOf:kindOf,monthStats:monthStats,yearStats:yearStats,get:()=>S,set:o=>{S=o;save();render()}};
 render();
 syncNative();
 if(hasNative()&&Date.now()-S.holLast>7*864e5)setTimeout(()=>updateHolidays(true),2500); /* refresh official holidays about once a week */
