@@ -5,134 +5,168 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Time Sheet</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#1e4fd8">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&display=swap" rel="stylesheet">
 <style>
-/* VOICE: practical, calm, a personal work tool you open daily.
-   IDEA: a punch-clock time card — stamped rows, a running total.
-   PICTURE: the entry form itself with a big live "stamped" result.
-   COLOUR and TYPE: steel panel, white card, black ink, time-clock red; Inter Tight + Inter, tabular figures.
-   LAYOUT: tab bar on top; form + result card; recent rows; report with tiles and a ledger table. */
+/* VOICE: practical, calm, a personal work tool you open daily on your phone.
+   IDEA: an Android expense-tracker app — but the "money" is hours: overtime, permission, leave.
+   PICTURE: a solid summary card (this month's overtime) over a day-grouped list with round category icons.
+   COLOUR and TYPE: Material 3 surfaces, deep blue primary, category colours kept; Roboto Flex, tabular figures.
+   LAYOUT: top app bar, single phone column, floating + button, bottom navigation bar; add/edit opens as a full screen. */
 :root{color-scheme:light dark;
---bg:light-dark(#d5dbe0,#16191c);--card:light-dark(#fff,#1f2327);--ink:light-dark(#111,#eef1f3);--mute:light-dark(#5b646c,#9aa4ad);
---line:light-dark(#dfe4e8,#30363c);--soft:light-dark(#f2f4f6,#262b30);--red:#e8251a;
---ot:#e8251a;--al:light-dark(#0b4f8a,#5aa2e6);--perm:light-dark(#0f7b6c,#3fc2ad);--sick:light-dark(#a3456f,#e07aa6);--trip:light-dark(#9a6200,#e0a640);--work:light-dark(#3d4650,#b8c2cc);--late:light-dark(#c2410c,#fb8a4c);--early:light-dark(#6d28d9,#a78bfa)}
+--bg:light-dark(#f6f7fb,#111318);--sur:light-dark(#fff,#1b1e24);--sur2:light-dark(#eef0f6,#252932);--ink:light-dark(#191c22,#e3e6ee);--mute:light-dark(#5d6371,#a2a9b8);
+--line:light-dark(#e2e5ee,#30353f);--pri:light-dark(#1e4fd8,#a9c0ff);--onpri:light-dark(#fff,#0d2466);--pric:light-dark(#dce5ff,#21366f);--onpric:light-dark(#0d2466,#dce5ff);
+--hero:light-dark(#1e4fd8,#21366f);--red:#e5281d;
+--ot:light-dark(#d62b20,#ff7a6e);--al:light-dark(#0b6bbf,#69b4ff);--perm:light-dark(#0f7b6c,#3fc2ad);--sick:light-dark(#a3456f,#e07aa6);--trip:light-dark(#9a6200,#e0a640);--work:light-dark(#4a5563,#b8c2cc);--late:light-dark(#c2410c,#fb8a4c);--early:light-dark(#6d28d9,#b9a0fb)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
-h1,h2,h3{font-family:"Inter Tight",Inter,sans-serif;margin:0;line-height:1.1}
-.wrap{max-width:980px;margin:0 auto;padding:0 max(4vw,14px) 60px}
-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 14px}
-h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em}
-h1 b{color:var(--red)}
-.status{font-size:13px;color:var(--mute)}
-nav{display:flex;gap:6px;background:var(--card);padding:5px;border-radius:14px;margin-bottom:18px}
-nav a{flex:1;text-align:center;padding:11px 4px;font-size:15px;border-radius:10px;color:var(--ink);text-decoration:none;font-weight:600;min-height:44px}
-nav a.on{background:var(--ink);color:var(--card)}
-.card{background:var(--card);border-radius:16px;padding:clamp(16px,3vw,26px);margin-bottom:16px}
-.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px}
-.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:18px}
-.cats button{border:2px solid var(--line);background:var(--soft);color:var(--ink);border-radius:12px;padding:10px 4px;font:600 14px Inter,sans-serif;min-height:52px;cursor:pointer}
-.cats button.on{border-color:var(--c);background:var(--c);color:#fff}
-label{display:block;font-size:14px;font-weight:600;margin-bottom:6px;color:var(--mute)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Roboto Flex",Roboto,system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;line-height:1.15;font-weight:600}
+svg.i{width:24px;height:24px;fill:currentColor;flex:none}
+.appbar{position:sticky;top:0;z-index:4;background:var(--bg);display:flex;align-items:center;gap:8px;padding:10px max(4vw,12px);min-height:64px}
+.appbar h1{font-size:22px;flex:1}
+.appbar .ib{background:transparent}
+.status{font-size:12px;color:var(--mute);background:var(--sur2);border-radius:20px;padding:4px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw}
+main{max-width:720px;margin:0 auto;padding:0 max(4vw,12px) 120px}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--sur);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 4px calc(8px + env(safe-area-inset-bottom))}
+.bnav a{flex:1;max-width:160px;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:var(--mute);font-size:12px;font-weight:500;min-height:56px;padding-top:4px}
+.bnav a span.pill{display:flex;justify-content:center;align-items:center;width:60px;height:32px;border-radius:16px;transition:background .2s}
+.bnav a.on{color:var(--ink);font-weight:700}.bnav a.on span.pill{background:var(--pric);color:var(--onpric)}
+.fab{position:fixed;right:max(4vw,16px);bottom:calc(86px + env(safe-area-inset-bottom));z-index:5;width:60px;height:60px;border-radius:18px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgb(0 0 0/.25);text-decoration:none}
+@media(min-width:760px){.fab{right:calc(50% - 360px + 8px)}}
+.card{background:var(--sur);border-radius:20px;padding:16px;margin-bottom:12px}
+h2{font-size:18px;margin-bottom:10px}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:18px 4px 8px}.sec h2{margin:0}.sec a{color:var(--pri);font-weight:600;font-size:14px;text-decoration:none}
+/* hero */
+.hero{background:var(--hero);color:#fff;border-radius:24px;padding:20px;margin:4px 0 12px}
+.hero .lbl{font-size:14px;opacity:.85}
+.hero .big{font-size:clamp(40px,11vw,54px);font-weight:700;line-height:1.05;letter-spacing:-.01em;margin:4px 0 2px;white-space:nowrap}
+.hero .sub{font-size:14px;opacity:.85}
+.hero .trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+.hero .trio div{background:rgb(255 255 255/.14);border-radius:14px;padding:10px}
+.hero .trio small{display:block;font-size:12px;opacity:.85}.hero .trio b{font-size:17px;white-space:nowrap}
+/* meters */
+.meters{display:grid;gap:14px}
+.meter{display:flex;gap:12px;align-items:center}.meter .mb{flex:1}
+.meter .top{display:flex;justify-content:space-between;font-size:14px;gap:8px}.meter .top b{white-space:nowrap}
+.bar{height:8px;background:var(--sur2);border-radius:4px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--c);border-radius:4px}
+/* avatars & lists */
+.av{width:42px;height:42px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
+.av svg{width:22px;height:22px;fill:currentColor}
+.list{list-style:none;margin:0;padding:0}
+.day{font-size:13px;font-weight:600;color:var(--mute);display:flex;justify-content:space-between;padding:12px 4px 6px}
+.group{background:var(--sur);border-radius:20px;padding:4px 0;margin-bottom:4px}
+.group li{display:flex;align-items:center;gap:4px;padding:0 6px 0 0}
+.group li+li{border-top:1px solid var(--line)}
+.rowb{flex:1;display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--ink);font:inherit;text-align:left;padding:10px 4px 10px 12px;cursor:pointer;min-height:60px;border-radius:16px}
+.rowb .t{flex:1}.rowb .t b{font-weight:500;display:block}.rowb .t small{display:block;color:var(--mute);font-size:13px;line-height:1.35}
+.amt{font-weight:600;white-space:nowrap;text-align:right}.amt.neg{color:var(--late)}.amt.pos{color:var(--ot)}
+.ib{border:0;background:var(--sur2);color:var(--ink);border-radius:20px;min-width:40px;min-height:40px;font:500 13px "Roboto Flex",sans-serif;cursor:pointer;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.ib.icon{padding:0;width:40px;background:transparent;color:var(--mute)}
+.empty{color:var(--mute);text-align:center;padding:26px 8px}
+/* add screen */
+.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 4px;margin-bottom:8px}
+.cats button{border:0;background:none;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 2px;font:500 12.5px/1.2 "Roboto Flex",sans-serif;cursor:pointer;border-radius:14px;min-height:80px}
+.cats button .av{width:48px;height:48px;transition:transform .15s}
+.cats button.on{background:color-mix(in srgb,var(--c) 10%,transparent);font-weight:700}
+.cats button.on .av{background:var(--c);color:#fff}
+.amountbox{text-align:center;padding:8px 0 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.amountbox .big{font-size:clamp(42px,12vw,58px);font-weight:700;line-height:1.05;color:var(--c,var(--pri));white-space:nowrap}
+.amountbox .why{color:var(--mute);font-size:14px;margin-top:6px}
+label{display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:var(--mute)}
 .row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:14px}
 .f{margin-bottom:14px}
-input,select{width:100%;font:16px Inter,sans-serif;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink);min-height:46px}
-input:focus,select:focus,button:focus-visible,nav a:focus-visible{outline:3px solid var(--red);outline-offset:1px}
-.check{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--ink);min-height:44px;cursor:pointer}
-.check input{width:22px;height:22px;min-height:0;accent-color:var(--red)}
-.seg{display:flex;gap:6px}.seg button{flex:1;border:1.5px solid var(--line);background:var(--soft);color:var(--ink);border-radius:10px;min-height:46px;font:600 15px Inter,sans-serif;cursor:pointer}
-.seg button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
-.btn{border:0;border-radius:12px;background:var(--red);color:#fff;font:700 16px Inter,sans-serif;padding:14px 18px;min-height:50px;width:100%;cursor:pointer}
-.btn.ghost{background:var(--soft);color:var(--ink)}
-.btns{display:flex;gap:8px;flex-wrap:wrap}.btns>*{flex:1 1 160px}.upbox .btn{display:flex;align-items:center;justify-content:center;height:100%;min-height:50px}
-.stamp{border:2px dashed var(--c,var(--red));border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
-.stamp .big{font:700 clamp(40px,8vw,60px)/1 "Inter Tight",sans-serif;color:var(--c,var(--red));white-space:nowrap}
-.stamp .why{color:var(--mute);font-size:14px;margin-top:8px}
-.msg{font-size:14px;border-radius:10px;padding:10px 12px;margin-top:10px}
-.msg.warn{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--ink)}
-.msg.ok{background:var(--soft);color:var(--mute)}
-.meters{display:grid;gap:12px}
-.meter .top{display:flex;justify-content:space-between;font-size:14px;gap:8px}.meter .top b{white-space:nowrap}
-.bar{height:10px;background:var(--soft);border-radius:6px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:var(--c)}
-h2{font-size:20px;margin-bottom:12px}
-.list{list-style:none;margin:0;padding:0}
-.list li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
-.list .t{flex:1}.list .t small{display:block;color:var(--mute);font-size:13px}
-.amt{font-weight:700;white-space:nowrap}
-.ib{border:0;background:var(--soft);color:var(--ink);border-radius:8px;min-width:44px;min-height:40px;font:600 13px Inter,sans-serif;cursor:pointer;padding:0 10px}
+input,select{width:100%;font:16px "Roboto Flex",sans-serif;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--sur2);color:var(--ink);min-height:50px}
+input:focus,select:focus{outline:2px solid var(--pri);outline-offset:0;border-color:transparent}
+button:focus-visible,a:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.check{display:flex;align-items:center;gap:12px;font-weight:500;color:var(--ink);min-height:44px;cursor:pointer;font-size:15px;margin:0}
+.check input{width:22px;height:22px;min-height:0;accent-color:var(--pri)}
+.seg{display:flex;border:1px solid var(--line);border-radius:24px;overflow:hidden}.seg button{flex:1;border:0;background:transparent;color:var(--ink);min-height:44px;font:500 15px "Roboto Flex",sans-serif;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}.seg button.on{background:var(--pric);color:var(--onpric);font-weight:700}
+.btn{border:0;border-radius:26px;background:var(--pri);color:var(--onpri);font:600 16px "Roboto Flex",sans-serif;padding:14px 20px;min-height:52px;width:100%;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.btn.ghost{background:var(--sur2);color:var(--ink)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}.btns>*{flex:1 1 160px}
+.savebar{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom));padding-top:8px;background:linear-gradient(transparent,var(--bg) 30%)}
+.msg{font-size:14px;border-radius:12px;padding:10px 12px;margin-top:8px}
+.msg.warn{background:color-mix(in srgb,var(--red) 13%,transparent);color:var(--ink)}
+.msg.ok{background:var(--sur2);color:var(--mute)}
+.msg.info{background:var(--pric);color:var(--onpric)}
+.wake{padding:14px;border-radius:20px;background:var(--pric);color:var(--onpric);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.wake p{margin:0;flex:1 1 200px}.wake a{color:inherit;font-size:14px}.wake .btn{width:auto}
+.fix{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.fix p{margin:0;flex:1 1 240px;font-size:14px}.fix .btn{width:auto}
+/* report */
 .filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.tile{background:var(--card);border-radius:14px;padding:14px;border:2px solid transparent;cursor:pointer;text-align:left;color:var(--ink);font:inherit}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.tile{background:var(--sur);border-radius:20px;padding:14px;border:2px solid transparent;cursor:pointer;text-align:left;color:var(--ink);font:inherit;display:flex;flex-direction:column;gap:2px}
 .tile.on{border-color:var(--c)}
-.tile .k{font-size:13px;color:var(--mute);display:flex;align-items:center;gap:6px}
-.tile .v{font:700 clamp(24px,4vw,32px)/1.1 "Inter Tight",sans-serif;color:var(--c);margin:6px 0 2px;white-space:nowrap}
+.tile .k{font-size:13px;color:var(--mute);display:flex;align-items:center;gap:8px}.tile .k .av{width:30px;height:30px}.tile .k .av svg{width:17px;height:17px}
+.tile .v{font-size:clamp(22px,6vw,28px);font-weight:700;line-height:1.1;color:var(--c);margin:8px 0 2px;white-space:nowrap}
 .tile .s{font-size:13px;color:var(--mute)}
+.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:600px){.tiles.t3{grid-template-columns:minmax(0,1fr)}}
 table{width:100%;border-collapse:collapse;font-size:15px}
-th{text-align:left;font-size:13px;color:var(--mute);font-weight:600;padding:8px 6px;border-bottom:2px solid var(--ink)}
+th{text-align:left;font-size:13px;color:var(--mute);font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}
 td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
 td.n,th.n{text-align:right;white-space:nowrap}
-tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--ink)}
+tfoot td{font-weight:700;border-bottom:0}
 .tag{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none;display:inline-block}
 .mini{display:inline-block;height:6px;background:var(--ot);border-radius:3px;vertical-align:middle;margin-right:6px}
 .flag{color:var(--red);font-size:12px;font-weight:600}
-.empty{color:var(--mute);text-align:center;padding:26px 8px}
-.wake{margin-top:14px;padding:14px;border-radius:12px;background:var(--soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap}.wake p{margin:0;flex:1 1 200px}.wake a{color:var(--ink);font-size:14px}.wake .btn{width:auto}
-.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.pgrid .card{margin-bottom:0}.pgrid small[dir]{text-align:left}
-.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:600px){.tiles.t3{grid-template-columns:minmax(0,1fr)}}
-.split{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--soft)}.split i{display:block;height:100%}
-.upbox{position:relative;display:inline-block;overflow:hidden;border-radius:12px}.upbox input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:200px;min-height:0;padding:0;border:0}
-.upbox:focus-within{outline:3px solid var(--red);outline-offset:2px}
-.upl{display:inline-flex;align-items:center;justify-content:center;width:auto;padding:14px 22px}
-@media(max-width:900px){.pgrid{grid-template-columns:minmax(0,1fr)}.pgrid .card{margin-bottom:0}}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 12px 10px 16px;border-radius:12px;display:none;align-items:center;gap:12px;z-index:5;max-width:92vw}
-.toast.show{display:flex}.toast button{background:var(--red);color:#fff;border:0;border-radius:8px;min-height:38px;padding:0 12px;font-weight:700;cursor:pointer}
+.pgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.pgrid .card{margin-bottom:0}
+.pgrid .list li{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.pgrid .list .t{flex:1}.pgrid .list .t small{display:block;color:var(--mute);font-size:13px;text-align:left}
+.payhero .lbl,.payhero .sub{opacity:.85}
+.split{display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgb(255 255 255/.2);margin-top:14px}.split i{display:block;height:100%}
+.upbox{position:relative;display:block;overflow:hidden;border-radius:26px}.upbox input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:200px;min-height:0;padding:0;border:0}
+.upbox:focus-within{outline:3px solid var(--pri);outline-offset:2px}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--sur);padding:10px 10px 10px 16px;border-radius:12px;display:none;align-items:center;gap:12px;z-index:6;max-width:92vw;font-size:14px}
+.toast.show{display:flex}.toast button{background:transparent;color:var(--pric);border:0;min-height:38px;padding:0 10px;font-weight:700;cursor:pointer}
 .note{font-size:13px;color:var(--mute)}
 [hidden]{display:none!important}
 .scroll{overflow-x:auto}
-@media(max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile:last-child:nth-child(odd){grid-column:1/-1}}
-@media(max-width:600px){.cats{grid-template-columns:repeat(2,minmax(0,1fr))}.cats button{min-height:46px}.filters{grid-template-columns:minmax(0,1fr)}
+@media(max-width:600px){.filters{grid-template-columns:minmax(0,1fr)}
 table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;color:var(--mute);font-size:13px;font-weight:600}.stack td:empty{display:none}.stack td.n{text-align:start}.stack tfoot tr{border:0}}
-@media(prefers-reduced-motion:no-preference){.stamp .big{transition:transform .2s}.stamp.pop .big{transform:scale(1.06)}}
+@media(prefers-reduced-motion:no-preference){.amountbox .big{transition:transform .2s}.cats button:active .av{transform:scale(.92)}}
 </style>
 <script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
 </head>
 <body>
-<div class="wrap">
-<header><h1>Time Sheet<b>.</b></h1><span class="status" id="status">Connecting…</span></header>
-<nav><a href="#log" id="t-log">Enter data</a><a href="#report" id="t-report">Report</a><a href="#pay" id="t-pay">Payslip</a><a href="#setup" id="t-setup">Settings</a></nav>
+<header class="appbar">
+ <a href="#home" class="ib icon" id="back" hidden aria-label="Back"><svg class="i" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></a>
+ <h1 id="barTitle">Time Sheet</h1><span class="status" id="status">Connecting…</span>
+</header>
+<main>
+<section id="v-home">
+ <div class="hero" id="hero"></div>
+ <div class="wake" id="wake" hidden></div>
+ <div class="card fix" id="fix" hidden></div>
+ <div class="sec"><h2 id="mTitle">This month</h2><a href="#report">See report</a></div>
+ <div class="card"><div class="meters" id="meters"></div></div>
+ <div class="sec"><h2>Recent</h2></div>
+ <div id="recent"></div>
+</section>
 
-<section id="v-log">
- <div class="grid">
-  <div class="card">
-   <div class="cats" id="cats"></div>
-   <div id="fTime">
-    <div class="f"><label for="date">Date</label><input type="date" id="date"></div>
-    <div class="row"><div id="inWrap"><label for="tin">Clock in</label><input type="time" id="tin"></div><div id="outWrap"><label for="tout">Clock out</label><input type="time" id="tout"></div></div>
-    <label class="check" id="holWrap"><input type="checkbox" id="hol"> Official holiday</label>
-    <label class="check" id="compWrap" hidden style="padding-left:32px"><input type="checkbox" id="comp"> Add 1 day to my annual leave instead of overtime</label>
-   </div>
-   <div id="fLeave" hidden>
-    <div class="row"><div><label for="from">From</label><input type="date" id="from"></div><div><label for="to">To (optional)</label><input type="date" id="to"></div></div>
-    <div class="f"><label>Length</label><div class="seg" id="portion"><button type="button" data-p="full" class="on">Full day</button><button type="button" data-p="half">Half day</button></div></div>
-   </div>
-   <div class="f"><label for="note">Note (optional)</label><input id="note" maxlength="120" placeholder="e.g. Month-end closing"></div>
-   <div class="btns"><button class="btn" id="save">Save entry</button><button class="btn ghost" id="cancel" hidden>Cancel edit</button></div>
-   <div class="wake" id="wake" hidden></div>
-  </div>
-  <div>
-   <div class="card">
-    <div class="stamp" id="stamp"><div class="big" id="big">—</div><div class="why" id="why">Fill in the form to see the result</div></div>
-    <div id="msgs"></div>
-   </div>
-   <div class="card"><h2 id="mTitle">This month</h2><div class="meters" id="meters"></div></div>
-  </div>
+<section id="v-add" hidden>
+ <div class="card">
+  <div class="amountbox" id="stamp"><div class="big" id="big">—</div><div class="why" id="why">Fill in the form to see the result</div></div>
+  <div class="cats" id="cats"></div>
  </div>
- <div class="card"><h2>Latest entries</h2><ul class="list" id="recent"></ul></div>
+ <div class="card">
+  <div id="fTime">
+   <div class="f"><label for="date">Date</label><input type="date" id="date"></div>
+   <div class="row"><div id="inWrap"><label for="tin">Clock in</label><input type="time" id="tin"></div><div id="outWrap"><label for="tout">Clock out</label><input type="time" id="tout"></div></div>
+   <label class="check" id="holWrap"><input type="checkbox" id="hol"> Official holiday</label>
+   <label class="check" id="compWrap" hidden style="padding-left:34px"><input type="checkbox" id="comp"> Add 1 day to my annual leave instead of overtime</label>
+  </div>
+  <div id="fLeave" hidden>
+   <div class="row"><div><label for="from">From</label><input type="date" id="from"></div><div><label for="to">To (optional)</label><input type="date" id="to"></div></div>
+   <div class="f"><label>Length</label><div class="seg" id="portion"><button type="button" data-p="full" class="on">Full day</button><button type="button" data-p="half">Half day</button></div></div>
+  </div>
+  <div class="f" style="margin:8px 0 0"><label for="note">Note (optional)</label><input id="note" maxlength="120" placeholder="e.g. Month-end closing"></div>
+  <div id="msgs"></div>
+ </div>
+ <div class="savebar"><div class="btns"><button class="btn ghost" id="cancel" hidden>Cancel edit</button><button class="btn" id="save">Save entry</button></div></div>
 </section>
 
 <section id="v-report" hidden>
@@ -152,7 +186,7 @@ table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-bl
  <div class="card">
   <h2>Upload payslips</h2>
   <p class="note" style="margin-top:0">Choose the payslip .htm file from your email. You can pick several months at once; uploading a month again replaces it. Payslips are saved on this phone.</p>
-  <div class="upbox"><span class="btn upl" aria-hidden="true">Upload payslip files</span><input type="file" id="payFile" multiple aria-label="Upload payslip files"></div>
+  <div class="upbox"><span class="btn" aria-hidden="true">Upload payslip files</span><input type="file" id="payFile" multiple aria-label="Upload payslip files"></div>
   <div id="payMsg"></div>
  </div>
  <div class="card filters">
@@ -167,9 +201,9 @@ table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-bl
  <div class="card">
   <h2>Your rules</h2>
   <div class="row"><div><label for="sStart">Shift start (Sun–Thu)</label><input type="time" id="sStart"></div><div><label for="sEnd">Shift end (Sun–Thu)</label><input type="time" id="sEnd"></div></div>
-  <div class="row"><div><label for="sAnnual">Annual leave days per year</label><input type="number" min="0" step="0.5" id="sAnnual"></div><div><label for="sPerm">Permission hours per month</label><input type="number" min="0" step="0.5" id="sPerm"></div></div>
+  <div class="row"><div><label for="sAnnual">Annual leave days / year</label><input type="number" min="0" step="0.5" id="sAnnual"></div><div><label for="sPerm">Permission hours / month</label><input type="number" min="0" step="0.5" id="sPerm"></div></div>
   <div class="f"><label for="sWake">Wake-up time for weekend or holiday work</label><input type="time" id="sWake"></div>
-  <p class="note">Friday and Saturday are your weekend: overtime there counts the full period, as on official holidays. Workdays and business trips: overtime is the time outside your shift. On a workday, arriving after the shift start or leaving before the shift end is rounded up to the next 30 minutes; if the whole amount fits in what's left of your monthly permission it is taken from permission, otherwise it is recorded as late coming or early leaving. Leave spanning several days skips Fridays and Saturdays; if an official holiday falls inside, delete that day's entry.</p>
+  <p class="note">Workdays and business trips: overtime is only the time after your shift end. Arriving before the shift start is never counted as overtime. Friday and Saturday are your weekend: overtime there counts the full period, as on official holidays. On a workday, arriving after the shift start or leaving before the shift end is rounded up to the next 30 minutes; if the whole amount fits in what's left of your monthly permission it is taken from permission, otherwise it is recorded as late coming or early leaving. Leave spanning several days skips Fridays and Saturdays; if an official holiday falls inside, delete that day's entry.</p>
   <button class="btn" id="sSave">Save settings</button>
  </div>
  <div class="card" id="driveCard" hidden>
@@ -182,7 +216,7 @@ table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-bl
  <div class="card">
   <h2>Backup &amp; restore</h2>
   <p class="note" style="margin-top:0">Save all your entries, payslips and settings in one file. Restore it here or in the standalone app to move your data. Restoring adds and updates entries — it never deletes anything.</p>
-  <div class="btns"><button class="btn" id="bkExport">Export backup</button><div class="upbox"><span class="btn ghost" style="display:block;text-align:center" aria-hidden="true">Restore from file</span><input type="file" id="bkFile" aria-label="Restore from backup file"></div></div>
+  <div class="btns"><button class="btn" id="bkExport">Export backup</button><div class="upbox"><span class="btn ghost" aria-hidden="true">Restore from file</span><input type="file" id="bkFile" aria-label="Restore from backup file"></div></div>
   <div id="bkMsg"></div>
  </div>
  <div class="card">
@@ -193,13 +227,30 @@ table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-bl
   <ul class="list" id="adjList" style="margin-top:12px"></ul>
  </div>
 </section>
-</div>
-<div class="toast" id="toast"><span id="toastT"></span><button id="toastB">Undo</button></div>
+</main>
+
+<a href="#add" class="fab" id="fab" aria-label="Add entry"><svg class="i" viewBox="0 0 24 24" style="width:28px;height:28px"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></a>
+<nav class="bnav">
+ <a href="#home" id="t-home"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>Home</a>
+ <a href="#report" id="t-report"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg></span>Report</a>
+ <a href="#pay" id="t-pay"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M18 17H6v-2h12v2zm0-4H6v-2h12v2zm0-4H6V7h12v2zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2v20z"/></svg></span>Payslip</a>
+ <a href="#setup" id="t-setup"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg></span>Settings</a>
+</nav>
+<div class="toast" id="toast" role="status"><span id="toastT"></span><button id="toastB">Undo</button></div>
 
 <script>
 {
+const ICON={work:'M10 4h4a2 2 0 0 1 2 2v1h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4V6a2 2 0 0 1 2-2zm0 3h4V6h-4z',
+ ot:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5v5.4l4 2.4-1 1.7-5-3V7z',
+ trip:'M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z',
+ perm:'M6 2h12v6l-4 4 4 4v6H6v-6l4-4-4-4zm2 2v3.2l4 4 4-4V4zm4 8.8-4 4V20h8v-3.2z',
+ late:'M11 7 9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5zm9 12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-8v2h8z',
+ early:'M17 7l-1.4 1.4 2.6 2.6H8v2h10.2l-2.6 2.6L17 17l5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4z',
+ al:'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4zm12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1zM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1z',
+ sick:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z'};
 const CATS={work:{n:'Workday',c:'var(--work)'},ot:{n:'Overtime',c:'var(--ot)'},trip:{n:'Business trip',c:'var(--trip)'},perm:{n:'Permission',c:'var(--perm)'},
  late:{n:'Late coming',c:'var(--late)'},early:{n:'Early leaving',c:'var(--early)'},al:{n:'Annual leave',c:'var(--al)'},sick:{n:'Sick leave',c:'var(--sick)'}};
+const av=k=>`<span class="av" style="--c:${CATS[k].c}"><svg viewBox="0 0 24 24"><path d="${ICON[k]}"/></svg></span>`;
 const TIMED=['work','ot','trip','perm','late','early'],DAYCAT=['al','sick'];
 const DEF={start:'08:30',end:'17:30',annual:21,perm:2,wake:'06:15',alFix:{'2026':{remaining:0.5,asOf:'2026-11-24'}}};
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -213,6 +264,7 @@ const dd=d=>{const n=+d;return (n%1?n.toFixed(1):n)+(n===1?' day':' days')};
 const dow=d=>new Date(d+'T00:00').getDay();
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const today=iso(new Date());
+const yesterday=(()=>{const d=new Date();d.setDate(d.getDate()-1);return iso(d)})();
 const fmtDate=d=>{const x=new Date(d+'T00:00');return `${x.getDate()} ${MONTHS[x.getMonth()].slice(0,3)} ${x.getFullYear()}`};
 const monthName=ym=>MONTHS[+ym.slice(5,7)-1];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -220,12 +272,13 @@ const r30=m=>Math.ceil(m/30)*30;
 const weekend=d=>{const w=dow(d);return w===5||w===6};
 
 function span(a,b){let x=toMin(a),y=toMin(b);if(y<=x)y+=1440;return[x,y]}
+/* Workdays & trips: only time after the shift end is overtime — clocking in before the shift start never counts */
 function calcOT(date,a,b,hol){
  const[x,y]=span(a,b),total=y-x,w=dow(date);
- if(hol)return{mins:total,total,why:'Official holiday — full period counts'};
- if(weekend(date))return{mins:total,total,why:`${DAYS[w]} (weekend) — full period counts`};
- const s=toMin(S.start),e=toMin(S.end),ov=Math.max(0,Math.min(y,e)-Math.max(x,s));
- return{mins:total-ov,total,why:`time outside your ${S.start}–${S.end} shift`};
+ if(hol)return{mins:total,total,early:0,why:'Official holiday — full period counts'};
+ if(weekend(date))return{mins:total,total,early:0,why:`${DAYS[w]} (weekend) — full period counts`};
+ const s=toMin(S.start),e=toMin(S.end),early=x<s?Math.min(y,s)-x:0,mins=Math.max(0,y-Math.max(x,e));
+ return{mins,total,early,why:early?`time after your ${S.end} shift end (before ${S.start} not counted)`:`time after your ${S.end} shift end`};
 }
 const lateBy=inT=>{const d=Math.min(toMin(inT),toMin(S.end))-toMin(S.start);return d>0?r30(d):0};
 const earlyBy=(outT,inT)=>{if(inT&&toMin(outT)<=toMin(inT))return 0;const d=toMin(S.end)-Math.max(toMin(outT),toMin(S.start));return d>0?r30(d):0};
@@ -236,11 +289,9 @@ function leaveDays(from,to){
 const skipEdit=e=>editId&&(e.id===editId||e.parent===editId);
 const permUsed=ym=>entries.filter(e=>e.cat==='perm'&&e.date.startsWith(ym)&&!skipEdit(e)).reduce((s,e)=>s+e.mins,0);
 const leaveUsed=(c,y)=>entries.filter(e=>e.cat===c&&e.date.startsWith(y)&&!skipEdit(e)).reduce((s,e)=>s+e.days,0);
-/* annual leave left in a year: a set balance minus leave dated after it was set, else the normal allowance minus all leave that year */
 const compDays=(y,after)=>entries.filter(e=>e.comp&&e.date.startsWith(y)&&(!after||e.date>after)&&!skipEdit(e)).length;
 const alLeft=y=>{const f=(S.alFix||{})[y];if(f)return f.remaining+compDays(y,f.asOf)-entries.filter(e=>e.cat==='al'&&e.date.startsWith(y)&&e.date>f.asOf&&!skipEdit(e)).reduce((s,e)=>s+e.days,0);return S.annual+compDays(y)-leaveUsed('al',y)};
 const alCap=y=>{const f=(S.alFix||{})[y];return f?`balance set to ${dd(f.remaining)} on ${fmtDate(f.asOf)}`:`${S.annual}-day allowance`};
-/* late / early → permission if the whole amount fits in what's left this month, else its own category */
 function deduct(date,items){
  let left=S.perm*60-permUsed(date.slice(0,7));
  return items.filter(i=>i.mins>0).map(i=>{const word=i.kind==='late'?'late coming':'early leaving',t=i.kind==='late'?`clocked in ${i.time}`:`clocked out ${i.time}`;
@@ -252,7 +303,7 @@ const plus15=t=>{const m=toMin(t)+15;return String(Math.floor(m/60)%24).padStart
 const gcalLink=d=>{const a=d.replace(/-/g,'')+'T'+S.wake.replace(':','')+'00',b=d.replace(/-/g,'')+'T'+plus15(S.wake).replace(':','')+'00';
  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Wake up – work today')+'&dates='+a+'/'+b+'&ctz=Africa/Cairo'};
 function showWake(e,failed){const w=$('wake');w.hidden=false;
- if(!mcp)w.innerHTML=`<p><b>Working ${DAYS[dow(e.date)]} ${fmtDate(e.date)}?</b><br>Add a ${esc(S.wake)} wake-up to Google Calendar, then tap Save there.</p><a class="btn" style="text-align:center;text-decoration:none;color:#fff" href="${gcalLink(e.date)}" target="_blank" rel="noopener">Open Google Calendar</a>`;
+ if(!mcp)w.innerHTML=`<p><b>Working ${DAYS[dow(e.date)]} ${fmtDate(e.date)}?</b><br>Add a ${esc(S.wake)} wake-up to Google Calendar, then tap Save there.</p><a class="btn" href="${gcalLink(e.date)}" target="_blank" rel="noopener">Open Google Calendar</a>`;
  else w.innerHTML=failed?`<p>Couldn't add it automatically. <a href="${gcalLink(e.date)}" target="_blank" rel="noopener">Open Google Calendar to add the ${esc(S.wake)} wake-up</a>, then tap Save there.</p>`
  :`<p><b>Working ${DAYS[dow(e.date)]} ${fmtDate(e.date)}?</b><br>Add a ${esc(S.wake)} wake-up alert to your Google Calendar.</p><button class="btn" data-wake="${e.id}">Add wake-up</button>`}
 async function addWake(id){const e=entries.find(x=>x.id===id);if(!e)return;
@@ -279,17 +330,17 @@ async function connect(){
   claude.use('mcp').then(m=>{mcp=m}).catch(()=>{});claude.use('downloads').then(d=>{dl=d}).catch(()=>{});
   if(!db||!id)throw 0;
   col=db.collection('data/users/'+id);
-  const timer=setTimeout(()=>setStatus('Still connecting — data may be out of date'),10000);
+  const timer=setTimeout(()=>setStatus('Still connecting…'),10000);
   col.onSnapshot(snap=>{
    const list=[],pl=[];snap.docs.forEach(d=>{const v=d.data();if(d.id==='settings')S={...DEF,...v};else if(d.id.startsWith('pay-'))pl.push({...v,id:d.id});else list.push({...v,id:d.id})});
-   entries=list;pays=pl;if(!snap.metadata.fromCache){clearTimeout(timer);setStatus('Saved to your account · private to you')}
+   entries=list;pays=pl;if(!snap.metadata.fromCache){clearTimeout(timer);setStatus('Synced · private')}
    renderAll();
-  },err=>{clearTimeout(timer);setStatus('Could not reach saved data ('+err.code+')')});
- }catch(e){col=null;localLoad();if(window.Android&&Android.storeBackup)localSave();setStatus('Saved on this phone · back up from Settings');renderAll()}
+  },err=>{clearTimeout(timer);setStatus('Offline ('+err.code+')')});
+ }catch(e){col=null;localLoad();if(window.Android&&Android.storeBackup)localSave();setStatus('Saved on this phone');renderAll()}
 }
 
-/* ---------- input screen ---------- */
-$('cats').innerHTML=Object.entries(CATS).map(([k,v])=>`<button type="button" data-c="${k}" style="--c:${v.c}">${v.n}</button>`).join('');
+/* ---------- add / edit screen ---------- */
+$('cats').innerHTML=Object.entries(CATS).map(([k,v])=>`<button type="button" data-c="${k}" style="--c:${v.c}">${av(k)}<span>${v.n}</span></button>`).join('');
 function setCat(c){cat=c;document.querySelectorAll('#cats button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));
  const time=TIMED.includes(c);$('fTime').hidden=!time;$('fLeave').hidden=time;
  $('inWrap').hidden=c==='early';$('outWrap').hidden=c==='late';$('holWrap').hidden=!['work','ot','trip'].includes(c);
@@ -304,11 +355,12 @@ function read(){
   if(needIn)r.in=a;if(needOut)r.out=b;r.hol=['work','ot','trip'].includes(cat)&&$('hol').checked;
   if(cat==='ot'||cat==='trip'||cat==='work'){
    const o=calcOT(r.date,a,b,r.hol);r.mins=o.mins;r.comp=r.hol&&$('comp').checked;
+   const earlyNote=o.early?`Clocked in ${dur(o.early)} before ${S.start} — not counted as overtime.`:'';
    if(r.comp){r.mins=0;const y=r.date.slice(0,4);r.big=cat==='ot'?'+1 day':dur(o.total);r.why=cat==='ot'?'Official holiday — added to annual leave':`Worked ${dur(o.total)} on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
     r.oks.push(`No overtime — 1 day added to your ${y} annual leave (${dd(alLeft(y)+(editId&&entries.find(e=>e.id===editId&&e.comp)?0:1))} left after this).`)}
-   else if(cat==='ot'){r.big=dur(o.mins);r.why=o.why.charAt(0).toUpperCase()+o.why.slice(1);if(!o.mins)r.warns.push('No overtime: these times are all inside your normal shift.')}
+   else if(cat==='ot'){r.big=dur(o.mins);r.why=o.why.charAt(0).toUpperCase()+o.why.slice(1);if(earlyNote)r.oks.push(earlyNote);if(!o.mins)r.warns.push(`No overtime: on a workday only time after ${S.end} counts.`)}
    else{r.big=dur(o.total);r.why=`Worked ${dur(o.total)} on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
-    r.oks.push(o.mins?`Overtime ${dur(o.mins)} (${o.why}).`:'No overtime.');
+    r.oks.push(o.mins?`Overtime ${dur(o.mins)} (${o.why}).`:'No overtime.');if(earlyNote)r.oks.push(earlyNote);
     if(cat==='work'&&!r.hol&&!weekend(r.date))r.ded=deduct(r.date,[{kind:'late',mins:lateBy(a),time:a},{kind:'early',mins:earlyBy(b,a),time:b}]);
     if(cat==='work'&&!r.ded.length&&!r.hol&&!weekend(r.date))r.oks.push('On time — no late coming or early leaving.')}
   }else if(cat==='perm'){const[x,y]=span(a,b);r.mins=y-x;r.big=dur(r.mins);r.why=`Permission on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
@@ -343,7 +395,7 @@ function preview(){
  return r;
 }
 function resetForm(){editId=null;['note','tin','tout','to'].forEach(i=>$(i).value='');$('hol').checked=false;$('comp').checked=false;$('to').disabled=false;
- $('save').textContent='Save entry';$('cancel').hidden=true;setPortion('full');preview()}
+ $('save').textContent='Save entry';$('cancel').hidden=true;setPortion('full');if(location.hash==='#add')$('barTitle').textContent='New entry';preview()}
 async function saveEntry(){
  const r=preview();if(r.errs.length)return;
  const base={note:r.note,created:Date.now()};let list=[],old=[];
@@ -358,37 +410,54 @@ async function saveEntry(){
  $('save').disabled=true;
  try{for(const e of old)await del(e.id);for(const e of list)await put(e);
   const extra=list.filter(e=>e.parent).map(e=>CATS[e.cat].n.toLowerCase()).join(' + ');
-  toast(`Saved ${CATS[cat].n.toLowerCase()}${extra?' + '+extra:''}`,false);resetForm();
+  toast(`Saved ${CATS[cat].n.toLowerCase()}${extra?' + '+extra:''}`,false);resetForm();location.hash='home';
   const w=list.find(e=>wakeable(e)&&!e.wake);if(w)showWake(w);else $('wake').hidden=true}
  catch(err){toast('Could not save — '+(err&&err.code||'try again'),false)}
  $('save').disabled=false;
 }
 function edit(id){let e=entries.find(x=>x.id===id);if(!e)return;if(e.parent){e=entries.find(x=>x.id===e.parent);if(!e)return}
- location.hash='log';const c=e.src||e.cat;setCat(c);editId=e.id;$('note').value=e.src?(e.usernote||''):(e.note||'');
+ const c=e.src||e.cat;setCat(c);editId=e.id;$('note').value=e.src?(e.usernote||''):(e.note||'');
  if(TIMED.includes(c)){$('date').value=e.date;$('tin').value=e.in||'';$('tout').value=e.out||'';$('hol').checked=!!e.hol;$('comp').checked=!!e.comp}
  else{$('from').value=e.date;$('to').value='';$('to').disabled=true;setPortion(e.days===.5?'half':'full')}
- $('save').textContent='Update entry';$('cancel').hidden=false;preview();window.scrollTo({top:0,behavior:'smooth'})}
+ $('save').textContent='Update entry';$('cancel').hidden=false;location.hash='add';$('barTitle').textContent='Edit entry';preview();window.scrollTo({top:0,behavior:'smooth'})}
 async function remove(id){const e=entries.find(x=>x.id===id);if(!e)return;const list=[e,...entries.filter(x=>x.parent===id)];
  try{for(const x of list)await del(x.id);undoList=list;toast(`Deleted ${CATS[e.cat].n.toLowerCase()} on ${fmtDate(e.date)}`,true)}catch(err){toast('Could not delete',false)}}
 let tt;function toast(t,undo){$('toastT').textContent=t;$('toastB').hidden=!undo;$('toast').classList.add('show');clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('show'),5000)}
 
+/* ---------- home ---------- */
 const sumM=(list,cats)=>list.filter(e=>cats.includes(e.cat)).reduce((s,e)=>s+(e.mins||0),0);
+/* saved workday/trip entries whose overtime differs under the current rule (e.g. early arrival was counted before) */
+const staleOT=()=>entries.filter(e=>['work','ot','trip'].includes(e.cat)&&!e.parent&&e.in&&e.out&&!e.comp&&!e.hol&&!weekend(e.date)&&calcOT(e.date,e.in,e.out,false).mins!==(e.mins||0));
+function renderFix(){const l=staleOT(),f=$('fix');if(!l.length){f.hidden=true;return}
+ const diff=l.reduce((s,e)=>s+(e.mins||0)-calcOT(e.date,e.in,e.out,false).mins,0);f.hidden=false;
+ f.innerHTML=`<p><b>${l.length} saved ${l.length===1?'entry counts':'entries count'} overtime the old way.</b><br>Early arrival before ${esc(S.start)} no longer counts. Updating ${diff>=0?`removes ${dur(diff)}`:`adds ${dur(-diff)}`} of overtime.</p><button class="btn" id="fixBtn">Update now</button>`}
+async function applyFix(){const l=staleOT();$('fixBtn').disabled=true;
+ try{for(const e of l)await put({...e,mins:calcOT(e.date,e.in,e.out,false).mins});toast(`Updated ${l.length} ${l.length===1?'entry':'entries'}`,false)}
+ catch(err){toast('Could not update — try again',false)}renderFix()}
+function renderHero(){
+ const ym=today.slice(0,7),y=today.slice(0,4),inM=entries.filter(e=>e.date.startsWith(ym)),ot=sumM(inM,['ot','work','trip']);
+ const otDays=inM.filter(e=>['ot','work','trip'].includes(e.cat)&&e.mins>0).length,permLeft=Math.max(0,S.perm*60-sumM(inM,['perm']));
+ $('hero').innerHTML=`<div class="lbl">Overtime in ${monthName(ym)} ${y}</div><div class="big">${dur(ot)}</div><div class="sub">${(ot/60).toFixed(2)} hours over ${otDays} ${otDays===1?'day':'days'}</div>
+  <div class="trio"><div><small>Workdays</small><b>${inM.filter(e=>e.cat==='work').length}</b></div><div><small>Permission left</small><b>${dur(permLeft)}</b></div><div><small>Leave left ${y}</small><b>${dd(alLeft(y))}</b></div></div>`}
 function renderMeters(){
- const ym=today.slice(0,7),y=today.slice(0,4),inM=entries.filter(e=>e.date.startsWith(ym));$('mTitle').textContent=`${monthName(ym)} ${y}`;
+ const ym=today.slice(0,7),y=today.slice(0,4),inM=entries.filter(e=>e.date.startsWith(ym));$('mTitle').textContent=`${monthName(ym)} at a glance`;
  const pm=sumM(inM,['perm']),al=entries.filter(e=>e.cat==='al'&&e.date.startsWith(y)).reduce((s,e)=>s+e.days,0);
  const n=c=>inM.filter(e=>e.cat===c).length;
- const m=(k,label,val,pct)=>`<div class="meter" style="--c:${CATS[k].c}"><div class="top"><span>${label}</span><b>${val}</b></div>${pct==null?'':`<div class="bar"><i style="width:${Math.min(100,pct)}%"></i></div>`}</div>`;
+ const m=(k,label,val,pct)=>`<div class="meter" style="--c:${CATS[k].c}">${av(k)}<div class="mb"><div class="top"><span>${label}</span><b>${val}</b></div>${pct==null?'':`<div class="bar"><i style="width:${Math.max(0,Math.min(100,pct))}%"></i></div>`}</div></div>`;
  $('meters').innerHTML=m('perm','Permission used',`${dur(pm)} of ${S.perm}h`,pm/(S.perm*60)*100)
-  +m('ot','Overtime (all days)',dur(sumM(inM,['ot','work','trip'])))
   +m('late','Late coming / early leaving',`${dur(sumM(inM,['late']))} / ${dur(sumM(inM,['early']))}`)
-  +m('work','Workdays · trip days',`${n('work')} · ${n('trip')}`)
+  +m('trip','Business trip days',`${n('trip')}`)
   +m('al',`Annual leave ${y}`,`${al} taken · ${dd(alLeft(y))} left`,(1-alLeft(y)/S.annual)*100)
   +m('sick','Sick leave this month',dd(inM.filter(e=>e.cat==='sick').reduce((s,e)=>s+e.days,0)));
 }
-function btns(e){const wk=wakeable(e)?(e.wake?'<span class="note">Wake-up set</span>':`<button class="ib" data-wake="${e.id}">Wake-up</button>`):'';return wk+(e.parent?`<button class="ib" data-edit="${e.id}">Edit day</button>`:`<button class="ib" data-edit="${e.id}">Edit</button><button class="ib" data-del="${e.id}" aria-label="Delete">✕</button>`)}
-function row(e){return `<li style="--c:${CATS[e.cat].c}"><span class="dot"></span><span class="t">${CATS[e.cat].n}${e.hol?' · holiday':''}${e.comp?' → leave day':''}<small>${DAYS[dow(e.date)]} ${fmtDate(e.date)}${e.in&&e.out?` · ${e.in}–${e.out}`:''}${e.note?' · '+esc(e.note):''}</small></span><span class="amt">${amount(e)}</span>${btns(e)}</li>`}
-function renderRecent(){const l=[...entries].sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created).slice(0,10);
- $('recent').innerHTML=l.length?l.map(row).join(''):'<li class="empty" style="display:block">No entries yet. Pick a category above and save your first one.</li>'}
+function row(e){const wk=wakeable(e)?(e.wake?'<span class="note" style="padding:0 6px">Wake-up set</span>':`<button class="ib" data-wake="${e.id}">Wake-up</button>`):'';
+ const cls=e.cat==='late'||e.cat==='early'?' neg':(e.mins>0&&['ot','work','trip'].includes(e.cat))?' pos':'';
+ return `<li><button class="rowb" data-edit="${e.id}" aria-label="Edit ${CATS[e.cat].n} on ${fmtDate(e.date)}">${av(e.cat)}<span class="t"><b>${CATS[e.cat].n}${e.hol?' · holiday':''}${e.comp?' → leave day':''}</b><small>${e.in&&e.out?`${e.in}–${e.out}`:e.in?`In ${e.in}`:e.out?`Out ${e.out}`:''}${e.note?(e.in||e.out?' · ':'')+esc(e.note):''}</small></span><span class="amt${cls}">${amount(e)}</span></button>${wk}${e.parent?'':`<button class="ib icon" data-del="${e.id}" aria-label="Delete"><svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></svg></button>`}</li>`}
+function renderRecent(){const l=[...entries].sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created).slice(0,15);
+ if(!l.length){$('recent').innerHTML='<div class="card empty">No entries yet. Tap + to add your first one.</div>';return}
+ const g=new Map();l.forEach(e=>{if(!g.has(e.date))g.set(e.date,[]);g.get(e.date).push(e)});
+ $('recent').innerHTML=[...g].map(([d,es])=>{const ot=es.filter(e=>['ot','work','trip'].includes(e.cat)).reduce((s,e)=>s+(e.mins||0),0);
+  return `<div class="day"><span>${d===today?'Today':d===yesterday?'Yesterday':DAYS[dow(d)]+', '+fmtDate(d)}</span><span>${ot?dur(ot)+' OT':''}</span></div><ul class="list group">${es.map(row).join('')}</ul>`}).join('')}
 
 /* ---------- report ---------- */
 function fillFilters(){
@@ -402,11 +471,10 @@ function renderReport(){
  fillFilters();rCat=$('fc').value;const p=period();
  const inP=entries.filter(e=>e.date.startsWith(p.prefix));
  const cnt=k=>inP.filter(e=>e.cat===k).length,days=k=>inP.filter(e=>e.cat===k).reduce((s,e)=>s+e.days,0);
- const alY=entries.filter(e=>e.cat==='al'&&e.date.startsWith(p.y)).reduce((s,e)=>s+e.days,0),pm=sumM(inP,['perm']);
- const otAll=sumM(inP,['ot','work','trip']),autoP=inP.filter(e=>e.cat==='perm'&&e.reason).length;
- const tile=(k,v,s)=>`<button class="tile${rCat===k?' on':''}" style="--c:${CATS[k].c}" data-tile="${k}"><span class="k"><span class="dot"></span>${CATS[k].n}</span><div class="v">${v}</div><span class="s">${s}</span></button>`;
- $('tiles').innerHTML=tile('work',dd(cnt('work')),`${dur(sumM(inP,['work']))} overtime`)
-  +tile('ot',dur(otAll),`${(otAll/60).toFixed(2)} h on all days`)
+ const pm=sumM(inP,['perm']),otAll=sumM(inP,['ot','work','trip']),autoP=inP.filter(e=>e.cat==='perm'&&e.reason).length;
+ const tile=(k,v,s)=>`<button class="tile${rCat===k?' on':''}" style="--c:${CATS[k].c}" data-tile="${k}"><span class="k">${av(k)}${CATS[k].n}</span><span class="v">${v}</span><span class="s">${s}</span></button>`;
+ $('tiles').innerHTML=tile('ot',dur(otAll),`${(otAll/60).toFixed(2)} h on all days`)
+  +tile('work',dd(cnt('work')),`${dur(sumM(inP,['work']))} overtime`)
   +tile('trip',dd(cnt('trip')),`${dur(sumM(inP,['trip']))} overtime`)
   +tile('perm',dur(pm),(p.m==='all'?`${cnt('perm')} times`:`of ${S.perm}h allowed`+(pm>S.perm*60?' · over':''))+(autoP?` · ${autoP} for late/early`:''))
   +tile('late',dur(sumM(inP,['late'])),`${cnt('late')} ${cnt('late')===1?'time':'times'}, no permission left`)
@@ -438,7 +506,7 @@ const EN={'المرتبالأساسي':'Basic salary','علاوةالسنةال�
  'فاتورةمحمول':'Mobile bill','إصلاحسيارة':'Car repair','مصروفات':'Expenses'};
 const tr=ar=>EN[ar.replace(/\s/g,'')]||ar;
 const money=n=>(n<0?'−':'')+Math.abs(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const clean=t=>String(t||'').replace(/ /g,' ').replace(/\s+/g,' ').trim();
+const clean=t=>String(t||'').replace(/ /g,' ').replace(/\s+/g,' ').trim();
 const num=t=>{t=clean(t);if(!t)return 0;const m=t.match(/^(-?)([\d,]+(?:\.\d+)?)(-?)$/);if(!m)return 0;const v=parseFloat(m[2].replace(/,/g,''));return (m[1]||m[3])?-v:v};
 const r2=n=>Math.round(n*100)/100,sumA=a=>r2(a.reduce((s,x)=>s+x.amt,0));
 function parsePayslip(html){
@@ -467,7 +535,6 @@ function parsePayslip(html){
 }
 const prevYM=ym=>{let[y,m]=ym.split('-').map(Number);m--;if(!m){m=12;y--}return `${y}-${String(m).padStart(2,'0')}`};
 const otPaid=p=>r2(p.earn.filter(x=>tr(x.ar)==='Overtime').reduce((s,x)=>s+x.amt,0));
-/* the payslip for month M pays overtime worked in month M-1 */
 function otCheck(p){const wm=prevYM(p.ym),list=entries.filter(e=>['ot','work','trip'].includes(e.cat)&&e.date.startsWith(wm)&&!e.comp&&e.mins>0);
  const mins=list.reduce((s,e)=>s+e.mins,0);return{wm,mins,days:list.length,paid:otPaid(p),rate:mins?r2(otPaid(p)/(mins/60)):null}}
 const payOK=p=>{const T=p.totals;return Math.abs(sumA(p.earn)-T.earn)<.02&&Math.abs(sumA(p.ded)-T.ded)<.02&&Math.abs(T.earn-T.ded-T.netIncome)<.02&&Math.abs(T.netIncome-T.rem-T.net)<.02};
@@ -484,7 +551,7 @@ $('payFile').addEventListener('change',async ev=>{
 let payPick=null;
 function payList(title,items,total,showZero){const rows=items.filter(x=>showZero||x.amt);
  return `<div class="card"><h2>${title}</h2><ul class="list">${rows.length?rows.map(x=>`<li><span class="t">${esc(tr(x.ar))}<small dir="rtl" lang="ar">${esc(x.ar)}</small></span><span class="amt">${money(x.amt)}</span></li>`).join(''):'<li class="note">None this month</li>'}
- <li style="border-top:2px solid var(--ink)"><span class="t"><b>Total</b></span><span class="amt">${money(total)}</span></li></ul></div>`}
+ <li><span class="t"><b>Total</b></span><span class="amt">${money(total)}</span></li></ul></div>`}
 function renderPay(){
  const ys=[...new Set([today.slice(0,4),...pays.map(p=>p.ym.slice(0,4))])].sort().reverse();
  if(!payPick){const lastP=[...pays].sort((a,b)=>b.ym.localeCompare(a.ym))[0];payPick=lastP?{y:lastP.ym.slice(0,4),v:lastP.ym}:{y:today.slice(0,4),v:'year'}}
@@ -496,29 +563,25 @@ function renderPay(){
  const z=$('pz').checked,out=$('payOut');
  if(!inY.length){out.innerHTML=`<div class="card empty">No payslips for ${y} yet. Upload the .htm payslip files from your email above — you can pick several at once.</div>`;return}
  if(payPick.v!=='year'){
-  const p=inY.find(x=>x.ym===payPick.v),T=p.totals,prev=pays.find(x=>x.ym<p.ym&&x.ym===[...pays.map(q=>q.ym).filter(q=>q<p.ym)].sort().at(-1));
+  const p=inY.find(x=>x.ym===payPick.v),T=p.totals,prevKey=pays.map(q=>q.ym).filter(q=>q<p.ym).sort().at(-1),prev=pays.find(x=>x.ym===prevKey);
   const pct=v=>T.earn?Math.max(0,v/T.earn*100):0,diff=prev?r2(T.net-prev.totals.net):null;
-  out.innerHTML=`<div class="card"><div class="stamp" style="--c:var(--perm)"><div class="big">${money(T.net)}</div><div class="why">Net paid for ${monthName(p.ym)} ${y} (EGP)${diff!=null?` · ${diff>=0?'▲':'▼'} ${money(Math.abs(diff))} vs ${monthName(prev.ym)}`:''}</div></div>
-   <div class="split"><i style="width:${pct(T.net)}%;background:var(--perm)"></i><i style="width:${pct(T.ded)}%;background:var(--ot)"></i><i style="width:${pct(T.rem)}%;background:var(--trip)"></i></div>
-   <div class="meters" style="margin-top:12px">
-    <div class="meter"><div class="top"><span>Total earnings (gross)</span><b>${money(T.earn)}</b></div></div>
-    <div class="meter"><div class="top"><span><span class="dot" style="--c:var(--ot);display:inline-block"></span> Payroll deductions</span><b>− ${money(T.ded)}</b></div></div>
-    <div class="meter"><div class="top"><span>Net income</span><b>${money(T.netIncome)}</b></div></div>
-    <div class="meter"><div class="top"><span><span class="dot" style="--c:var(--trip);display:inline-block"></span> Additional deductions</span><b>− ${money(T.rem)}</b></div></div>
-    <div class="meter"><div class="top"><span><span class="dot" style="--c:var(--perm);display:inline-block"></span> <b>Net paid</b></span><b>${money(T.net)}</b></div></div>
-   </div>${payOK(p)?'':'<div class="msg warn">The totals in this payslip do not add up — please check the original.</div>'}
-   <div style="margin-top:14px;text-align:right"><button class="ib" data-delpay="${p.id}">Remove this payslip</button></div></div>
+  out.innerHTML=`<div class="hero payhero"><div class="lbl">Net paid · ${monthName(p.ym)} ${y} (EGP)</div><div class="big">${money(T.net)}</div><div class="sub">${diff!=null?`${diff>=0?'▲':'▼'} ${money(Math.abs(diff))} vs ${monthName(prev.ym)}`:'&nbsp;'}</div>
+   <div class="split"><i style="width:${pct(T.net)}%;background:#7ff0d9"></i><i style="width:${pct(T.ded)}%;background:#ff9b92"></i><i style="width:${pct(T.rem)}%;background:#ffd27a"></i></div>
+   <div class="trio"><div><small>Gross</small><b>${money(T.earn)}</b></div><div><small>Deductions</small><b>− ${money(T.ded)}</b></div><div><small>Other</small><b>− ${money(T.rem)}</b></div></div></div>
+   ${payOK(p)?'':'<div class="msg warn">The totals in this payslip do not add up — please check the original.</div>'}
    ${(()=>{const o=otCheck(p);return `<div class="card"><h2>Overtime check</h2><p class="note" style="margin-top:0">${monthName(p.ym)}'s payslip pays the overtime worked in ${monthName(o.wm)} ${o.wm.slice(0,4)}.</p>
-    <div class="tiles t3" style="margin:0"><div class="tile" style="--c:var(--ot);cursor:default"><span class="k">Overtime paid</span><div class="v">${money(o.paid)}</div><span class="s">EGP on this payslip</span></div>
-    <div class="tile" style="--c:var(--ot);cursor:default"><span class="k">Logged in ${monthName(o.wm)}</span><div class="v">${o.mins?dur(o.mins):'—'}</div><span class="s">${o.mins?`${(o.mins/60).toFixed(2)} h over ${o.days} day${o.days===1?'':'s'}`:'No overtime in your Time Sheet'}</span></div>
-    <div class="tile" style="--c:var(--ot);cursor:default"><span class="k">Paid per hour</span><div class="v">${o.rate!=null?money(o.rate):'—'}</div><span class="s">${o.rate!=null?'EGP per logged hour':'Needs logged hours'}</span></div></div>
+    <div class="tiles t3" style="margin:0"><div class="tile" style="--c:var(--ot);cursor:default;background:var(--sur2)"><span class="k">Overtime paid</span><span class="v">${money(o.paid)}</span><span class="s">EGP on this payslip</span></div>
+    <div class="tile" style="--c:var(--ot);cursor:default;background:var(--sur2)"><span class="k">Logged in ${monthName(o.wm)}</span><span class="v">${o.mins?dur(o.mins):'—'}</span><span class="s">${o.mins?`${(o.mins/60).toFixed(2)} h over ${o.days} day${o.days===1?'':'s'}`:'No overtime in your Time Sheet'}</span></div>
+    <div class="tile" style="--c:var(--ot);cursor:default;background:var(--sur2)"><span class="k">Paid per hour</span><span class="v">${o.rate!=null?money(o.rate):'—'}</span><span class="s">${o.rate!=null?'EGP per logged hour':'Needs logged hours'}</span></div></div>
     ${!o.mins&&o.paid?`<div class="msg ok">No Time Sheet data for ${monthName(o.wm)}, so there's nothing to compare yet.</div>`:''}${o.mins&&!o.paid?`<div class="msg warn">You logged ${dur(o.mins)} of overtime in ${monthName(o.wm)} but this payslip shows no overtime payment.</div>`:''}</div>`})()}
-   <div class="pgrid">${payList('Earnings',p.earn,T.earn,z)}${payList('Deductions',p.ded,T.ded,z)}${payList('Additional deductions',p.rem,T.rem,z)}</div>`;
+   <div class="pgrid">${payList('Earnings',p.earn,T.earn,z)}${payList('Deductions',p.ded,T.ded,z)}${payList('Additional deductions',p.rem,T.rem,z)}</div>
+   <div style="margin-top:12px;text-align:center"><button class="ib" data-delpay="${p.id}">Remove this payslip</button></div>`;
  }else{
   const tot=k=>r2(inY.reduce((s,p)=>s+p.totals[k],0)),maxN=Math.max(1,...inY.map(p=>p.totals.net));
   const missing=MONTHS.map((m,i)=>`${y}-${String(i+1).padStart(2,'0')}`).filter(k=>k<today.slice(0,7)&&!inY.some(p=>p.ym===k)).map(k=>monthName(k).slice(0,3));
   const agg=key=>{const m=new Map();inY.forEach(p=>p[key].forEach(x=>m.set(x.ar,r2((m.get(x.ar)||0)+x.amt))));return[...m].map(([ar,amt])=>({ar,amt}))};
-  out.innerHTML=`<div class="card"><h2>${y} month by month</h2><p class="note" style="margin-top:0">${inY.length} payslip${inY.length===1?'':'s'} uploaded${missing.length?` · missing: ${missing.join(', ')}`:''}</p>
+  out.innerHTML=`<div class="hero payhero"><div class="lbl">Net paid in ${y} (EGP)</div><div class="big">${money(tot('net'))}</div><div class="sub">${inY.length} payslip${inY.length===1?'':'s'} uploaded${missing.length?` · missing: ${missing.join(', ')}`:''}</div></div>
+   <div class="card"><h2>${y} month by month</h2>
    <table class="stack"><thead><tr><th>Month</th><th class="n">Gross</th><th class="n">Deductions</th><th class="n">Other</th><th class="n">Net paid</th></tr></thead><tbody>
    ${inY.map(p=>`<tr><td><button class="ib" data-paym="${p.ym}">${monthName(p.ym)}</button></td><td class="n">${money(p.totals.earn)}</td><td class="n">${money(p.totals.ded)}</td><td class="n">${money(p.totals.rem)}</td><td class="n"><span class="mini" style="width:${Math.round(p.totals.net/maxN*40)}px;background:var(--perm)"></span><b>${money(p.totals.net)}</b></td></tr>`).join('')}
    </tbody><tfoot><tr><td>Total</td><td class="n">${money(tot('earn'))}</td><td class="n">${money(tot('ded'))}</td><td class="n">${money(tot('rem'))}</td><td class="n">${money(tot('net'))}</td></tr></tfoot></table></div>
@@ -538,7 +601,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('button');i
  else if(b.dataset.delpay){if(pendingDel!==b.dataset.delpay){pendingDel=b.dataset.delpay;b.textContent='Tap again to remove';return}
   pendingDel=null;try{await delPay(b.dataset.delpay);payPick=null;toast('Payslip removed',false)}catch(err){toast('Could not remove',false)}}});
 
-/* ---------- backup & restore (same file format in the Claude tool and the standalone app) ---------- */
+/* ---------- backup & restore ---------- */
 let dl=null,pendingImport=null;
 function backupJSON(){return JSON.stringify({app:'timesheet',version:1,exported:new Date().toISOString(),settings:S,entries,pays},null,1)}
 $('bkExport').addEventListener('click',async()=>{
@@ -580,20 +643,27 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||
  const a=b.dataset.drive;$('driveMsg').innerHTML='<div class="msg ok">Working…</div>';
  if(a==='connect')Android.driveConnect();else if(a==='backup')Android.driveBackupNow();else if(a==='restore')Android.driveRestore();else if(a==='off')Android.driveDisconnect()});
 
+
 /* ---------- settings / routing ---------- */
 function renderSetup(){$('sStart').value=S.start;$('sEnd').value=S.end;$('sAnnual').value=S.annual;$('sPerm').value=S.perm;$('sWake').value=S.wake;$('aYear').value=today.slice(0,4);renderAdj();driveRender()}
 function renderAdj(){const f=S.alFix||{},ks=Object.keys(f).sort();
- $('adjList').innerHTML=ks.length?ks.map(y=>`<li><span class="t">${y}: ${dd(f[y].remaining)} left as of ${fmtDate(f[y].asOf)}<small>Now ${dd(alLeft(y))} left</small></span><button class="ib" data-unfix="${y}">Remove</button></li>`).join(''):'<li class="note">No adjustments — every year uses the normal allowance.</li>'}
-function route(){const V=['log','report','pay','setup'],v=V.includes(location.hash.slice(1))?location.hash.slice(1):'log';
- V.forEach(k=>{$('v-'+k).hidden=k!==v;$('t-'+k).classList.toggle('on',k===v)});if(v==='report')renderReport();if(v==='pay')renderPay();if(v==='setup')renderSetup()}
-function renderAll(){renderMeters();renderRecent();if(!$('v-report').hidden)renderReport();if(!$('v-pay').hidden)renderPay();preview()}
+ $('adjList').innerHTML=ks.length?ks.map(y=>`<li style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)"><span style="flex:1">${y}: ${dd(f[y].remaining)} left as of ${fmtDate(f[y].asOf)}<small class="note" style="display:block">Now ${dd(alLeft(y))} left</small></span><button class="ib" data-unfix="${y}">Remove</button></li>`).join(''):'<li class="note">No adjustments — every year uses the normal allowance.</li>'}
+const TITLES={home:'Time Sheet',add:'New entry',report:'Report',pay:'Payslips',setup:'Settings'};
+function route(){const V=['home','add','report','pay','setup'];let v=location.hash.slice(1);if(v==='log')v='home';if(!V.includes(v))v='home';
+ V.forEach(k=>{$('v-'+k).hidden=k!==v;const t=$('t-'+k);if(t)t.classList.toggle('on',k===v)});
+ $('fab').hidden=v!=='home'&&v!=='report';$('back').hidden=v!=='add';$('barTitle').textContent=v==='add'&&editId?'Edit entry':TITLES[v];
+ if(v==='report')renderReport();if(v==='pay')renderPay();if(v==='setup')renderSetup();if(v==='add')preview();window.scrollTo(0,0)}
+function renderAll(){renderHero();renderFix();renderMeters();renderRecent();if(!$('v-report').hidden)renderReport();if(!$('v-pay').hidden)renderPay();preview()}
 
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
- if(b.dataset.c)setCat(b.dataset.c);else if(b.dataset.p)setPortion(b.dataset.p);else if(b.dataset.edit)edit(b.dataset.edit);
+ if(b.id==='fixBtn')applyFix();
+ else if(b.dataset.c)setCat(b.dataset.c);else if(b.dataset.p)setPortion(b.dataset.p);else if(b.dataset.edit)edit(b.dataset.edit);
  else if(b.dataset.del)remove(b.dataset.del);else if(b.dataset.unfix){const f={...(S.alFix||{})};delete f[b.dataset.unfix];S={...S,alFix:f};putSettings().then(()=>{renderAdj();toast('Adjustment removed',false)}).catch(()=>toast('Could not save',false))}
  else if(b.dataset.wake){b.disabled=true;addWake(b.dataset.wake)}else if(b.dataset.tile){$('fc').value=rCat===b.dataset.tile?'all':b.dataset.tile;renderReport()}});
 ['date','tin','tout','hol','comp','from','to','note'].forEach(id=>$(id).addEventListener('input',preview));
-$('save').addEventListener('click',saveEntry);$('cancel').addEventListener('click',resetForm);
+$('save').addEventListener('click',saveEntry);$('cancel').addEventListener('click',()=>{resetForm();location.hash='home'});
+$('back').addEventListener('click',()=>{if(editId)resetForm()});
+$('fab').addEventListener('click',()=>{if(editId)resetForm()});
 ['fy','fm','fc'].forEach(id=>$(id).addEventListener('change',renderReport));
 $('toastB').addEventListener('click',async()=>{if(undoList){const l=undoList;undoList=null;for(const e of l)await put(e);toast('Restored',false)}});
 $('csv').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('table').dataset.csv||'');toast('Report copied — paste into Excel or Sheets',false)}catch(e){toast('Copy was blocked by the browser',false)}});
