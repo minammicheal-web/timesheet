@@ -691,8 +691,10 @@ function renderDay(){
     if(d.type==='halfPM')h+='<div class="muted small" style="margin-top:6px">Expected to stay until 1:00 PM</div>';
   }
   if(!leave){
+    if(workday&&d.type==='work'){const sc=schedule(d.date);
+      h+='<label class="chkline" style="margin-top:12px"><input type="checkbox" id="d-normal"'+(d.in===sc.start&&d.out===sc.end?' checked':'')+'> <span>Normal workday ('+esc(sc.start)+' – '+esc(sc.end)+')</span></label>';}
     h+='<div class="two"><label>Clock in<input type="time" data-k="in" value="'+esc(d.in)+'"></label><label>Clock out<input type="time" data-k="out" value="'+esc(d.out)+'"></label></div>';
-    if(workday){h+=listBlock('perms','Permissions')+listBlock('trips','Business trips')}
+    if(workday){h+=listBlock('perms','Left and came back (permission)')+'<div class="muted small">Went out in the middle of the day? Add it here, e.g. out 12:00 and back 1:30 PM. Keep clock in at the start and clock out at the end of the day.</div>'+listBlock('trips','Business trips')}
     if(kind==='holiday')h+=msel('d-hm','If you worked this holiday, count it as',sortOpts([['leave','+1 annual leave day'],['ot','Overtime']]),d.holidayMode==='leave'?'leave':'ot');
   }
   if(!leave&&d.date>=todayStr()){
@@ -1377,11 +1379,27 @@ document.addEventListener('change',ev=>{
 });
 document.addEventListener('input',ev=>{
   const t=ev.target;if(!draft||!$('#sheet').contains(t))return;
-  if(t.dataset.k){draft[t.dataset.k]=t.value;if(t.dataset.k==='alarm')draft._alarmTouched=true}
+  if(t.id==='d-normal'){
+    const sc=schedule(draft.date),i=$('[data-k=in]'),o=$('[data-k=out]');
+    if(t.checked){draft.in=sc.start;draft.out=sc.end}
+    else if(draft.in===sc.start&&draft.out===sc.end){draft.in='';draft.out=''}
+    if(i)i.value=draft.in;if(o)o.value=draft.out;
+    previewDay();return;
+  }
+  if(t.dataset.pre)delete t.dataset.pre;
+  if(t.dataset.k){draft[t.dataset.k]=t.value;if(t.dataset.k==='alarm')draft._alarmTouched=true;
+    if(t.dataset.k==='in'||t.dataset.k==='out'){const cb=$('#d-normal'),sc=schedule(draft.date);if(cb)cb.checked=draft.in===sc.start&&draft.out===sc.end}}
   else if(t.dataset.list)draft[t.dataset.list][+t.dataset.i][t.dataset.f]=t.value;
   else return;
   previewDay();
 });
+/* Empty clock-in opens the time picker on AM, clock-out on PM (the normal day's times); change it by hand if needed. */
+function timePre(ev){
+  const t=ev.target;if(!draft||!t||!t.matches||!t.matches('input[data-k=in],input[data-k=out]')||t.value)return;
+  const sc=schedule(draft.date);t.value=t.dataset.k==='in'?sc.start:sc.end;t.dataset.pre='1';
+}
+document.addEventListener('pointerdown',timePre,true);document.addEventListener('click',timePre,true);
+document.addEventListener('focusout',ev=>{const t=ev.target;if(t&&t.dataset&&t.dataset.pre==='1'){t.value='';delete t.dataset.pre}},true);
 window.addEventListener('popstate',()=>{closeMs();if(view==='settings'){view=prevView||'home';render()}else if(view!=='home'){view='home';render()}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeMs()});
 window.addEventListener('resize',closeMs);

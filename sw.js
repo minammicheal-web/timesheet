@@ -1,5 +1,5 @@
 // Network-first service worker: always tries the latest files, falls back to cache offline.
-const CACHE = 'timesheet-v7';
+const CACHE = 'timesheet-v8';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
