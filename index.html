@@ -2,682 +2,513 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Time Sheet</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1e4fd8">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&display=swap" rel="stylesheet">
+<title>Time Sheet</title>
 <style>
-/* VOICE: practical, calm, a personal work tool you open daily on your phone.
-   IDEA: an Android expense-tracker app — but the "money" is hours: overtime, permission, leave.
-   PICTURE: a solid summary card (this month's overtime) over a day-grouped list with round category icons.
-   COLOUR and TYPE: Material 3 surfaces, deep blue primary, category colours kept; Roboto Flex, tabular figures.
-   LAYOUT: top app bar, single phone column, floating + button, bottom navigation bar; add/edit opens as a full screen. */
-:root{color-scheme:light dark;
---bg:light-dark(#f6f7fb,#111318);--sur:light-dark(#fff,#1b1e24);--sur2:light-dark(#eef0f6,#252932);--ink:light-dark(#191c22,#e3e6ee);--mute:light-dark(#5d6371,#a2a9b8);
---line:light-dark(#e2e5ee,#30353f);--pri:light-dark(#1e4fd8,#a9c0ff);--onpri:light-dark(#fff,#0d2466);--pric:light-dark(#dce5ff,#21366f);--onpric:light-dark(#0d2466,#dce5ff);
---hero:light-dark(#1e4fd8,#21366f);--red:#e5281d;
---ot:light-dark(#d62b20,#ff7a6e);--al:light-dark(#0b6bbf,#69b4ff);--perm:light-dark(#0f7b6c,#3fc2ad);--sick:light-dark(#a3456f,#e07aa6);--trip:light-dark(#9a6200,#e0a640);--work:light-dark(#4a5563,#b8c2cc);--late:light-dark(#c2410c,#fb8a4c);--early:light-dark(#6d28d9,#b9a0fb)}
-:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
-*{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Roboto Flex",Roboto,system-ui,sans-serif;overflow-x:clip;font-variant-numeric:tabular-nums}
-h1,h2,h3{margin:0;line-height:1.15;font-weight:600}
-svg.i{width:24px;height:24px;fill:currentColor;flex:none}
-.appbar{position:sticky;top:0;z-index:4;background:var(--bg);display:flex;align-items:center;gap:8px;padding:10px max(4vw,12px);min-height:64px}
-.appbar h1{font-size:22px;flex:1}
-.appbar .ib{background:transparent}
-.status{font-size:12px;color:var(--mute);background:var(--sur2);border-radius:20px;padding:4px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw}
-main{max-width:720px;margin:0 auto;padding:0 max(4vw,12px) 120px}
-.bnav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--sur);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 4px calc(8px + env(safe-area-inset-bottom))}
-.bnav a{flex:1;max-width:160px;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:var(--mute);font-size:12px;font-weight:500;min-height:56px;padding-top:4px}
-.bnav a span.pill{display:flex;justify-content:center;align-items:center;width:60px;height:32px;border-radius:16px;transition:background .2s}
-.bnav a.on{color:var(--ink);font-weight:700}.bnav a.on span.pill{background:var(--pric);color:var(--onpric)}
-.fab{position:fixed;right:max(4vw,16px);bottom:calc(86px + env(safe-area-inset-bottom));z-index:5;width:60px;height:60px;border-radius:18px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgb(0 0 0/.25);text-decoration:none}
-@media(min-width:760px){.fab{right:calc(50% - 360px + 8px)}}
-.card{background:var(--sur);border-radius:20px;padding:16px;margin-bottom:12px}
-h2{font-size:18px;margin-bottom:10px}
-.sec{display:flex;justify-content:space-between;align-items:baseline;margin:18px 4px 8px}.sec h2{margin:0}.sec a{color:var(--pri);font-weight:600;font-size:14px;text-decoration:none}
-/* hero */
-.hero{background:var(--hero);color:#fff;border-radius:24px;padding:20px;margin:4px 0 12px}
-.hero .lbl{font-size:14px;opacity:.85}
-.hero .big{font-size:clamp(40px,11vw,54px);font-weight:700;line-height:1.05;letter-spacing:-.01em;margin:4px 0 2px;white-space:nowrap}
-.hero .sub{font-size:14px;opacity:.85}
-.hero .trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
-.hero .trio div{background:rgb(255 255 255/.14);border-radius:14px;padding:10px}
-.hero .trio small{display:block;font-size:12px;opacity:.85}.hero .trio b{font-size:17px;white-space:nowrap}
-/* meters */
-.meters{display:grid;gap:14px}
-.meter{display:flex;gap:12px;align-items:center}.meter .mb{flex:1}
-.meter .top{display:flex;justify-content:space-between;font-size:14px;gap:8px}.meter .top b{white-space:nowrap}
-.bar{height:8px;background:var(--sur2);border-radius:4px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--c);border-radius:4px}
-/* avatars & lists */
-.av{width:42px;height:42px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
-.av svg{width:22px;height:22px;fill:currentColor}
-.list{list-style:none;margin:0;padding:0}
-.day{font-size:13px;font-weight:600;color:var(--mute);display:flex;justify-content:space-between;padding:12px 4px 6px}
-.group{background:var(--sur);border-radius:20px;padding:4px 0;margin-bottom:4px}
-.group li{display:flex;align-items:center;gap:4px;padding:0 6px 0 0}
-.group li+li{border-top:1px solid var(--line)}
-.rowb{flex:1;display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--ink);font:inherit;text-align:left;padding:10px 4px 10px 12px;cursor:pointer;min-height:60px;border-radius:16px}
-.rowb .t{flex:1}.rowb .t b{font-weight:500;display:block}.rowb .t small{display:block;color:var(--mute);font-size:13px;line-height:1.35}
-.amt{font-weight:600;white-space:nowrap;text-align:right}.amt.neg{color:var(--late)}.amt.pos{color:var(--ot)}
-.ib{border:0;background:var(--sur2);color:var(--ink);border-radius:20px;min-width:40px;min-height:40px;font:500 13px "Roboto Flex",sans-serif;cursor:pointer;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
-.ib.icon{padding:0;width:40px;background:transparent;color:var(--mute)}
-.empty{color:var(--mute);text-align:center;padding:26px 8px}
-/* add screen */
-.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 4px;margin-bottom:8px}
-.cats button{border:0;background:none;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 2px;font:500 12.5px/1.2 "Roboto Flex",sans-serif;cursor:pointer;border-radius:14px;min-height:80px}
-.cats button .av{width:48px;height:48px;transition:transform .15s}
-.cats button.on{background:color-mix(in srgb,var(--c) 10%,transparent);font-weight:700}
-.cats button.on .av{background:var(--c);color:#fff}
-.amountbox{text-align:center;padding:8px 0 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
-.amountbox .big{font-size:clamp(42px,12vw,58px);font-weight:700;line-height:1.05;color:var(--c,var(--pri));white-space:nowrap}
-.amountbox .why{color:var(--mute);font-size:14px;margin-top:6px}
-label{display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:var(--mute)}
-.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:14px}
-.f{margin-bottom:14px}
-input,select{width:100%;font:16px "Roboto Flex",sans-serif;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--sur2);color:var(--ink);min-height:50px}
-input:focus,select:focus{outline:2px solid var(--pri);outline-offset:0;border-color:transparent}
-button:focus-visible,a:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
-.check{display:flex;align-items:center;gap:12px;font-weight:500;color:var(--ink);min-height:44px;cursor:pointer;font-size:15px;margin:0}
-.check input{width:22px;height:22px;min-height:0;accent-color:var(--pri)}
-.seg{display:flex;border:1px solid var(--line);border-radius:24px;overflow:hidden}.seg button{flex:1;border:0;background:transparent;color:var(--ink);min-height:44px;font:500 15px "Roboto Flex",sans-serif;cursor:pointer}
-.seg button+button{border-left:1px solid var(--line)}.seg button.on{background:var(--pric);color:var(--onpric);font-weight:700}
-.btn{border:0;border-radius:26px;background:var(--pri);color:var(--onpri);font:600 16px "Roboto Flex",sans-serif;padding:14px 20px;min-height:52px;width:100%;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
-.btn.ghost{background:var(--sur2);color:var(--ink)}
-.btns{display:flex;gap:8px;flex-wrap:wrap}.btns>*{flex:1 1 160px}
-.savebar{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom));padding-top:8px;background:linear-gradient(transparent,var(--bg) 30%)}
-.msg{font-size:14px;border-radius:12px;padding:10px 12px;margin-top:8px}
-.msg.warn{background:color-mix(in srgb,var(--red) 13%,transparent);color:var(--ink)}
-.msg.ok{background:var(--sur2);color:var(--mute)}
-.msg.info{background:var(--pric);color:var(--onpric)}
-.wake{padding:14px;border-radius:20px;background:var(--pric);color:var(--onpric);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.wake p{margin:0;flex:1 1 200px}.wake a{color:inherit;font-size:14px}.wake .btn{width:auto}
-.fix{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.fix p{margin:0;flex:1 1 240px;font-size:14px}.fix .btn{width:auto}
-/* report */
-.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
-.tile{background:var(--sur);border-radius:20px;padding:14px;border:2px solid transparent;cursor:pointer;text-align:left;color:var(--ink);font:inherit;display:flex;flex-direction:column;gap:2px}
-.tile.on{border-color:var(--c)}
-.tile .k{font-size:13px;color:var(--mute);display:flex;align-items:center;gap:8px}.tile .k .av{width:30px;height:30px}.tile .k .av svg{width:17px;height:17px}
-.tile .v{font-size:clamp(22px,6vw,28px);font-weight:700;line-height:1.1;color:var(--c);margin:8px 0 2px;white-space:nowrap}
-.tile .s{font-size:13px;color:var(--mute)}
-.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:600px){.tiles.t3{grid-template-columns:minmax(0,1fr)}}
-table{width:100%;border-collapse:collapse;font-size:15px}
-th{text-align:left;font-size:13px;color:var(--mute);font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}
-td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
-td.n,th.n{text-align:right;white-space:nowrap}
-tfoot td{font-weight:700;border-bottom:0}
-.tag{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none;display:inline-block}
-.mini{display:inline-block;height:6px;background:var(--ot);border-radius:3px;vertical-align:middle;margin-right:6px}
-.flag{color:var(--red);font-size:12px;font-weight:600}
-.pgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.pgrid .card{margin-bottom:0}
-.pgrid .list li{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.pgrid .list .t{flex:1}.pgrid .list .t small{display:block;color:var(--mute);font-size:13px;text-align:left}
-.payhero .lbl,.payhero .sub{opacity:.85}
-.split{display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgb(255 255 255/.2);margin-top:14px}.split i{display:block;height:100%}
-.upbox{position:relative;display:block;overflow:hidden;border-radius:26px}.upbox input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:200px;min-height:0;padding:0;border:0}
-.upbox:focus-within{outline:3px solid var(--pri);outline-offset:2px}
-.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--sur);padding:10px 10px 10px 16px;border-radius:12px;display:none;align-items:center;gap:12px;z-index:6;max-width:92vw;font-size:14px}
-.toast.show{display:flex}.toast button{background:transparent;color:var(--pric);border:0;min-height:38px;padding:0 10px;font-weight:700;cursor:pointer}
-.note{font-size:13px;color:var(--mute)}
-[hidden]{display:none!important}
-.scroll{overflow-x:auto}
-@media(max-width:600px){.filters{grid-template-columns:minmax(0,1fr)}
-table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;color:var(--mute);font-size:13px;font-weight:600}.stack td:empty{display:none}.stack td.n{text-align:start}.stack tfoot tr{border:0}}
-@media(prefers-reduced-motion:no-preference){.amountbox .big{transition:transform .2s}.cats button:active .av{transform:scale(.92)}}
+:root{
+  --bg:#f3f6f8;--card:#ffffff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --accent:#0f766e;--on-accent:#ffffff;--accent-soft:#d9f2ee;--danger:#dc2626;--warn:#b45309;--warn-soft:#fef3c7;
+  --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 14px rgba(15,23,42,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#8da0b8;--line:#23304a;
+    --accent:#2dd4bf;--on-accent:#04201c;--accent-soft:#12332f;--danger:#f87171;--warn:#fbbf24;--warn-soft:#3a2d0b;
+    --shadow:none}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--accent);color:var(--on-accent);
+  padding:calc(12px + env(safe-area-inset-top)) 16px 12px;font-weight:700;font-size:18px;letter-spacing:.2px}
+main{max-width:640px;margin:0 auto;padding:14px 14px calc(90px + env(safe-area-inset-bottom))}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;background:var(--card);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:9px 0 8px;font-size:11px;font-weight:600;cursor:pointer}
+nav button span{display:block;font-size:20px;line-height:1.1}
+nav button.on{color:var(--accent)}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.hero{text-align:center}
+.timer{font-size:48px;font-weight:700;font-variant-numeric:tabular-nums;margin:6px 0 2px;letter-spacing:1px}
+.muted{color:var(--muted)}.small{font-size:13px}
+h3{margin:0 0 12px;font-size:18px}
+h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+label{display:block;text-align:left;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0}
+input,select,textarea{width:100%;margin-top:5px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0}
+textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.btn{display:inline-block;border:0;border-radius:12px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;
+  background:var(--accent);color:var(--on-accent)}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.big{width:100%;padding:16px;font-size:18px;margin-top:12px}
+.btn.sm{padding:8px 12px;font-size:14px}
+.btns{display:flex;gap:10px;margin-top:16px}.btns .btn{flex:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:6px}
+.row{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;text-align:left;
+  background:none;border:0;border-top:1px solid var(--line);padding:11px 0;color:inherit;font:inherit;cursor:pointer}
+.row:first-of-type{border-top:0}
+.dur{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.dayhead b{font-size:15px}
+.badge{display:inline-block;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:1px 7px;font-size:12px;font-weight:700;margin-left:6px}
+.month{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.month b{font-size:17px}
+.month button{border:0;background:var(--card);border:1px solid var(--line);color:var(--text);width:42px;height:42px;border-radius:12px;font-size:18px;cursor:pointer}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted);font-weight:600}
+.line{display:flex;justify-content:space-between;gap:10px;padding:7px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border-radius:20px;padding:6px 8px 6px 12px;font-weight:600;font-size:14px}
+.chip button{border:0;background:none;color:inherit;font-size:16px;cursor:pointer;padding:0 4px}
+.addrow{display:flex;gap:8px}.addrow input{margin-top:0}
+.fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:4;width:56px;height:56px;border-radius:28px;
+  border:0;background:var(--accent);color:var(--on-accent);font-size:30px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+#modal{position:fixed;inset:0;z-index:20;background:rgba(2,6,23,.55);display:none;align-items:flex-end;justify-content:center}
+#modal.show{display:flex}
+#sheet{background:var(--card);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;
+  padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;
+  background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%}
+#toast.show{opacity:1}
 </style>
-<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
 </head>
 <body>
-<header class="appbar">
- <a href="#home" class="ib icon" id="back" hidden aria-label="Back"><svg class="i" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></a>
- <h1 id="barTitle">Time Sheet</h1><span class="status" id="status">Connecting…</span>
-</header>
-<main>
-<section id="v-home">
- <div class="hero" id="hero"></div>
- <div class="wake" id="wake" hidden></div>
- <div class="card fix" id="fix" hidden></div>
- <div class="sec"><h2 id="mTitle">This month</h2><a href="#report">See report</a></div>
- <div class="card"><div class="meters" id="meters"></div></div>
- <div class="sec"><h2>Recent</h2></div>
- <div id="recent"></div>
-</section>
-
-<section id="v-add" hidden>
- <div class="card">
-  <div class="amountbox" id="stamp"><div class="big" id="big">—</div><div class="why" id="why">Fill in the form to see the result</div></div>
-  <div class="cats" id="cats"></div>
- </div>
- <div class="card">
-  <div id="fTime">
-   <div class="f"><label for="date">Date</label><input type="date" id="date"></div>
-   <div class="row"><div id="inWrap"><label for="tin">Clock in</label><input type="time" id="tin"></div><div id="outWrap"><label for="tout">Clock out</label><input type="time" id="tout"></div></div>
-   <label class="check" id="holWrap"><input type="checkbox" id="hol"> Official holiday</label>
-   <label class="check" id="compWrap" hidden style="padding-left:34px"><input type="checkbox" id="comp"> Add 1 day to my annual leave instead of overtime</label>
-  </div>
-  <div id="fLeave" hidden>
-   <div class="row"><div><label for="from">From</label><input type="date" id="from"></div><div><label for="to">To (optional)</label><input type="date" id="to"></div></div>
-   <div class="f"><label>Length</label><div class="seg" id="portion"><button type="button" data-p="full" class="on">Full day</button><button type="button" data-p="half">Half day</button></div></div>
-  </div>
-  <div class="f" style="margin:8px 0 0"><label for="note">Note (optional)</label><input id="note" maxlength="120" placeholder="e.g. Month-end closing"></div>
-  <div id="msgs"></div>
- </div>
- <div class="savebar"><div class="btns"><button class="btn ghost" id="cancel" hidden>Cancel edit</button><button class="btn" id="save">Save entry</button></div></div>
-</section>
-
-<section id="v-report" hidden>
- <div class="card filters">
-  <div><label for="fy">Year</label><select id="fy"></select></div>
-  <div><label for="fm">Month</label><select id="fm"></select></div>
-  <div><label for="fc">Category</label><select id="fc"></select></div>
- </div>
- <div class="tiles" id="tiles"></div>
- <div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px"><h2 id="rTitle" style="margin:0">Day by day</h2><button class="ib" id="csv">Copy as CSV</button></div>
-  <div id="table"></div>
- </div>
-</section>
-
-<section id="v-pay" hidden>
- <div class="card">
-  <h2>Upload payslips</h2>
-  <p class="note" style="margin-top:0">Choose the payslip .htm file from your email. You can pick several months at once; uploading a month again replaces it. Payslips are saved on this phone.</p>
-  <div class="upbox"><span class="btn" aria-hidden="true">Upload payslip files</span><input type="file" id="payFile" multiple aria-label="Upload payslip files"></div>
-  <div id="payMsg"></div>
- </div>
- <div class="card filters">
-  <div><label for="py">Year</label><select id="py"></select></div>
-  <div><label for="pv">Show</label><select id="pv"></select></div>
-  <div style="align-self:end"><label class="check"><input type="checkbox" id="pz"> Show zero items</label></div>
- </div>
- <div id="payOut"></div>
-</section>
-
-<section id="v-setup" hidden>
- <div class="card">
-  <h2>Your rules</h2>
-  <div class="row"><div><label for="sStart">Shift start (Sun–Thu)</label><input type="time" id="sStart"></div><div><label for="sEnd">Shift end (Sun–Thu)</label><input type="time" id="sEnd"></div></div>
-  <div class="row"><div><label for="sAnnual">Annual leave days / year</label><input type="number" min="0" step="0.5" id="sAnnual"></div><div><label for="sPerm">Permission hours / month</label><input type="number" min="0" step="0.5" id="sPerm"></div></div>
-  <div class="f"><label for="sWake">Wake-up time for weekend or holiday work</label><input type="time" id="sWake"></div>
-  <p class="note">Workdays and business trips: overtime is only the time after your shift end. Arriving before the shift start is never counted as overtime. Friday and Saturday are your weekend: overtime there counts the full period, as on official holidays. On a workday, arriving after the shift start or leaving before the shift end is rounded up to the next 30 minutes; if the whole amount fits in what's left of your monthly permission it is taken from permission, otherwise it is recorded as late coming or early leaving. Leave spanning several days skips Fridays and Saturdays; if an official holiday falls inside, delete that day's entry.</p>
-  <button class="btn" id="sSave">Save settings</button>
- </div>
- <div class="card" id="driveCard" hidden>
-  <h2>Google Drive backup</h2>
-  <p class="note" style="margin-top:0">Like WhatsApp: sign in once with your Google account and the app backs up every day to a "Time Sheet Backups" folder in your Google Drive. The newest 30 backups are kept.</p>
-  <div id="driveState"></div>
-  <div class="btns" id="driveBtns" style="margin-top:12px"></div>
-  <div id="driveMsg"></div>
- </div>
- <div class="card">
-  <h2>Backup &amp; restore</h2>
-  <p class="note" style="margin-top:0">Save all your entries, payslips and settings in one file. Restore it here or in the standalone app to move your data. Restoring adds and updates entries — it never deletes anything.</p>
-  <div class="btns"><button class="btn" id="bkExport">Export backup</button><div class="upbox"><span class="btn ghost" aria-hidden="true">Restore from file</span><input type="file" id="bkFile" aria-label="Restore from backup file"></div></div>
-  <div id="bkMsg"></div>
- </div>
- <div class="card">
-  <h2>Adjust annual leave balance</h2>
-  <p class="note" style="margin-top:0">Set how many annual leave days you really have left in a year. From then on, only annual leave dated after the day you set it is taken from that number. Other years keep the normal allowance.</p>
-  <div class="row"><div><label for="aYear">Year</label><input type="number" id="aYear" min="2000" max="2100"></div><div><label for="aLeft">Days left now</label><input type="number" id="aLeft" min="0" step="0.5"></div></div>
-  <button class="btn ghost" id="aSave">Set balance</button>
-  <ul class="list" id="adjList" style="margin-top:12px"></ul>
- </div>
-</section>
-</main>
-
-<a href="#add" class="fab" id="fab" aria-label="Add entry"><svg class="i" viewBox="0 0 24 24" style="width:28px;height:28px"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></a>
-<nav class="bnav">
- <a href="#home" id="t-home"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>Home</a>
- <a href="#report" id="t-report"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg></span>Report</a>
- <a href="#pay" id="t-pay"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M18 17H6v-2h12v2zm0-4H6v-2h12v2zm0-4H6V7h12v2zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2v20z"/></svg></span>Payslip</a>
- <a href="#setup" id="t-setup"><span class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg></span>Settings</a>
+<header>Time Sheet</header>
+<main id="view"></main>
+<button class="fab" id="fab" data-a="new" aria-label="Add entry">+</button>
+<nav id="nav">
+  <button data-v="today"><span>⏱</span>Today</button>
+  <button data-v="log"><span>📋</span>Log</button>
+  <button data-v="summary"><span>📊</span>Summary</button>
+  <button data-v="settings"><span>⚙️</span>Settings</button>
 </nav>
-<div class="toast" id="toast" role="status"><span id="toastT"></span><button id="toastB">Undo</button></div>
+<div id="modal"><div id="sheet"></div></div>
+<div id="toast"></div>
+<noscript>This app needs JavaScript.</noscript>
 
 <script>
-{
-const ICON={work:'M10 4h4a2 2 0 0 1 2 2v1h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4V6a2 2 0 0 1 2-2zm0 3h4V6h-4z',
- ot:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5v5.4l4 2.4-1 1.7-5-3V7z',
- trip:'M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z',
- perm:'M6 2h12v6l-4 4 4 4v6H6v-6l4-4-4-4zm2 2v3.2l4 4 4-4V4zm4 8.8-4 4V20h8v-3.2z',
- late:'M11 7 9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5zm9 12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-8v2h8z',
- early:'M17 7l-1.4 1.4 2.6 2.6H8v2h10.2l-2.6 2.6L17 17l5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4z',
- al:'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4zm12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1zM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1z',
- sick:'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z'};
-const CATS={work:{n:'Workday',c:'var(--work)'},ot:{n:'Overtime',c:'var(--ot)'},trip:{n:'Business trip',c:'var(--trip)'},perm:{n:'Permission',c:'var(--perm)'},
- late:{n:'Late coming',c:'var(--late)'},early:{n:'Early leaving',c:'var(--early)'},al:{n:'Annual leave',c:'var(--al)'},sick:{n:'Sick leave',c:'var(--sick)'}};
-const av=k=>`<span class="av" style="--c:${CATS[k].c}"><svg viewBox="0 0 24 24"><path d="${ICON[k]}"/></svg></span>`;
-const TIMED=['work','ot','trip','perm','late','early'],DAYCAT=['al','sick'];
-const DEF={start:'08:30',end:'17:30',annual:21,perm:2,wake:'06:15',alFix:{'2026':{remaining:0.5,asOf:'2026-11-24'}}};
-const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-let S={...DEF},entries=[],pays=[],col=null,mcp=null,cat='work',portion='full',editId=null,undoList=null,rCat='all';
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m};
-const dur=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h&&r?`${h}h ${r}m`:h?`${h}h`:`${r}m`};
-const dd=d=>{const n=+d;return (n%1?n.toFixed(1):n)+(n===1?' day':' days')};
-const dow=d=>new Date(d+'T00:00').getDay();
-const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const today=iso(new Date());
-const yesterday=(()=>{const d=new Date();d.setDate(d.getDate()-1);return iso(d)})();
-const fmtDate=d=>{const x=new Date(d+'T00:00');return `${x.getDate()} ${MONTHS[x.getMonth()].slice(0,3)} ${x.getFullYear()}`};
-const monthName=ym=>MONTHS[+ym.slice(5,7)-1];
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const r30=m=>Math.ceil(m/30)*30;
-const weekend=d=>{const w=dow(d);return w===5||w===6};
+(function(){
+'use strict';
 
-function span(a,b){let x=toMin(a),y=toMin(b);if(y<=x)y+=1440;return[x,y]}
-/* Workdays & trips: only time after the shift end is overtime — clocking in before the shift start never counts */
-function calcOT(date,a,b,hol){
- const[x,y]=span(a,b),total=y-x,w=dow(date);
- if(hol)return{mins:total,total,early:0,why:'Official holiday — full period counts'};
- if(weekend(date))return{mins:total,total,early:0,why:`${DAYS[w]} (weekend) — full period counts`};
- const s=toMin(S.start),e=toMin(S.end),early=x<s?Math.min(y,s)-x:0,mins=Math.max(0,y-Math.max(x,e));
- return{mins,total,early,why:early?`time after your ${S.end} shift end (before ${S.start} not counted)`:`time after your ${S.end} shift end`};
-}
-const lateBy=inT=>{const d=Math.min(toMin(inT),toMin(S.end))-toMin(S.start);return d>0?r30(d):0};
-const earlyBy=(outT,inT)=>{if(inT&&toMin(outT)<=toMin(inT))return 0;const d=toMin(S.end)-Math.max(toMin(outT),toMin(S.start));return d>0?r30(d):0};
-function leaveDays(from,to){
- const out=[];if(!from)return out;let d=new Date(from+'T00:00');const end=new Date((to&&to>=from?to:from)+'T00:00');
- while(d<=end){const w=d.getDay();if(w!==5&&w!==6)out.push(iso(d));d.setDate(d.getDate()+1)}return out;
-}
-const skipEdit=e=>editId&&(e.id===editId||e.parent===editId);
-const permUsed=ym=>entries.filter(e=>e.cat==='perm'&&e.date.startsWith(ym)&&!skipEdit(e)).reduce((s,e)=>s+e.mins,0);
-const leaveUsed=(c,y)=>entries.filter(e=>e.cat===c&&e.date.startsWith(y)&&!skipEdit(e)).reduce((s,e)=>s+e.days,0);
-const compDays=(y,after)=>entries.filter(e=>e.comp&&e.date.startsWith(y)&&(!after||e.date>after)&&!skipEdit(e)).length;
-const alLeft=y=>{const f=(S.alFix||{})[y];if(f)return f.remaining+compDays(y,f.asOf)-entries.filter(e=>e.cat==='al'&&e.date.startsWith(y)&&e.date>f.asOf&&!skipEdit(e)).reduce((s,e)=>s+e.days,0);return S.annual+compDays(y)-leaveUsed('al',y)};
-const alCap=y=>{const f=(S.alFix||{})[y];return f?`balance set to ${dd(f.remaining)} on ${fmtDate(f.asOf)}`:`${S.annual}-day allowance`};
-function deduct(date,items){
- let left=S.perm*60-permUsed(date.slice(0,7));
- return items.filter(i=>i.mins>0).map(i=>{const word=i.kind==='late'?'late coming':'early leaving',t=i.kind==='late'?`clocked in ${i.time}`:`clocked out ${i.time}`;
-  if(i.mins<=left){left-=i.mins;return{...i,cat:'perm',note:`Auto: permission for ${word} (${t})`,line:`${CATS[i.kind].n} ${dur(i.mins)} → taken from permission (${dur(left)} left in ${monthName(date)})`}}
-  return{...i,cat:i.kind,note:`Auto: ${word} — not enough permission left (${t})`,line:`${CATS[i.kind].n} ${dur(i.mins)} → recorded as ${word}: ${left>0?`only ${dur(left)}`:'no'} permission left in ${monthName(date)}`,warn:true}});
-}
-const wakeable=e=>['work','ot','trip'].includes(e.cat)&&!e.parent&&(weekend(e.date)||e.hol)&&e.date>=today;
-const plus15=t=>{const m=toMin(t)+15;return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
-const gcalLink=d=>{const a=d.replace(/-/g,'')+'T'+S.wake.replace(':','')+'00',b=d.replace(/-/g,'')+'T'+plus15(S.wake).replace(':','')+'00';
- return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Wake up – work today')+'&dates='+a+'/'+b+'&ctz=Africa/Cairo'};
-function showWake(e,failed){const w=$('wake');w.hidden=false;
- if(!mcp)w.innerHTML=`<p><b>Working ${DAYS[dow(e.date)]} ${fmtDate(e.date)}?</b><br>Add a ${esc(S.wake)} wake-up to Google Calendar, then tap Save there.</p><a class="btn" href="${gcalLink(e.date)}" target="_blank" rel="noopener">Open Google Calendar</a>`;
- else w.innerHTML=failed?`<p>Couldn't add it automatically. <a href="${gcalLink(e.date)}" target="_blank" rel="noopener">Open Google Calendar to add the ${esc(S.wake)} wake-up</a>, then tap Save there.</p>`
- :`<p><b>Working ${DAYS[dow(e.date)]} ${fmtDate(e.date)}?</b><br>Add a ${esc(S.wake)} wake-up alert to your Google Calendar.</p><button class="btn" data-wake="${e.id}">Add wake-up</button>`}
-async function addWake(id){const e=entries.find(x=>x.id===id);if(!e)return;
- try{if(!mcp)throw 0;
-  await mcp.callTool('Google Calendar','create_event',{summary:'Wake up – work today',startTime:`${e.date}T${S.wake}:00`,endTime:`${e.date}T${plus15(S.wake)}:00`,
-   description:`Logged in Time Sheet: ${CATS[e.cat].n}${e.in?` ${e.in}–${e.out}`:''}`,overrideReminders:[{method:'popup',minutes:0}],availability:'AVAILABILITY_FREE'});
-  await put({...e,wake:true});$('wake').hidden=true;toast(`Wake-up set for ${S.wake} on ${DAYS[dow(e.date)]} ${fmtDate(e.date)}`,false)}
- catch(err){showWake(e,true);$('wake').scrollIntoView({behavior:'smooth',block:'center'})}}
-const amount=e=>e.comp?(e.cat==='ot'?'+1 leave day':'1 day · +1 leave day'):e.cat==='work'||e.cat==='trip'?'1 day'+(e.mins?` · ${dur(e.mins)} OT`:''):DAYCAT.includes(e.cat)?dd(e.days):dur(e.mins);
+/* ---------- helpers ---------- */
+var $ = function(s,r){return (r||document).querySelector(s)};
+var esc = function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var pad = function(n){return String(n).padStart(2,'0')};
+var ymd = function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var hm = function(d){return pad(d.getHours())+':'+pad(d.getMinutes())};
+var parseYmd = function(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
+var toMin = function(t){var p=t.split(':').map(Number);return p[0]*60+p[1]};
+var fmt = function(m){m=Math.max(0,Math.round(m));return Math.floor(m/60)+'h '+pad(m%60)+'m'};
+var uid = function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)};
+function rawDur(start,end){var d=toMin(end)-toMin(start);if(d<0)d+=1440;return d}
+function dur(e){return Math.max(0,rawDur(e.start,e.end)-(+e.brk||0))}
+function dayLabel(s){return parseYmd(s).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}
+function monthLabel(){return new Date(ui.y,ui.m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'})}
 
 /* ---------- storage ---------- */
-function setStatus(t){$('status').textContent=t}
-function localLoad(){try{const j=JSON.parse(localStorage.getItem('ts-data')||'{}');entries=j.entries||[];pays=j.pays||[];S={...DEF,...(j.settings||{})}}catch(e){}}
-function localSave(){try{localStorage.setItem('ts-data',JSON.stringify({entries,pays,settings:S}))}catch(e){}
- if(window.Android&&Android.storeBackup){try{Android.storeBackup(backupJSON())}catch(e){}}}
-async function put(e){if(col){await col.doc(e.id).set(e)}else{entries=entries.filter(x=>x.id!==e.id).concat(e);localSave();renderAll()}}
-async function del(id){if(col){await col.doc(id).delete()}else{entries=entries.filter(x=>x.id!==id);localSave();renderAll()}}
-async function putSettings(){if(col){await col.doc('settings').set({...S,kind:'settings'})}else{localSave();renderAll()}}
-async function connect(){
- try{
-  if(!window.claude||!claude.use)throw 0;
-  const[db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
-  const id=user&&await user.id();
-  claude.use('mcp').then(m=>{mcp=m}).catch(()=>{});claude.use('downloads').then(d=>{dl=d}).catch(()=>{});
-  if(!db||!id)throw 0;
-  col=db.collection('data/users/'+id);
-  const timer=setTimeout(()=>setStatus('Still connecting…'),10000);
-  col.onSnapshot(snap=>{
-   const list=[],pl=[];snap.docs.forEach(d=>{const v=d.data();if(d.id==='settings')S={...DEF,...v};else if(d.id.startsWith('pay-'))pl.push({...v,id:d.id});else list.push({...v,id:d.id})});
-   entries=list;pays=pl;if(!snap.metadata.fromCache){clearTimeout(timer);setStatus('Synced · private')}
-   renderAll();
-  },err=>{clearTimeout(timer);setStatus('Offline ('+err.code+')')});
- }catch(e){col=null;localLoad();if(window.Android&&Android.storeBackup)localSave();setStatus('Saved on this phone');renderAll()}
+var KEY='timesheet.data.v1';
+var mem=null;
+function defaults(){
+  return {entries:[],active:null,settings:{target:8,weekStart:1,rate:0,currency:'',projects:['General']}};
 }
-
-/* ---------- add / edit screen ---------- */
-$('cats').innerHTML=Object.entries(CATS).map(([k,v])=>`<button type="button" data-c="${k}" style="--c:${v.c}">${av(k)}<span>${v.n}</span></button>`).join('');
-function setCat(c){cat=c;document.querySelectorAll('#cats button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));
- const time=TIMED.includes(c);$('fTime').hidden=!time;$('fLeave').hidden=time;
- $('inWrap').hidden=c==='early';$('outWrap').hidden=c==='late';$('holWrap').hidden=!['work','ot','trip'].includes(c);
- $('stamp').style.setProperty('--c',CATS[c].c);preview()}
-function setPortion(p){portion=p;document.querySelectorAll('#portion button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));preview()}
-function read(){
- const r={cat,note:$('note').value.trim(),errs:[],warns:[],oks:[],ded:[]};
- if(TIMED.includes(cat)){
-  r.date=$('date').value;const a=$('tin').value,b=$('tout').value;
-  const needIn=cat!=='early',needOut=cat!=='late';
-  if(!r.date||(needIn&&!a)||(needOut&&!b)){r.errs.push(`Enter the date${needIn?', clock in':''}${needOut?(needIn?' and':',')+' clock out':''}.`);return r}
-  if(needIn)r.in=a;if(needOut)r.out=b;r.hol=['work','ot','trip'].includes(cat)&&$('hol').checked;
-  if(cat==='ot'||cat==='trip'||cat==='work'){
-   const o=calcOT(r.date,a,b,r.hol);r.mins=o.mins;r.comp=r.hol&&$('comp').checked;
-   const earlyNote=o.early?`Clocked in ${dur(o.early)} before ${S.start} — not counted as overtime.`:'';
-   if(r.comp){r.mins=0;const y=r.date.slice(0,4);r.big=cat==='ot'?'+1 day':dur(o.total);r.why=cat==='ot'?'Official holiday — added to annual leave':`Worked ${dur(o.total)} on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
-    r.oks.push(`No overtime — 1 day added to your ${y} annual leave (${dd(alLeft(y)+(editId&&entries.find(e=>e.id===editId&&e.comp)?0:1))} left after this).`)}
-   else if(cat==='ot'){r.big=dur(o.mins);r.why=o.why.charAt(0).toUpperCase()+o.why.slice(1);if(earlyNote)r.oks.push(earlyNote);if(!o.mins)r.warns.push(`No overtime: on a workday only time after ${S.end} counts.`)}
-   else{r.big=dur(o.total);r.why=`Worked ${dur(o.total)} on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
-    r.oks.push(o.mins?`Overtime ${dur(o.mins)} (${o.why}).`:'No overtime.');if(earlyNote)r.oks.push(earlyNote);
-    if(cat==='work'&&!r.hol&&!weekend(r.date))r.ded=deduct(r.date,[{kind:'late',mins:lateBy(a),time:a},{kind:'early',mins:earlyBy(b,a),time:b}]);
-    if(cat==='work'&&!r.ded.length&&!r.hol&&!weekend(r.date))r.oks.push('On time — no late coming or early leaving.')}
-  }else if(cat==='perm'){const[x,y]=span(a,b);r.mins=y-x;r.big=dur(r.mins);r.why=`Permission on ${DAYS[dow(r.date)]} ${fmtDate(r.date)}`;
-   const ym=r.date.slice(0,7),lim=S.perm*60,used=permUsed(ym);
-   if(used+r.mins>lim)r.warns.push(`This goes over your ${S.perm}h monthly permission limit: ${dur(used)} already used in ${monthName(ym)}, ${dur(used+r.mins-lim)} over.`);
-   else r.oks.push(`${dur(lim-used-r.mins)} of permission left in ${monthName(ym)} after this.`)}
-  else{
-   if(weekend(r.date)){r.errs.push('That day is a Friday or Saturday (weekend).');return r}
-   const m=cat==='late'?lateBy(a):earlyBy(b);
-   if(!m){r.errs.push(cat==='late'?`On time — clock in after ${S.start} to count as late.`:`Not early — clock out before ${S.end} to count as early leaving.`);return r}
-   r.big=dur(m);r.why=`${cat==='late'?`Clocked in ${a}`:`Clocked out ${b}`}, rounded up to the next 30 minutes`;
-   r.ded=deduct(r.date,[{kind:cat,mins:m,time:cat==='late'?a:b}]);
+function load(){
+  var d=defaults(),raw=null;
+  try{raw=localStorage.getItem(KEY)}catch(e){raw=mem}
+  if(raw){
+    try{
+      var p=JSON.parse(raw);
+      if(p&&Array.isArray(p.entries))d.entries=p.entries.filter(validEntry);
+      if(p&&p.active&&typeof p.active.start==='number')d.active=p.active;
+      if(p&&p.settings)Object.keys(d.settings).forEach(function(k){if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
+      if(!Array.isArray(d.settings.projects)||!d.settings.projects.length)d.settings.projects=['General'];
+    }catch(e){}
   }
- }else{
-  const from=$('from').value,to=editId?'':$('to').value;
-  if(!from){r.errs.push('Choose the leave date.');return r}
-  r.dates=leaveDays(from,to);
-  if(!r.dates.length){r.errs.push('That day is a Friday or Saturday (weekend).');return r}
-  if(r.dates.length>1&&portion==='half'){r.errs.push('Half day works for a single date only.');return r}
-  r.days=portion==='half'?.5:1;const total=r.days*r.dates.length;r.big=dd(total);
-  r.why=r.dates.length>1?`${r.dates.length} working days, ${fmtDate(r.dates[0])} – ${fmtDate(r.dates.at(-1))} (Fri & Sat skipped)`:`${portion==='half'?'Half day':'Full day'} on ${DAYS[dow(from)]} ${fmtDate(from)}`;
-  if(cat==='al'){const y=from.slice(0,4),left=alLeft(y)-total;
-   if(left<0)r.warns.push(`This goes over your annual leave for ${y} (${alCap(y)}) by ${dd(-left)}.`);else r.oks.push(`${dd(left)} of annual leave left in ${y} after this.`)}
- }
- return r;
+  return d;
 }
-function preview(){
- $('compWrap').hidden=$('holWrap').hidden||$('fTime').hidden||!$('hol').checked;if($('compWrap').hidden)$('comp').checked=false;
- const r=read();
- $('big').textContent=r.errs.length?'—':r.big;$('why').textContent=r.errs[0]||r.why||'';
- $('msgs').innerHTML=r.ded.map(d=>`<div class="msg ${d.warn?'warn':'ok'}">${esc(d.line)}</div>`).join('')+r.warns.map(w=>`<div class="msg warn">${esc(w)}</div>`).join('')+r.oks.map(w=>`<div class="msg ok">${esc(w)}</div>`).join('');
- return r;
+function validEntry(e){
+  return e&&typeof e.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e.date)&&/^\d{2}:\d{2}$/.test(e.start)&&/^\d{2}:\d{2}$/.test(e.end);
 }
-function resetForm(){editId=null;['note','tin','tout','to'].forEach(i=>$(i).value='');$('hol').checked=false;$('comp').checked=false;$('to').disabled=false;
- $('save').textContent='Save entry';$('cancel').hidden=true;setPortion('full');if(location.hash==='#add')$('barTitle').textContent='New entry';preview()}
-async function saveEntry(){
- const r=preview();if(r.errs.length)return;
- const base={note:r.note,created:Date.now()};let list=[],old=[];
- if(editId)old=entries.filter(e=>e.parent===editId);
- if(cat==='work'||cat==='ot'||cat==='trip'||cat==='perm'){
-  const id=editId||uid();
-  list.push({...base,id,cat,date:r.date,in:r.in,out:r.out,hol:!!r.hol,comp:!!r.comp,mins:r.mins,...(cat==='work'||cat==='trip'?{days:1}:{})});
-  r.ded.forEach(d=>list.push({id:uid(),created:Date.now(),cat:d.cat,date:r.date,mins:d.mins,reason:d.kind,[d.kind==='late'?'in':'out']:d.time,note:d.note,parent:id}));
- }else if(cat==='late'||cat==='early'){
-  const d=r.ded[0];list.push({...base,id:editId||uid(),cat:d.cat,src:cat,reason:cat,date:r.date,mins:d.mins,[cat==='late'?'in':'out']:d.time,note:d.note+(r.note?' · '+r.note:''),usernote:r.note});
- }else list=r.dates.map((d,i)=>({...base,id:(i===0&&editId)||uid(),cat,date:d,days:r.days}));
- $('save').disabled=true;
- try{for(const e of old)await del(e.id);for(const e of list)await put(e);
-  const extra=list.filter(e=>e.parent).map(e=>CATS[e.cat].n.toLowerCase()).join(' + ');
-  toast(`Saved ${CATS[cat].n.toLowerCase()}${extra?' + '+extra:''}`,false);resetForm();location.hash='home';
-  const w=list.find(e=>wakeable(e)&&!e.wake);if(w)showWake(w);else $('wake').hidden=true}
- catch(err){toast('Could not save — '+(err&&err.code||'try again'),false)}
- $('save').disabled=false;
+function save(){
+  var s=JSON.stringify(S);
+  try{localStorage.setItem(KEY,s)}catch(e){mem=s}
 }
-function edit(id){let e=entries.find(x=>x.id===id);if(!e)return;if(e.parent){e=entries.find(x=>x.id===e.parent);if(!e)return}
- const c=e.src||e.cat;setCat(c);editId=e.id;$('note').value=e.src?(e.usernote||''):(e.note||'');
- if(TIMED.includes(c)){$('date').value=e.date;$('tin').value=e.in||'';$('tout').value=e.out||'';$('hol').checked=!!e.hol;$('comp').checked=!!e.comp}
- else{$('from').value=e.date;$('to').value='';$('to').disabled=true;setPortion(e.days===.5?'half':'full')}
- $('save').textContent='Update entry';$('cancel').hidden=false;location.hash='add';$('barTitle').textContent='Edit entry';preview();window.scrollTo({top:0,behavior:'smooth'})}
-async function remove(id){const e=entries.find(x=>x.id===id);if(!e)return;const list=[e,...entries.filter(x=>x.parent===id)];
- try{for(const x of list)await del(x.id);undoList=list;toast(`Deleted ${CATS[e.cat].n.toLowerCase()} on ${fmtDate(e.date)}`,true)}catch(err){toast('Could not delete',false)}}
-let tt;function toast(t,undo){$('toastT').textContent=t;$('toastB').hidden=!undo;$('toast').classList.add('show');clearTimeout(tt);tt=setTimeout(()=>$('toast').classList.remove('show'),5000)}
+var S=load();
+var view='today';
+var now0=new Date();
+var ui={y:now0.getFullYear(),m:now0.getMonth()};
 
-/* ---------- home ---------- */
-const sumM=(list,cats)=>list.filter(e=>cats.includes(e.cat)).reduce((s,e)=>s+(e.mins||0),0);
-/* saved workday/trip entries whose overtime differs under the current rule (e.g. early arrival was counted before) */
-const staleOT=()=>entries.filter(e=>['work','ot','trip'].includes(e.cat)&&!e.parent&&e.in&&e.out&&!e.comp&&!e.hol&&!weekend(e.date)&&calcOT(e.date,e.in,e.out,false).mins!==(e.mins||0));
-function renderFix(){const l=staleOT(),f=$('fix');if(!l.length){f.hidden=true;return}
- const diff=l.reduce((s,e)=>s+(e.mins||0)-calcOT(e.date,e.in,e.out,false).mins,0);f.hidden=false;
- f.innerHTML=`<p><b>${l.length} saved ${l.length===1?'entry counts':'entries count'} overtime the old way.</b><br>Early arrival before ${esc(S.start)} no longer counts. Updating ${diff>=0?`removes ${dur(diff)}`:`adds ${dur(-diff)}`} of overtime.</p><button class="btn" id="fixBtn">Update now</button>`}
-async function applyFix(){const l=staleOT();$('fixBtn').disabled=true;
- try{for(const e of l)await put({...e,mins:calcOT(e.date,e.in,e.out,false).mins});toast(`Updated ${l.length} ${l.length===1?'entry':'entries'}`,false)}
- catch(err){toast('Could not update — try again',false)}renderFix()}
-function renderHero(){
- const ym=today.slice(0,7),y=today.slice(0,4),inM=entries.filter(e=>e.date.startsWith(ym)),ot=sumM(inM,['ot','work','trip']);
- const otDays=inM.filter(e=>['ot','work','trip'].includes(e.cat)&&e.mins>0).length,permLeft=Math.max(0,S.perm*60-sumM(inM,['perm']));
- $('hero').innerHTML=`<div class="lbl">Overtime in ${monthName(ym)} ${y}</div><div class="big">${dur(ot)}</div><div class="sub">${(ot/60).toFixed(2)} hours over ${otDays} ${otDays===1?'day':'days'}</div>
-  <div class="trio"><div><small>Workdays</small><b>${inM.filter(e=>e.cat==='work').length}</b></div><div><small>Permission left</small><b>${dur(permLeft)}</b></div><div><small>Leave left ${y}</small><b>${dd(alLeft(y))}</b></div></div>`}
-function renderMeters(){
- const ym=today.slice(0,7),y=today.slice(0,4),inM=entries.filter(e=>e.date.startsWith(ym));$('mTitle').textContent=`${monthName(ym)} at a glance`;
- const pm=sumM(inM,['perm']),al=entries.filter(e=>e.cat==='al'&&e.date.startsWith(y)).reduce((s,e)=>s+e.days,0);
- const n=c=>inM.filter(e=>e.cat===c).length;
- const m=(k,label,val,pct)=>`<div class="meter" style="--c:${CATS[k].c}">${av(k)}<div class="mb"><div class="top"><span>${label}</span><b>${val}</b></div>${pct==null?'':`<div class="bar"><i style="width:${Math.max(0,Math.min(100,pct))}%"></i></div>`}</div></div>`;
- $('meters').innerHTML=m('perm','Permission used',`${dur(pm)} of ${S.perm}h`,pm/(S.perm*60)*100)
-  +m('late','Late coming / early leaving',`${dur(sumM(inM,['late']))} / ${dur(sumM(inM,['early']))}`)
-  +m('trip','Business trip days',`${n('trip')}`)
-  +m('al',`Annual leave ${y}`,`${al} taken · ${dd(alLeft(y))} left`,(1-alLeft(y)/S.annual)*100)
-  +m('sick','Sick leave this month',dd(inM.filter(e=>e.cat==='sick').reduce((s,e)=>s+e.days,0)));
+/* ---------- calculations ---------- */
+function targetMin(){return Math.round((+S.settings.target||0)*60)}
+function byStart(a,b){return a.start<b.start?-1:a.start>b.start?1:0}
+function monthEntries(){
+  var pre=ui.y+'-'+pad(ui.m+1)+'-';
+  return S.entries.filter(function(e){return e.date.indexOf(pre)===0});
 }
-function row(e){const wk=wakeable(e)?(e.wake?'<span class="note" style="padding:0 6px">Wake-up set</span>':`<button class="ib" data-wake="${e.id}">Wake-up</button>`):'';
- const cls=e.cat==='late'||e.cat==='early'?' neg':(e.mins>0&&['ot','work','trip'].includes(e.cat))?' pos':'';
- return `<li><button class="rowb" data-edit="${e.id}" aria-label="Edit ${CATS[e.cat].n} on ${fmtDate(e.date)}">${av(e.cat)}<span class="t"><b>${CATS[e.cat].n}${e.hol?' · holiday':''}${e.comp?' → leave day':''}</b><small>${e.in&&e.out?`${e.in}–${e.out}`:e.in?`In ${e.in}`:e.out?`Out ${e.out}`:''}${e.note?(e.in||e.out?' · ':'')+esc(e.note):''}</small></span><span class="amt${cls}">${amount(e)}</span></button>${wk}${e.parent?'':`<button class="ib icon" data-del="${e.id}" aria-label="Delete"><svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></svg></button>`}</li>`}
-function renderRecent(){const l=[...entries].sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created).slice(0,15);
- if(!l.length){$('recent').innerHTML='<div class="card empty">No entries yet. Tap + to add your first one.</div>';return}
- const g=new Map();l.forEach(e=>{if(!g.has(e.date))g.set(e.date,[]);g.get(e.date).push(e)});
- $('recent').innerHTML=[...g].map(([d,es])=>{const ot=es.filter(e=>['ot','work','trip'].includes(e.cat)).reduce((s,e)=>s+(e.mins||0),0);
-  return `<div class="day"><span>${d===today?'Today':d===yesterday?'Yesterday':DAYS[dow(d)]+', '+fmtDate(d)}</span><span>${ot?dur(ot)+' OT':''}</span></div><ul class="list group">${es.map(row).join('')}</ul>`}).join('')}
-
-/* ---------- report ---------- */
-function fillFilters(){
- const ys=new Set([today.slice(0,4),...entries.map(e=>e.date.slice(0,4))]);const cy=$('fy').value||today.slice(0,4);
- $('fy').innerHTML=[...ys].sort().reverse().map(y=>`<option${y===cy?' selected':''}>${y}</option>`).join('');
- if(!$('fm').options.length){$('fm').innerHTML='<option value="all">All months</option>'+MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,'0')}">${m}</option>`).join('');$('fm').value=today.slice(5,7)}
- if(!$('fc').options.length)$('fc').innerHTML='<option value="all">All categories</option>'+Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('');
+function dayTotals(list){
+  var t={};
+  list.forEach(function(e){t[e.date]=(t[e.date]||0)+dur(e)});
+  return t;
 }
-function period(){const y=$('fy').value,m=$('fm').value;return{y,m,prefix:m==='all'?y:`${y}-${m}`,label:m==='all'?`All of ${y}`:`${MONTHS[+m-1]} ${y}`}}
-function renderReport(){
- fillFilters();rCat=$('fc').value;const p=period();
- const inP=entries.filter(e=>e.date.startsWith(p.prefix));
- const cnt=k=>inP.filter(e=>e.cat===k).length,days=k=>inP.filter(e=>e.cat===k).reduce((s,e)=>s+e.days,0);
- const pm=sumM(inP,['perm']),otAll=sumM(inP,['ot','work','trip']),autoP=inP.filter(e=>e.cat==='perm'&&e.reason).length;
- const tile=(k,v,s)=>`<button class="tile${rCat===k?' on':''}" style="--c:${CATS[k].c}" data-tile="${k}"><span class="k">${av(k)}${CATS[k].n}</span><span class="v">${v}</span><span class="s">${s}</span></button>`;
- $('tiles').innerHTML=tile('ot',dur(otAll),`${(otAll/60).toFixed(2)} h on all days`)
-  +tile('work',dd(cnt('work')),`${dur(sumM(inP,['work']))} overtime`)
-  +tile('trip',dd(cnt('trip')),`${dur(sumM(inP,['trip']))} overtime`)
-  +tile('perm',dur(pm),(p.m==='all'?`${cnt('perm')} times`:`of ${S.perm}h allowed`+(pm>S.perm*60?' · over':''))+(autoP?` · ${autoP} for late/early`:''))
-  +tile('late',dur(sumM(inP,['late'])),`${cnt('late')} ${cnt('late')===1?'time':'times'}, no permission left`)
-  +tile('early',dur(sumM(inP,['early'])),`${cnt('early')} ${cnt('early')===1?'time':'times'}, no permission left`)
-  +tile('al',dd(days('al')),`${dd(alLeft(p.y))} left in ${p.y}`+(compDays(p.y)?` · +${compDays(p.y)} from holidays`:''))
-  +tile('sick',dd(days('sick')),`${cnt('sick')} entries`);
- const rows=inP.filter(e=>rCat==='all'||e.cat===rCat||(rCat==='ot'&&(e.cat==='trip'||e.cat==='work')&&e.mins>0)).sort((a,b)=>a.date.localeCompare(b.date)||(a.created-b.created));
- $('rTitle').textContent=`${rCat==='all'?'All entries':CATS[rCat].n} · ${p.label}`;
- if(!rows.length){$('table').innerHTML='<div class="empty">Nothing recorded for this period.</div>';return}
- const maxOT=Math.max(1,...rows.filter(e=>['ot','trip','work'].includes(e.cat)).map(e=>e.mins||0));
- const permRun={};
- const body=rows.map(e=>{let flag='';if(e.cat==='perm'){const ym=e.date.slice(0,7);permRun[ym]=(permRun[ym]||0)+e.mins;if(permRun[ym]>S.perm*60)flag=' <span class="flag">over limit</span>'}
-  const bar=['ot','trip','work'].includes(e.cat)&&e.mins?`<span class="mini" style="width:${Math.round(e.mins/maxOT*40)}px"></span>`:'';
-  return `<tr><td style="white-space:nowrap">${fmtDate(e.date)}</td><td>${DAYS[dow(e.date)]}</td><td><span class="tag" style="--c:${CATS[e.cat].c}"><span class="dot"></span>${CATS[e.cat].n}${e.hol?' (holiday)':''}${e.comp?' → +1 leave day':''}</span></td><td class="n">${DAYCAT.includes(e.cat)?(e.days===.5?'Half':'Full'):(e.in||'')}</td><td class="n">${e.out||''}</td><td class="n">${bar}<b>${amount(e)}</b>${flag}</td><td>${esc(e.note)}</td><td class="n"><button class="ib" data-edit="${e.id}">Edit</button></td></tr>`}).join('');
- let foot='';if(rCat!=='all'){const om=rows.reduce((s,e)=>s+(e.mins||0),0);
-  const t=rCat==='work'||rCat==='trip'?`${dd(rows.length)} · ${dur(om)} OT`:DAYCAT.includes(rCat)?dd(rows.reduce((s,e)=>s+e.days,0)):dur(om);
-  foot=`<tfoot><tr><td colspan="5">Total · ${rows.length} entries</td><td class="n">${t}</td><td></td><td></td></tr></tfoot>`}
- $('table').innerHTML=`<table class="stack"><thead><tr><th>Date</th><th>Day</th><th>Type</th><th class="n">In</th><th class="n">Out</th><th class="n">Amount</th><th>Note</th><th></th></tr></thead><tbody>${body}</tbody>${foot}</table>`;
- $('table').dataset.csv=['Date,Day,Type,Clock in,Clock out,Hours,Days,Note'].concat(rows.map(e=>[e.date,DAYS[dow(e.date)],CATS[e.cat].n+(e.hol?' (holiday)':''),e.in||'',e.out||'',e.mins!=null?(e.mins/60).toFixed(2):'',e.days??'','"'+(e.note||'').replace(/"/g,'""')+'"'].join(','))).join('\n');
+function weekStartOf(d){
+  var diff=(d.getDay()-(+S.settings.weekStart)+7)%7;
+  return new Date(d.getFullYear(),d.getMonth(),d.getDate()-diff);
+}
+function stats(list){
+  var days=dayTotals(list),tm=targetMin(),total=0,worked=0,ot=0,proj={},weeks={};
+  Object.keys(days).forEach(function(k){
+    var m=days[k];total+=m;if(m>0)worked++;
+    if(tm>0&&m>tm)ot+=m-tm;
+    var w=ymd(weekStartOf(parseYmd(k)));weeks[w]=(weeks[w]||0)+m;
+  });
+  list.forEach(function(e){proj[e.project]=(proj[e.project]||0)+dur(e)});
+  return {total:total,worked:worked,ot:ot,proj:proj,weeks:weeks,days:days};
+}
+function money(mins){
+  var r=+S.settings.rate||0;if(r<=0)return '';
+  return ((mins/60)*r).toFixed(2)+(S.settings.currency?' '+S.settings.currency:'');
+}
+function runningToday(){
+  if(!S.active)return 0;
+  var mid=new Date();mid.setHours(0,0,0,0);
+  return Math.max(0,Math.floor((Date.now()-Math.max(S.active.start,mid.getTime()))/60000));
 }
 
-/* ---------- payslips ---------- */
-const EN={'المرتبالأساسي':'Basic salary','علاوةالسنةالحالية':'Current-year raise','علاوةسنواتسابقة':'Previous years\' raises','حوافزومكافآت':'Incentives & bonuses','بدلات':'Allowances',
- 'أضافي':'Overtime','إضافي':'Overtime','تسوياتأخرى':'Other settlements','تسوياتأخري':'Other settlements','عمولات':'Commissions','م.توزيعأرباح':'Profit share','تسويةرصيداجازات':'Leave balance settlement',
- 'تأمينات':'Social insurance','ت.معاشاضافى':'Additional pension','ضريبةكسبالعمل':'Income tax','أجازةمرضية':'Sick leave','غياب':'Absence','أيامبدونأجر':'Unpaid days',
- 'تسويةضريبية':'Tax settlement','تأمينصحىشامل':'Universal health insurance','م.بالرعايةالصحية':'Health care contribution','م.بصندوقالعاملين':'Employees\' fund','مساهمهتكافليه':'Takaful contribution',
- 'قسطشراءمدة':'Service-period purchase','مشاركةمجتمعية':'Community contribution','تسويةدفعةمقدمةمكافآت':'Bonus advance settlement','تسويةدفعةمقدمةعمولات':'Commission advance settlement',
- 'تأمينسيارة':'Car insurance','استقطاعاتمزاياعاملين':'Employee benefits deductions','إنتقالات':'Transportation','انتقالات':'Transportation','قسطبنك':'Bank installment','عهدمؤقتة':'Temporary custody',
- 'فاتورةمحمول':'Mobile bill','إصلاحسيارة':'Car repair','مصروفات':'Expenses'};
-const tr=ar=>EN[ar.replace(/\s/g,'')]||ar;
-const money=n=>(n<0?'−':'')+Math.abs(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const clean=t=>String(t||'').replace(/ /g,' ').replace(/\s+/g,' ').trim();
-const num=t=>{t=clean(t);if(!t)return 0;const m=t.match(/^(-?)([\d,]+(?:\.\d+)?)(-?)$/);if(!m)return 0;const v=parseFloat(m[2].replace(/,/g,''));return (m[1]||m[3])?-v:v};
-const r2=n=>Math.round(n*100)/100,sumA=a=>r2(a.reduce((s,x)=>s+x.amt,0));
-function parsePayslip(html){
- const doc=new DOMParser().parseFromString(html,'text/html'),all=clean(doc.body?doc.body.textContent:'');
- const pm=all.match(/Pa[yr]*oll\s*for\s*:\s*(\d{1,2})\s*\/\s*(\d{4})/i);
- if(!pm)throw new Error('could not find the payroll month ("Payroll for: MM/YYYY")');
- const ym=`${pm[2]}-${pm[1].padStart(2,'0')}`,p={id:'pay-'+ym,kind:'payslip',ym,earn:[],ded:[],rem:[],totals:{},uploaded:Date.now()};
- for(const t of doc.querySelectorAll('table')){
-  const rows=[...t.rows].map(r=>[...r.cells].map(c=>clean(c.textContent))),txt=rows.flat().join(' ');
-  if(/نوع\s*ال[إا]ستقطاع/.test(txt)){
-   for(const c of rows){
-    if(c.some(x=>/نوع\s*ال/.test(x)))continue;
-    if(c.length>=4){const[da,dl,ea,el]=c;
-     if(/[أاإ]جمالي/.test(dl+el)){p.totals.ded=num(da);p.totals.earn=num(ea);continue}
-     if(dl)p.ded.push({ar:dl,amt:num(da)});if(el)p.earn.push({ar:el,amt:num(ea)})}
-    else if(c.length>=2&&/صافي/.test(c[1]))p.totals.netIncome=num(c[0]);
-   }
-  }else if(/Net\s*:/.test(txt)){const m=txt.match(/Net\s*:\s*(-?[\d,]+(?:\.\d+)?-?)/);if(m)p.totals.net=num(m[1])}
-  else if(rows.length&&rows.every(c=>c.length===2)&&!/Personnel|Company|Pers\./i.test(txt)){
-   for(const[a,l]of rows){if(!l)continue;if(/^[إاأ]جمالي$/.test(l)){p.totals.rem=num(a);continue}p.rem.push({ar:l,amt:num(a)})}
+/* ---------- ui bits ---------- */
+var toastT;
+function toast(msg){
+  var t=$('#toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2300);
+}
+function openModal(html){$('#sheet').innerHTML=html;$('#modal').classList.add('show')}
+function closeModal(){$('#modal').classList.remove('show');$('#sheet').innerHTML='';resolver=null}
+var resolver=null;
+function ask(msg,okLabel){
+  return new Promise(function(res){
+    openModal('<h3>'+esc(msg)+'</h3><div class="btns"><button class="btn ghost" data-a="ask-no">Cancel</button><button class="btn danger" data-a="ask-yes">'+esc(okLabel||'Confirm')+'</button></div>');
+    resolver=res;
+  });
+}
+function copyText(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){toast('Copied')},function(){fallbackCopy()});
+  }else fallbackCopy();
+  function fallbackCopy(){
+    var ta=$('#exp');if(!ta)return;
+    ta.select();
+    try{document.execCommand('copy');toast('Copied')}catch(e){toast('Select the text and copy it')}
   }
- }
- if(!p.earn.length)throw new Error('no earnings table found — is this the payslip email file?');
- const T=p.totals;T.earn??=sumA(p.earn);T.ded??=sumA(p.ded);T.rem??=sumA(p.rem);T.netIncome??=r2(T.earn-T.ded);T.net??=r2(T.netIncome-T.rem);
- return p;
 }
-const prevYM=ym=>{let[y,m]=ym.split('-').map(Number);m--;if(!m){m=12;y--}return `${y}-${String(m).padStart(2,'0')}`};
-const otPaid=p=>r2(p.earn.filter(x=>tr(x.ar)==='Overtime').reduce((s,x)=>s+x.amt,0));
-function otCheck(p){const wm=prevYM(p.ym),list=entries.filter(e=>['ot','work','trip'].includes(e.cat)&&e.date.startsWith(wm)&&!e.comp&&e.mins>0);
- const mins=list.reduce((s,e)=>s+e.mins,0);return{wm,mins,days:list.length,paid:otPaid(p),rate:mins?r2(otPaid(p)/(mins/60)):null}}
-const payOK=p=>{const T=p.totals;return Math.abs(sumA(p.earn)-T.earn)<.02&&Math.abs(sumA(p.ded)-T.ded)<.02&&Math.abs(T.earn-T.ded-T.netIncome)<.02&&Math.abs(T.netIncome-T.rem-T.net)<.02};
-async function savePay(p){if(col)await col.doc(p.id).set(p);else{pays=pays.filter(x=>x.id!==p.id).concat(p);localSave();renderPay()}}
-async function delPay(id){if(col)await col.doc(id).delete();else{pays=pays.filter(x=>x.id!==id);localSave();renderPay()}}
-async function readFile(f){const buf=await f.arrayBuffer();let t=new TextDecoder('utf-8').decode(buf);if(!/[؀-ۿ]/.test(t)){try{t=new TextDecoder('windows-1256').decode(buf)}catch(e){}}return t}
-$('payFile').addEventListener('change',async ev=>{
- const files=[...ev.target.files];ev.target.value='';if(!files.length)return;const out=[];let last=null;
- for(const f of files){try{const p=parsePayslip(await readFile(f));const had=pays.some(x=>x.id===p.id);await savePay(p);last=p.ym;
-   out.push(`<div class="msg ${payOK(p)?'ok':'warn'}">${monthName(p.ym)} ${p.ym.slice(0,4)} ${had?'replaced':'added'} — net paid ${money(p.totals.net)} EGP${payOK(p)?'':' · totals do not add up, please check the file'}</div>`)}
-  catch(e){out.push(`<div class="msg warn">${esc(f.name)}: ${esc(e.message||'could not read this file')}</div>`)}}
- $('payMsg').innerHTML=out.join('');if(last){payPick={y:last.slice(0,4),v:last}}renderPay();
+function download(name,text,mime){
+  try{
+    var blob=new Blob(['﻿'+text],{type:mime});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=name;
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);
+    toast('Download started');
+  }catch(e){toast('Download not available here — use Copy')}
+}
+var exportData={};
+function showExport(title,text,name,mime){
+  exportData={text:text,name:name,mime:mime};
+  var canShare=!!navigator.share;
+  openModal('<h3>'+esc(title)+'</h3><textarea id="exp" readonly>'+esc(text)+'</textarea>'+
+    '<div class="btns"><button class="btn" data-a="exp-copy">Copy</button>'+
+    (canShare?'<button class="btn ghost" data-a="exp-share">Share</button>':'')+
+    '<button class="btn ghost" data-a="exp-dl">Download</button></div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Close</button></div>');
+}
+
+/* ---------- views ---------- */
+function projOptions(sel){
+  var list=S.settings.projects.slice();
+  if(sel&&list.indexOf(sel)<0)list.push(sel);
+  return list.map(function(p){return '<option value="'+esc(p)+'"'+(p===sel?' selected':'')+'>'+esc(p)+'</option>'}).join('');
+}
+function entryRow(e){
+  return '<button class="row" data-a="edit" data-id="'+esc(e.id)+'"><div><b>'+esc(e.project)+'</b>'+
+    '<div class="muted small">'+e.start+' – '+e.end+(e.brk?' · break '+e.brk+'m':'')+(e.note?' · '+esc(e.note):'')+'</div></div>'+
+    '<div class="dur">'+fmt(dur(e))+'</div></button>';
+}
+function vToday(){
+  var now=new Date(),today=ymd(now);
+  var es=S.entries.filter(function(e){return e.date===today}).sort(byStart);
+  var done=es.reduce(function(a,e){return a+dur(e)},0);
+  var total=done+runningToday(),tm=targetMin();
+  var h='<section class="card hero"><div class="muted">'+esc(now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}))+'</div>';
+  if(S.active){
+    var st=new Date(S.active.start);
+    h+='<div class="timer" id="timer">00:00:00</div>'+
+       '<div class="muted">Working since '+hm(st)+' · '+esc(S.active.project)+(S.active.note?' · '+esc(S.active.note):'')+'</div>'+
+       '<label>Break taken (minutes)<input id="brk" type="number" inputmode="numeric" min="0" step="5" value="0"></label>'+
+       '<button class="btn big danger" data-a="out">Clock out</button>';
+  }else{
+    h+='<div class="timer" style="font-size:34px;color:var(--muted)">Not clocked in</div>'+
+       '<label>Project<select id="proj">'+projOptions(S.settings.projects[0])+'</select></label>'+
+       '<label>Note (optional)<input id="note" maxlength="80" placeholder="What are you working on?"></label>'+
+       '<button class="btn big" data-a="in">Clock in</button>';
+  }
+  h+='</section>';
+  h+='<section class="card"><div class="line"><span>Today</span><b id="todayTot">'+fmt(total)+'</b></div>';
+  if(tm>0){
+    h+='<div class="bar"><i id="todayBar" style="width:'+Math.min(100,total/tm*100)+'%"></i></div>'+
+       '<div class="muted small" style="margin-top:6px">Target '+fmt(tm)+'</div>';
+  }
+  h+='</section>';
+  h+='<section class="card"><h4>Today\'s entries</h4>'+
+     (es.length?es.map(entryRow).join(''):'<div class="empty" style="padding:10px">Nothing logged yet today.</div>')+
+     '<button class="btn ghost sm" style="margin-top:10px" data-a="new">+ Add entry manually</button></section>';
+  return h;
+}
+function monthNav(){
+  return '<div class="month"><button data-a="prev" aria-label="Previous month">‹</button><b>'+esc(monthLabel())+'</b><button data-a="next" aria-label="Next month">›</button></div>';
+}
+function vLog(){
+  var list=monthEntries(),st=stats(list),tm=targetMin();
+  var h=monthNav();
+  if(!list.length)return h+'<div class="card empty">No entries this month.<br>Tap + to add one.</div>';
+  var dates=Object.keys(st.days).sort().reverse();
+  dates.forEach(function(d){
+    var mins=st.days[d],ot=tm>0&&mins>tm?mins-tm:0;
+    var es=list.filter(function(e){return e.date===d}).sort(byStart);
+    h+='<section class="card"><div class="dayhead"><b>'+esc(dayLabel(d))+'</b><span class="dur">'+fmt(mins)+(ot?'<span class="badge">+'+fmt(ot)+'</span>':'')+'</span></div>'+es.map(entryRow).join('')+'</section>';
+  });
+  return h;
+}
+function vSummary(){
+  var list=monthEntries(),st=stats(list);
+  var h=monthNav();
+  var avg=st.worked?st.total/st.worked:0;
+  h+='<div class="stats">'+
+    '<div class="stat"><b>'+fmt(st.total)+'</b><span>Total hours</span></div>'+
+    '<div class="stat"><b>'+st.worked+'</b><span>Days worked</span></div>'+
+    '<div class="stat"><b>'+fmt(st.ot)+'</b><span>Overtime</span></div>'+
+    '<div class="stat"><b>'+fmt(avg)+'</b><span>Average per day</span></div></div>';
+  var earn=money(st.total);
+  if(earn)h+='<section class="card"><div class="line"><span>Earnings</span><b>'+esc(earn)+'</b></div></section>';
+  var pk=Object.keys(st.proj).sort(function(a,b){return st.proj[b]-st.proj[a]});
+  if(pk.length){
+    h+='<section class="card"><h4>By project</h4>';
+    pk.forEach(function(p){
+      h+='<div style="margin-bottom:10px"><div class="line" style="padding:0"><span>'+esc(p)+'</span><b>'+fmt(st.proj[p])+'</b></div>'+
+         '<div class="bar"><i style="width:'+(st.total?st.proj[p]/st.total*100:0)+'%"></i></div></div>';
+    });
+    h+='</section>';
+  }
+  var wk=Object.keys(st.weeks).sort();
+  if(wk.length){
+    h+='<section class="card"><h4>By week</h4>';
+    wk.forEach(function(w){
+      h+='<div class="line"><span>Week of '+esc(parseYmd(w).toLocaleDateString(undefined,{day:'numeric',month:'short'}))+'</span><b>'+fmt(st.weeks[w])+'</b></div>';
+    });
+    h+='</section>';
+  }
+  h+='<button class="btn big" data-a="csv">Export this month (CSV)</button>';
+  return h;
+}
+function vSettings(){
+  var s=S.settings;
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var h='<section class="card"><h3>Work</h3>'+
+    '<label>Daily target (hours)<input type="number" inputmode="decimal" step="0.25" min="0" max="24" data-set="target" value="'+esc(s.target)+'"></label>'+
+    '<div class="muted small">Time beyond this on a single day counts as overtime. Use 0 to switch overtime off.</div>'+
+    '<label>Week starts on<select data-set="weekStart">'+days.map(function(d,i){return '<option value="'+i+'"'+(i==s.weekStart?' selected':'')+'>'+d+'</option>'}).join('')+'</select></label>'+
+    '<div class="two"><label>Hourly rate (optional)<input type="number" inputmode="decimal" step="0.01" min="0" data-set="rate" value="'+esc(s.rate||'')+'" placeholder="0"></label>'+
+    '<label>Currency<input data-set="currency" maxlength="5" value="'+esc(s.currency)+'" placeholder="EGP"></label></div></section>';
+  h+='<section class="card"><h3>Projects</h3><div class="chips">'+
+    s.projects.map(function(p,i){return '<span class="chip">'+esc(p)+(s.projects.length>1?'<button data-a="rmproj" data-i="'+i+'" aria-label="Remove">×</button>':'')+'</span>'}).join('')+'</div>'+
+    '<div class="addrow"><input id="newproj" maxlength="40" placeholder="New project name"><button class="btn" data-a="addproj">Add</button></div></section>';
+  h+='<section class="card"><h3>Data</h3>'+
+    '<div class="muted small" style="margin-bottom:10px">Everything is stored on this device only.</div>'+
+    '<div class="btns" style="margin-top:0"><button class="btn ghost" data-a="backup">Backup</button><button class="btn ghost" data-a="restore">Restore</button></div>'+
+    '<div class="btns"><button class="btn ghost" data-a="csvall">Export all (CSV)</button><button class="btn danger" data-a="wipe">Erase all</button></div></section>';
+  return h;
+}
+function render(){
+  var v=$('#view');
+  v.innerHTML={today:vToday,log:vLog,summary:vSummary,settings:vSettings}[view]();
+  Array.prototype.forEach.call(document.querySelectorAll('#nav button'),function(b){b.classList.toggle('on',b.dataset.v===view)});
+  $('#fab').style.display=view==='log'?'block':'none';
+  tick();
+}
+
+/* ---------- live timer ---------- */
+function tick(){
+  if(!S.active)return;
+  var t=$('#timer');if(!t)return;
+  var sec=Math.max(0,Math.floor((Date.now()-S.active.start)/1000));
+  t.textContent=pad(Math.floor(sec/3600))+':'+pad(Math.floor(sec/60)%60)+':'+pad(sec%60);
+  var es=S.entries.filter(function(e){return e.date===ymd(new Date())});
+  var total=es.reduce(function(a,e){return a+dur(e)},0)+runningToday();
+  var tt=$('#todayTot');if(tt)tt.textContent=fmt(total);
+  var bar=$('#todayBar'),tm=targetMin();
+  if(bar&&tm>0)bar.style.width=Math.min(100,total/tm*100)+'%';
+}
+setInterval(tick,250);
+
+/* ---------- entry form ---------- */
+function entryForm(id){
+  var e=id?S.entries.filter(function(x){return x.id===id})[0]:null;
+  if(id&&!e)return;
+  var v=e||{date:ymd(new Date()),start:'09:00',end:'17:00',brk:0,project:S.settings.projects[0],note:''};
+  openModal('<h3>'+(e?'Edit entry':'New entry')+'</h3>'+
+    '<input type="hidden" id="f-id" value="'+esc(id||'')+'">'+
+    '<label>Date<input type="date" id="f-date" value="'+esc(v.date)+'"></label>'+
+    '<div class="two"><label>Start<input type="time" id="f-start" value="'+esc(v.start)+'"></label>'+
+    '<label>End<input type="time" id="f-end" value="'+esc(v.end)+'"></label></div>'+
+    '<label>Break (minutes)<input type="number" inputmode="numeric" id="f-brk" min="0" step="5" value="'+(+v.brk||0)+'"></label>'+
+    '<label>Project<select id="f-proj">'+projOptions(v.project)+'</select></label>'+
+    '<label>Note<input id="f-note" maxlength="80" value="'+esc(v.note)+'"></label>'+
+    '<div class="muted" id="f-prev" style="margin-top:6px"></div>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="save">Save</button></div>'+
+    (e?'<div class="btns"><button class="btn danger" data-a="del" data-id="'+esc(id)+'">Delete entry</button></div>':''));
+  previewForm();
+}
+function previewForm(){
+  var p=$('#f-prev');if(!p)return;
+  var s=$('#f-start').value,e=$('#f-end').value,b=+$('#f-brk').value||0;
+  if(!s||!e){p.textContent='';return}
+  var d=Math.max(0,rawDur(s,e)-b);
+  p.textContent='Duration: '+fmt(d)+(toMin(e)<toMin(s)?' (ends next day)':'');
+}
+function saveForm(){
+  var id=$('#f-id').value,date=$('#f-date').value,s=$('#f-start').value,e=$('#f-end').value;
+  var b=Math.max(0,Math.round(+$('#f-brk').value||0));
+  if(!date||!s||!e){toast('Please fill in date, start and end');return}
+  if(s===e){toast('Start and end are the same');return}
+  if(b>=rawDur(s,e)){toast('Break is longer than the shift');return}
+  var rec={id:id||uid(),date:date,start:s,end:e,brk:b,project:$('#f-proj').value,note:$('#f-note').value.trim()};
+  if(id){S.entries=S.entries.map(function(x){return x.id===id?rec:x})}else S.entries.push(rec);
+  var d=parseYmd(date);ui.y=d.getFullYear();ui.m=d.getMonth();
+  save();closeModal();render();toast('Saved');
+}
+
+/* ---------- clock in/out ---------- */
+function clockIn(){
+  S.active={start:Date.now(),project:$('#proj').value,note:$('#note').value.trim()};
+  save();render();
+}
+function clockOut(){
+  var a=S.active;if(!a)return;
+  var st=new Date(a.start),en=new Date();
+  var b=Math.max(0,Math.round(+($('#brk')||{}).value||0));
+  var hrs=(en-st)/3600000;
+  var rec={id:uid(),date:ymd(st),start:hm(st),end:hm(en),brk:0,project:a.project,note:a.note||''};
+  var raw=rawDur(rec.start,rec.end);
+  rec.brk=b<raw?b:0;
+  S.active=null;
+  if(rec.start===rec.end&&hrs<12){toast('Shift under a minute — discarded');save();render();return}
+  S.entries.push(rec);save();render();
+  if(hrs>16){toast('Long shift — please check this entry');entryForm(rec.id)}
+  else toast('Saved '+fmt(dur(rec)));
+}
+
+/* ---------- export / import ---------- */
+function csvCell(v){v=String(v==null?'':v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function toCsv(list){
+  var rows=[['Date','Start','End','Break (min)','Hours','Project','Note']];
+  list.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:byStart(a,b)}).forEach(function(e){
+    rows.push([e.date,e.start,e.end,e.brk||0,(dur(e)/60).toFixed(2),e.project,e.note||'']);
+  });
+  return rows.map(function(r){return r.map(csvCell).join(',')}).join('\n');
+}
+function restoreForm(){
+  openModal('<h3>Restore backup</h3><div class="muted small">Paste the backup text below. This replaces all current data.</div>'+
+    '<textarea id="imp" placeholder="Paste backup here"></textarea>'+
+    '<div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="doimport">Restore</button></div>');
+}
+function doImport(){
+  var raw=$('#imp').value.trim(),p;
+  try{p=JSON.parse(raw)}catch(e){toast('That is not a valid backup');return}
+  if(!p||!Array.isArray(p.entries)){toast('That is not a valid backup');return}
+  var d=defaults();
+  d.entries=p.entries.filter(validEntry).map(function(e){return {id:e.id,date:e.date,start:e.start,end:e.end,brk:Math.max(0,+e.brk||0),project:String(e.project||'General'),note:String(e.note||'')}});
+  if(p.settings)Object.keys(d.settings).forEach(function(k){if(p.settings[k]!==undefined)d.settings[k]=p.settings[k]});
+  if(!Array.isArray(d.settings.projects)||!d.settings.projects.length)d.settings.projects=['General'];
+  S=d;save();closeModal();render();toast('Restored '+S.entries.length+' entries');
+}
+
+/* ---------- settings ---------- */
+function setSetting(k,v){
+  var s=S.settings;
+  if(k==='target'){var n=parseFloat(v);s.target=isNaN(n)?8:Math.min(24,Math.max(0,n))}
+  else if(k==='weekStart')s.weekStart=+v;
+  else if(k==='rate'){var r=parseFloat(v);s.rate=isNaN(r)?0:Math.max(0,r)}
+  else if(k==='currency')s.currency=v.trim();
+  save();toast('Saved');
+}
+
+/* ---------- events ---------- */
+function changeMonth(d){
+  var x=new Date(ui.y,ui.m+d,1);ui.y=x.getFullYear();ui.m=x.getMonth();render();
+}
+document.addEventListener('click',function(ev){
+  var nb=ev.target.closest('#nav button');
+  if(nb){view=nb.dataset.v;render();window.scrollTo(0,0);return}
+  if(ev.target.id==='modal'){closeModal();return}
+  var t=ev.target.closest('[data-a]');if(!t)return;
+  var a=t.dataset.a;
+  switch(a){
+    case 'in':clockIn();break;
+    case 'out':clockOut();break;
+    case 'new':entryForm(null);break;
+    case 'edit':entryForm(t.dataset.id);break;
+    case 'save':saveForm();break;
+    case 'close':closeModal();break;
+    case 'del':
+      var id=t.dataset.id;
+      ask('Delete this entry?','Delete').then(function(ok){
+        if(ok){S.entries=S.entries.filter(function(e){return e.id!==id});save();closeModal();render();toast('Deleted')}
+      });break;
+    case 'ask-yes':var r1=resolver;resolver=null;closeModal();if(r1)r1(true);break;
+    case 'ask-no':var r2=resolver;resolver=null;closeModal();if(r2)r2(false);break;
+    case 'prev':changeMonth(-1);break;
+    case 'next':changeMonth(1);break;
+    case 'csv':showExport('CSV – '+monthLabel(),toCsv(monthEntries()),'timesheet-'+ui.y+'-'+pad(ui.m+1)+'.csv','text/csv');break;
+    case 'csvall':showExport('CSV – all entries',toCsv(S.entries),'timesheet-all.csv','text/csv');break;
+    case 'backup':showExport('Backup',JSON.stringify({app:'timesheet',version:1,entries:S.entries,settings:S.settings}),'timesheet-backup.json','application/json');break;
+    case 'restore':restoreForm();break;
+    case 'doimport':doImport();break;
+    case 'exp-copy':copyText(exportData.text);break;
+    case 'exp-dl':download(exportData.name,exportData.text,exportData.mime);break;
+    case 'exp-share':
+      navigator.share({title:exportData.name,text:exportData.text}).catch(function(){});break;
+    case 'addproj':
+      var inp=$('#newproj'),name=inp.value.trim();
+      if(!name)break;
+      if(S.settings.projects.some(function(p){return p.toLowerCase()===name.toLowerCase()})){toast('Project already exists');break}
+      S.settings.projects.push(name);save();render();break;
+    case 'rmproj':
+      if(S.settings.projects.length>1){S.settings.projects.splice(+t.dataset.i,1);save();render()}break;
+    case 'wipe':
+      ask('Erase ALL entries and settings? This cannot be undone.','Erase everything').then(function(ok){
+        if(ok){S=defaults();save();render();toast('All data erased')}
+      });break;
+  }
 });
-let payPick=null;
-function payList(title,items,total,showZero){const rows=items.filter(x=>showZero||x.amt);
- return `<div class="card"><h2>${title}</h2><ul class="list">${rows.length?rows.map(x=>`<li><span class="t">${esc(tr(x.ar))}<small dir="rtl" lang="ar">${esc(x.ar)}</small></span><span class="amt">${money(x.amt)}</span></li>`).join(''):'<li class="note">None this month</li>'}
- <li><span class="t"><b>Total</b></span><span class="amt">${money(total)}</span></li></ul></div>`}
-function renderPay(){
- const ys=[...new Set([today.slice(0,4),...pays.map(p=>p.ym.slice(0,4))])].sort().reverse();
- if(!payPick){const lastP=[...pays].sort((a,b)=>b.ym.localeCompare(a.ym))[0];payPick=lastP?{y:lastP.ym.slice(0,4),v:lastP.ym}:{y:today.slice(0,4),v:'year'}}
- const y=payPick.y,inY=pays.filter(p=>p.ym.startsWith(y)).sort((a,b)=>a.ym.localeCompare(b.ym));
- if(payPick.v!=='year'&&!inY.some(p=>p.ym===payPick.v))payPick.v=inY.length?inY.at(-1).ym:'year';
- $('py').innerHTML=ys.map(x=>`<option${x===y?' selected':''}>${x}</option>`).join('');
- $('pv').innerHTML=`<option value="year">Whole year</option>`+inY.map(p=>`<option value="${p.ym}"${p.ym===payPick.v?' selected':''}>${monthName(p.ym)}</option>`).join('');
- if(payPick.v==='year')$('pv').value='year';
- const z=$('pz').checked,out=$('payOut');
- if(!inY.length){out.innerHTML=`<div class="card empty">No payslips for ${y} yet. Upload the .htm payslip files from your email above — you can pick several at once.</div>`;return}
- if(payPick.v!=='year'){
-  const p=inY.find(x=>x.ym===payPick.v),T=p.totals,prevKey=pays.map(q=>q.ym).filter(q=>q<p.ym).sort().at(-1),prev=pays.find(x=>x.ym===prevKey);
-  const pct=v=>T.earn?Math.max(0,v/T.earn*100):0,diff=prev?r2(T.net-prev.totals.net):null;
-  out.innerHTML=`<div class="hero payhero"><div class="lbl">Net paid · ${monthName(p.ym)} ${y} (EGP)</div><div class="big">${money(T.net)}</div><div class="sub">${diff!=null?`${diff>=0?'▲':'▼'} ${money(Math.abs(diff))} vs ${monthName(prev.ym)}`:'&nbsp;'}</div>
-   <div class="split"><i style="width:${pct(T.net)}%;background:#7ff0d9"></i><i style="width:${pct(T.ded)}%;background:#ff9b92"></i><i style="width:${pct(T.rem)}%;background:#ffd27a"></i></div>
-   <div class="trio"><div><small>Gross</small><b>${money(T.earn)}</b></div><div><small>Deductions</small><b>− ${money(T.ded)}</b></div><div><small>Other</small><b>− ${money(T.rem)}</b></div></div></div>
-   ${payOK(p)?'':'<div class="msg warn">The totals in this payslip do not add up — please check the original.</div>'}
-   ${(()=>{const o=otCheck(p);return `<div class="card"><h2>Overtime check</h2><p class="note" style="margin-top:0">${monthName(p.ym)}'s payslip pays the overtime worked in ${monthName(o.wm)} ${o.wm.slice(0,4)}.</p>
-    <div class="tiles t3" style="margin:0"><div class="tile" style="--c:var(--ot);cursor:default;background:var(--sur2)"><span class="k">Overtime paid</span><span class="v">${money(o.paid)}</span><span class="s">EGP on this payslip</span></div>
-    <div class="tile" style="--c:var(--ot);cursor:default;background:var(--sur2)"><span class="k">Logged in ${monthName(o.wm)}</span><span class="v">${o.mins?dur(o.mins):'—'}</span><span class="s">${o.mins?`${(o.mins/60).toFixed(2)} h over ${o.days} day${o.days===1?'':'s'}`:'No overtime in your Time Sheet'}</span></div>
-    <div class="tile" style="--c:var(--ot);cursor:default;background:var(--sur2)"><span class="k">Paid per hour</span><span class="v">${o.rate!=null?money(o.rate):'—'}</span><span class="s">${o.rate!=null?'EGP per logged hour':'Needs logged hours'}</span></div></div>
-    ${!o.mins&&o.paid?`<div class="msg ok">No Time Sheet data for ${monthName(o.wm)}, so there's nothing to compare yet.</div>`:''}${o.mins&&!o.paid?`<div class="msg warn">You logged ${dur(o.mins)} of overtime in ${monthName(o.wm)} but this payslip shows no overtime payment.</div>`:''}</div>`})()}
-   <div class="pgrid">${payList('Earnings',p.earn,T.earn,z)}${payList('Deductions',p.ded,T.ded,z)}${payList('Additional deductions',p.rem,T.rem,z)}</div>
-   <div style="margin-top:12px;text-align:center"><button class="ib" data-delpay="${p.id}">Remove this payslip</button></div>`;
- }else{
-  const tot=k=>r2(inY.reduce((s,p)=>s+p.totals[k],0)),maxN=Math.max(1,...inY.map(p=>p.totals.net));
-  const missing=MONTHS.map((m,i)=>`${y}-${String(i+1).padStart(2,'0')}`).filter(k=>k<today.slice(0,7)&&!inY.some(p=>p.ym===k)).map(k=>monthName(k).slice(0,3));
-  const agg=key=>{const m=new Map();inY.forEach(p=>p[key].forEach(x=>m.set(x.ar,r2((m.get(x.ar)||0)+x.amt))));return[...m].map(([ar,amt])=>({ar,amt}))};
-  out.innerHTML=`<div class="hero payhero"><div class="lbl">Net paid in ${y} (EGP)</div><div class="big">${money(tot('net'))}</div><div class="sub">${inY.length} payslip${inY.length===1?'':'s'} uploaded${missing.length?` · missing: ${missing.join(', ')}`:''}</div></div>
-   <div class="card"><h2>${y} month by month</h2>
-   <table class="stack"><thead><tr><th>Month</th><th class="n">Gross</th><th class="n">Deductions</th><th class="n">Other</th><th class="n">Net paid</th></tr></thead><tbody>
-   ${inY.map(p=>`<tr><td><button class="ib" data-paym="${p.ym}">${monthName(p.ym)}</button></td><td class="n">${money(p.totals.earn)}</td><td class="n">${money(p.totals.ded)}</td><td class="n">${money(p.totals.rem)}</td><td class="n"><span class="mini" style="width:${Math.round(p.totals.net/maxN*40)}px;background:var(--perm)"></span><b>${money(p.totals.net)}</b></td></tr>`).join('')}
-   </tbody><tfoot><tr><td>Total</td><td class="n">${money(tot('earn'))}</td><td class="n">${money(tot('ded'))}</td><td class="n">${money(tot('rem'))}</td><td class="n">${money(tot('net'))}</td></tr></tfoot></table></div>
-   <div class="card"><h2>Overtime paid vs logged</h2><p class="note" style="margin-top:0">Each payslip pays the previous month's overtime.</p>
-   <table class="stack"><thead><tr><th>Payslip</th><th>Worked in</th><th class="n">Hours logged</th><th class="n">Paid (EGP)</th><th class="n">Per hour</th></tr></thead><tbody>
-   ${inY.map(p=>{const o=otCheck(p);return `<tr><td>${monthName(p.ym)}</td><td>${monthName(o.wm)}</td><td class="n">${o.mins?(o.mins/60).toFixed(2):'—'}</td><td class="n">${money(o.paid)}</td><td class="n">${o.rate!=null?money(o.rate):'—'}</td></tr>`}).join('')}
-   </tbody></table></div>
-   <div class="pgrid">${payList(`Earnings in ${y}`,agg('earn'),tot('earn'),z)}${payList(`Deductions in ${y}`,agg('ded'),tot('ded'),z)}${payList(`Additional deductions in ${y}`,agg('rem'),tot('rem'),z)}</div>`;
- }
-}
-$('py').addEventListener('change',()=>{payPick={y:$('py').value,v:'year'};renderPay()});
-$('pv').addEventListener('change',()=>{payPick={y:$('py').value,v:$('pv').value};renderPay()});
-$('pz').addEventListener('change',renderPay);
-let pendingDel=null;
-document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
- if(b.dataset.paym){payPick={y:b.dataset.paym.slice(0,4),v:b.dataset.paym};renderPay();window.scrollTo({top:0,behavior:'smooth'})}
- else if(b.dataset.delpay){if(pendingDel!==b.dataset.delpay){pendingDel=b.dataset.delpay;b.textContent='Tap again to remove';return}
-  pendingDel=null;try{await delPay(b.dataset.delpay);payPick=null;toast('Payslip removed',false)}catch(err){toast('Could not remove',false)}}});
-
-/* ---------- backup & restore ---------- */
-let dl=null,pendingImport=null;
-function backupJSON(){return JSON.stringify({app:'timesheet',version:1,exported:new Date().toISOString(),settings:S,entries,pays},null,1)}
-$('bkExport').addEventListener('click',async()=>{
- const json=backupJSON(),name=`timesheet-backup-${today}.json`;
- if(window.Android&&Android.saveFile){const r=Android.saveFile(name,json);toast(r?`Backup saved to ${r}: ${name}`:'Could not save the backup',false);return}
- if(dl){try{await dl.save({filename:name,data:json});toast('Backup saved',false);return}catch(e){if(e&&e.code==='declined')return}}
- if(!window.claude){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Backup downloaded',false);return}catch(e){}}
- try{await navigator.clipboard.writeText(json);toast('Backup copied — paste it into a note and save it',false)}catch(e){toast('Could not export here',false)}
+document.addEventListener('change',function(ev){
+  var t=ev.target.closest('[data-set]');if(t)setSetting(t.dataset.set,t.value);
 });
-$('bkFile').addEventListener('change',async ev=>{const f=ev.target.files[0];ev.target.value='';if(!f)return;
- try{const d=JSON.parse(await f.text());if(d.app!=='timesheet'||!Array.isArray(d.entries))throw 0;
-  pendingImport=d;$('bkMsg').innerHTML=`<div class="msg ok">Backup from ${esc(fmtDate((d.exported||today).slice(0,10)))}: ${d.entries.length} entries, ${(d.pays||[]).length} payslips. <br><button class="btn" style="margin-top:8px" data-restore="1">Restore now</button></div>`}
- catch(e){pendingImport=null;$('bkMsg').innerHTML='<div class="msg warn">That file is not a Time Sheet backup.</div>'}});
-async function restore(box){box=box||$('bkMsg');const d=pendingImport;if(!d)return;pendingImport=null;box.innerHTML='<div class="msg ok">Restoring…</div>';
- const es=d.entries.filter(e=>e&&e.id&&e.cat&&e.date),ps=(d.pays||[]).filter(p=>p&&p.id&&String(p.id).startsWith('pay-'));
- try{S={...DEF,...(d.settings||{})};
-  if(col){for(const e of es)await col.doc(e.id).set(e);for(const p of ps)await col.doc(p.id).set(p);await putSettings()}
-  else{const m=(a,b)=>{const map=new Map(a.map(x=>[x.id,x]));b.forEach(x=>map.set(x.id,x));return[...map.values()]};entries=m(entries,es);pays=m(pays,ps);localSave();renderAll()}
-  renderSetup();box.innerHTML=`<div class="msg ok">Restored ${es.length} entries and ${ps.length} payslips.</div>`}
- catch(e){box.innerHTML='<div class="msg warn">Restore stopped partway — try again; nothing is deleted.</div>'}}
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.restore){b.disabled=true;restore(b.dataset.restore==='drive'?$('driveMsg'):null)}});
-/* ---------- Google Drive (Android app only) ---------- */
-const HAS_DRIVE=!!(window.Android&&typeof Android.driveStatus==='function');
-function driveRender(st){if(!HAS_DRIVE)return;try{st=st||JSON.parse(Android.driveStatus())}catch(e){return}
- $('driveCard').hidden=false;
- const when=st.last?new Date(st.last).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'not yet';
- $('driveState').innerHTML=st.on?`<div class="msg ok">Connected as <b>${esc(st.email||'your Google account')}</b><br>Last backup: ${esc(when)} · backs up daily when you have internet</div>`:'<div class="msg ok">Not connected</div>';
- if(st.error)$('driveState').innerHTML+=`<div class="msg warn">${esc(st.error)}</div>`;
- $('driveBtns').innerHTML=st.on?'<button class="btn" data-drive="backup">Back up now</button><button class="btn ghost" data-drive="restore">Restore from Drive</button><button class="btn ghost" data-drive="off">Disconnect</button>'
-  :'<button class="btn" data-drive="connect">Sign in with Google</button>'}
-window.onDrive=ev=>{
- if(ev.type==='status'){driveRender(ev);$('driveMsg').innerHTML=ev.message?`<div class="msg ok">${esc(ev.message)}</div>`:'';
-  if(ev.justConnected){if(!entries.length&&!pays.length){$('driveMsg').innerHTML='<div class="msg ok">Connected. Looking for an earlier backup…</div>';Android.driveRestore()}else $('driveMsg').innerHTML='<div class="msg ok">Connected — your first backup is done.</div>'}}
- else if(ev.type==='error'){driveRender();$('driveMsg').innerHTML=`<div class="msg warn">${esc(ev.message)}</div>`}
- else if(ev.type==='restore'){try{const d=JSON.parse(ev.data);if(d.app!=='timesheet')throw 0;pendingImport=d;
-   $('driveMsg').innerHTML=`<div class="msg ok">Latest Drive backup (${esc(fmtDate(String(d.exported||today).slice(0,10)))}): ${d.entries.length} entries, ${(d.pays||[]).length} payslips.<br><button class="btn" style="margin-top:8px" data-restore="drive">Restore now</button></div>`}
-  catch(e){$('driveMsg').innerHTML='<div class="msg warn">The Drive backup could not be read.</div>'}}};
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!b.dataset.drive||!HAS_DRIVE)return;
- const a=b.dataset.drive;$('driveMsg').innerHTML='<div class="msg ok">Working…</div>';
- if(a==='connect')Android.driveConnect();else if(a==='backup')Android.driveBackupNow();else if(a==='restore')Android.driveRestore();else if(a==='off')Android.driveDisconnect()});
+document.addEventListener('input',function(ev){
+  if(/^f-(start|end|brk)$/.test(ev.target.id))previewForm();
+});
+document.addEventListener('visibilitychange',function(){if(!document.hidden){tick();if(view==='today')render()}});
 
+render();
 
-/* ---------- settings / routing ---------- */
-function renderSetup(){$('sStart').value=S.start;$('sEnd').value=S.end;$('sAnnual').value=S.annual;$('sPerm').value=S.perm;$('sWake').value=S.wake;$('aYear').value=today.slice(0,4);renderAdj();driveRender()}
-function renderAdj(){const f=S.alFix||{},ks=Object.keys(f).sort();
- $('adjList').innerHTML=ks.length?ks.map(y=>`<li style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)"><span style="flex:1">${y}: ${dd(f[y].remaining)} left as of ${fmtDate(f[y].asOf)}<small class="note" style="display:block">Now ${dd(alLeft(y))} left</small></span><button class="ib" data-unfix="${y}">Remove</button></li>`).join(''):'<li class="note">No adjustments — every year uses the normal allowance.</li>'}
-const TITLES={home:'Time Sheet',add:'New entry',report:'Report',pay:'Payslips',setup:'Settings'};
-function route(){const V=['home','add','report','pay','setup'];let v=location.hash.slice(1);if(v==='log')v='home';if(!V.includes(v))v='home';
- V.forEach(k=>{$('v-'+k).hidden=k!==v;const t=$('t-'+k);if(t)t.classList.toggle('on',k===v)});
- $('fab').hidden=v!=='home'&&v!=='report';$('back').hidden=v!=='add';$('barTitle').textContent=v==='add'&&editId?'Edit entry':TITLES[v];
- if(v==='report')renderReport();if(v==='pay')renderPay();if(v==='setup')renderSetup();if(v==='add')preview();window.scrollTo(0,0)}
-function renderAll(){renderHero();renderFix();renderMeters();renderRecent();if(!$('v-report').hidden)renderReport();if(!$('v-pay').hidden)renderPay();preview()}
-
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
- if(b.id==='fixBtn')applyFix();
- else if(b.dataset.c)setCat(b.dataset.c);else if(b.dataset.p)setPortion(b.dataset.p);else if(b.dataset.edit)edit(b.dataset.edit);
- else if(b.dataset.del)remove(b.dataset.del);else if(b.dataset.unfix){const f={...(S.alFix||{})};delete f[b.dataset.unfix];S={...S,alFix:f};putSettings().then(()=>{renderAdj();toast('Adjustment removed',false)}).catch(()=>toast('Could not save',false))}
- else if(b.dataset.wake){b.disabled=true;addWake(b.dataset.wake)}else if(b.dataset.tile){$('fc').value=rCat===b.dataset.tile?'all':b.dataset.tile;renderReport()}});
-['date','tin','tout','hol','comp','from','to','note'].forEach(id=>$(id).addEventListener('input',preview));
-$('save').addEventListener('click',saveEntry);$('cancel').addEventListener('click',()=>{resetForm();location.hash='home'});
-$('back').addEventListener('click',()=>{if(editId)resetForm()});
-$('fab').addEventListener('click',()=>{if(editId)resetForm()});
-['fy','fm','fc'].forEach(id=>$(id).addEventListener('change',renderReport));
-$('toastB').addEventListener('click',async()=>{if(undoList){const l=undoList;undoList=null;for(const e of l)await put(e);toast('Restored',false)}});
-$('csv').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('table').dataset.csv||'');toast('Report copied — paste into Excel or Sheets',false)}catch(e){toast('Copy was blocked by the browser',false)}});
-$('sSave').addEventListener('click',async()=>{const a=parseFloat($('sAnnual').value),p=parseFloat($('sPerm').value);
- if(!$('sStart').value||!$('sEnd').value||!$('sWake').value||!(a>=0)||!(p>=0)){toast('Please fill in every setting',false);return}
- S={...S,start:$('sStart').value,end:$('sEnd').value,annual:a,perm:p,wake:$('sWake').value};try{await putSettings();toast('Settings saved',false)}catch(e){toast('Could not save settings',false)}});
-$('aSave').addEventListener('click',async()=>{const y=String(parseInt($('aYear').value)),v=parseFloat($('aLeft').value);
- if(!(+y>2000)||!(v>=0)){toast('Enter a year and the days left',false);return}
- S={...S,alFix:{...(S.alFix||{}),[y]:{remaining:v,asOf:today}}};try{await putSettings();renderAdj();toast(`${y} annual leave set to ${dd(v)} left`,false)}catch(e){toast('Could not save',false)}});
-window.addEventListener('hashchange',route);
-$('date').value=today;$('from').value=today;
-setCat('work');route();renderAll();connect();
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
 }
+})();
 </script>
-<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
 </body>
 </html>
