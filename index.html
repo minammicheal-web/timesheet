@@ -151,6 +151,10 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offse
 .row.selm .cbx{animation:cbIn .22s cubic-bezier(.2,.8,.2,1)}
 .row.picked{background:var(--soft)}
 @keyframes cbIn{from{transform:scale(0);opacity:0}to{transform:none;opacity:1}}
+.brkbtn{background:var(--warn-soft);color:var(--warn)}
+.brk.on{margin:12px 0 4px;padding:12px;border-radius:14px;background:var(--warn-soft);color:var(--warn)}
+.brk.on .muted{color:inherit;opacity:.85}
+.btimer{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
 /* Floating "+ Add" button, bottom right (same as the expenses app) */
 .fab{position:fixed;right:max(18px,calc(50vw - 292px));bottom:calc(18px + env(safe-area-inset-bottom));z-index:4;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);
   font:800 17px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 24px;min-height:58px;cursor:pointer;overflow:hidden;
@@ -251,11 +255,12 @@ const graceMin=()=>Math.max(0,Math.round(+S.settings.grace||0));
 /* The core of all rules: one day record -> results */
 function calc(rec){
   const date=rec.date,kind=kindOf(date),sch=schedule(date),type=rec.type||'work';
-  const r={kind,sch,type,lateRaw:0,late:0,earlyRaw:0,early:0,perm:0,tripMin:0,ot:0,otMin:0,credit:0,
+  const r={kind,sch,type,brk:0,brkN:0,lateRaw:0,late:0,earlyRaw:0,early:0,perm:0,tripMin:0,ot:0,otMin:0,credit:0,
     leave:{annual:0,casual:0,sick:0,unpaid:0,half:0},incomplete:false,noOut:false};
   const perms=ranges(rec.perms),trips=ranges(rec.trips);
   r.perm=perms.reduce((a,x)=>a+x[1]-x[0],0);
   r.tripMin=trips.reduce((a,x)=>a+x[1]-x[0],0);
+  const brs=ranges(rec.breaks);r.brkN=brs.length;r.brk=brs.reduce((a,x)=>a+x[1]-x[0],0);
   const hasIn=TIME.test(rec.in||''),hasOut=TIME.test(rec.out||'');
   if(kind!=='workday'){                         /* weekend / holiday: whole hours = overtime */
     if(hasIn&&hasOut){
@@ -299,6 +304,7 @@ function tags(rec,c){
   if(c.early)t.push(['bad','Early '+fm(c.early)]);
   if(c.perm)t.push(['info','Permission '+fm(c.perm)]);
   if(c.tripMin)t.push(['info','Trip '+fm(c.tripMin)]);
+  if(c.brk)t.push(['mute','Breaks '+fm(c.brk)+(c.brkN>1?' ('+c.brkN+')':'')]);
   if(c.ot)t.push(['ok','Overtime '+c.ot+'h']);
   if(c.credit)t.push(['ok','+1 leave day']);
   if(c.noOut)t.push(['warn','No clock-out']);
@@ -455,8 +461,12 @@ function vHome(){
   }else if(!rec.out){
     const op=openPerm(rec);
     h+='<div class="timer" id="timer">00:00:00</div><div class="muted">Clocked in at '+rec.in+(op?' · out since '+op.from:'')+'</div>';
+    const ob=openBreak(rec);
     if(op)h+='<button class="btn big" style="margin-top:12px" data-a="backin">Back in</button><div style="margin-top:8px"><button class="link" data-a="out">Clock out for the day</button></div>';
-    else h+='<div class="btns"><button class="btn ghost" data-a="stepout">Step out</button><button class="btn danger" data-a="out">Clock out</button></div>';
+    else if(ob)h+='<div class="brk on"><div class="muted small">On break since '+ob.from+'</div><div class="btimer" id="btimer">00:00</div></div>'+
+      '<button class="btn big brkbtn" data-a="brkend">End break</button><div style="margin-top:8px"><button class="link" data-a="out">Clock out for the day</button></div>';
+    else h+='<button class="btn big brkbtn" style="margin-top:12px" data-a="brkstart">☕ Start break</button>'+
+      '<div class="btns"><button class="btn ghost" data-a="stepout">Step out</button><button class="btn danger" data-a="out">Clock out</button></div>';
   }else{
     h+='<div class="timer" style="font-size:28px;margin:12px 0">'+rec.in+' – '+rec.out+'</div>';
   }
@@ -780,11 +790,13 @@ function tick(){
   const n=new Date(),a=tm(rec.in),b=n.getHours()*60+n.getMinutes();
   let sec=(b-a)*60+n.getSeconds();if(sec<0)sec=0;
   t.textContent=pad(Math.floor(sec/3600))+':'+pad(Math.floor(sec/60)%60)+':'+pad(sec%60);
+  const bt=$('#btimer'),ob=openBreak(rec);
+  if(bt&&ob){const s2=Math.max(0,Math.floor((Date.now()-(ob.t||Date.now()))/1000));bt.textContent=(s2>=3600?Math.floor(s2/3600)+':':'')+pad(Math.floor(s2/60)%60)+':'+pad(s2%60)}
 }
 setInterval(tick,500);
 
 /* ================= clock in / out ================= */
-function blank(d){return {date:d,type:'work',in:'',out:'',perms:[],trips:[],holidayMode:'ot',note:''}}
+function blank(d){return {date:d,type:'work',in:'',out:'',perms:[],trips:[],breaks:[],holidayMode:'ot',note:''}}
 function clockIn(){
   const d=todayStr();let rec=S.days[d];
   if(!rec)rec=S.days[d]=blank(d);
@@ -807,10 +819,31 @@ function backIn(){
   save();render();
   const m=ranges([p])[0];toast(m?'Back in — permission '+fm(m[1]-m[0]):'Back in');
 }
+const openBreak=rec=>(rec.breaks||[]).find(x=>x.from&&!x.to);
+function breakStart(){
+  const rec=S.days[todayStr()];if(!rec||!rec.in||rec.out||openPerm(rec)||openBreak(rec))return;
+  if(!rec.breaks)rec.breaks=[];
+  rec.breaks.push({from:hm(new Date()),to:'',t:Date.now()});
+  save();render();toast('Break started at '+rec.breaks[rec.breaks.length-1].from);
+}
+function endBreak(rec,at){
+  const b=openBreak(rec);if(!b)return null;
+  b.to=at;delete b.t;
+  if(tm(b.to)<=tm(b.from)){rec.breaks.splice(rec.breaks.indexOf(b),1);return 0}
+  return tm(b.to)-tm(b.from);
+}
+function breakEnd(){
+  const rec=S.days[todayStr()];if(!rec)return;
+  const m=endBreak(rec,hm(new Date()));if(m===null)return;
+  save();render();
+  const tot=ranges(rec.breaks).reduce((a,x)=>a+x[1]-x[0],0);
+  toast(m?'Break over — '+fm(m)+' · '+fm(tot)+' in breaks today':'Break ended (under a minute, not recorded)');
+}
 function clockOut(){
   const d=todayStr(),rec=S.days[d];if(!rec||!rec.in)return;
   const op=openPerm(rec);if(op)rec.perms.splice(rec.perms.indexOf(op),1); /* leaving for the day while stepped out: no permission is recorded for the open gap */
   rec.out=hm(new Date());
+  endBreak(rec,rec.out); /* clocking out during a break ends the break at the same time */
   save();render();
   const c=calc(rec),bits=[];
   if(c.late)bits.push('late '+fm(c.late));if(c.early)bits.push('early '+fm(c.early));if(c.ot)bits.push('overtime '+c.ot+'h');
@@ -821,7 +854,7 @@ function clockOut(){
 function openDay(date,opts){
   const ex=S.days[date];
   draft=ex?JSON.parse(JSON.stringify(ex)):blank(date);
-  draft.perms=draft.perms||[];draft.trips=draft.trips||[];
+  draft.perms=draft.perms||[];draft.trips=draft.trips||[];draft.breaks=draft.breaks||[];
   draft._new=!ex;draft._orig=date;
   if(opts&&opts.type&&draft._new)draft.type=opts.type;
   autoAlarm();
@@ -830,7 +863,7 @@ function openDay(date,opts){
   renderDay();
 }
 function clean(d){
-  const r={date:d.date,type:d.type,in:d.in||'',out:d.out||'',perms:d.perms.filter(x=>x.from||x.to),trips:d.trips.filter(x=>x.from||x.to),holidayMode:d.holidayMode||'ot',note:(d.note||'').trim()};
+  const r={date:d.date,type:d.type,in:d.in||'',out:d.out||'',perms:d.perms.filter(x=>x.from||x.to),trips:d.trips.filter(x=>x.from||x.to),breaks:(d.breaks||[]).filter(x=>x.from||x.to).map(x=>x.t&&!x.to?{from:x.from,to:'',t:x.t}:{from:x.from,to:x.to}),holidayMode:d.holidayMode||'ot',note:(d.note||'').trim()};
   if(d.date>=todayStr()&&TIME.test(d.alarm||''))r.alarm=d.alarm;
   if(d.otPlan)r.otPlan=d.otPlan;
   return r;
@@ -904,6 +937,7 @@ function renderDay(){
       h+='<label class="chkline" style="margin-top:12px"><input type="checkbox" id="d-normal"'+(d.in===sc.start&&d.out===sc.end?' checked':'')+'> <span>Normal workday ('+esc(sc.start)+' – '+esc(sc.end)+')</span></label>';}
     h+='<div class="two"><label>Clock in<input type="time" data-k="in" value="'+esc(d.in)+'"></label><label>Clock out<input type="time" data-k="out" value="'+esc(d.out)+'"></label></div>';
     if(workday){h+=listBlock('perms','Left and came back (permission)')+'<div class="muted small">Went out in the middle of the day? Add it here, e.g. out 12:00 and back 1:30 PM. Keep clock in at the start and clock out at the end of the day.</div>'+listBlock('trips','Business trips')}
+    h+=listBlock('breaks','Breaks')+'<div class="muted small">Breaks are kept for your record — they don\'t change late, early or overtime.</div>';
     if(kind==='holiday')h+=msel('d-hm','If you worked this holiday, count it as',sortOpts([['leave','+1 annual leave day'],['ot','Overtime']]),d.holidayMode==='leave'?'leave':'ot');
   }
   if(!range&&d.date>=todayStr()){
@@ -928,6 +962,7 @@ function previewDay(){
       L.push('Early leaving: '+(c.early?fm(c.early)+' (actual '+fm(c.earlyRaw)+')':(c.earlyRaw?'none (within the '+graceMin()+'-minute grace)':'none')));
       if(c.perm)L.push('Permission: '+fm(c.perm));
       if(c.tripMin)L.push('Business trip: '+fm(c.tripMin));
+      if(c.brk)L.push('Breaks: '+fm(c.brk)+(c.brkN>1?' ('+c.brkN+' breaks)':''));
       L.push('Overtime: '+(c.ot?c.ot+'h':'none'));
     }
   }else{
@@ -987,9 +1022,10 @@ function saveDay(bal){
     if(d.in&&!TIME.test(d.in)||d.out&&!TIME.test(d.out)){toast('Check the times');return}
     if(kind==='workday'&&d.in&&d.out&&tm(d.out)<=tm(d.in)){toast('Clock-out must be after clock-in');return}
     if(!d.in&&d.out){toast('Add a clock-in time');return}
-    for(const k of ['perms','trips']){
+    for(const k of ['perms','trips','breaks']){
       for(const x of d[k]){
-        if(!TIME.test(x.from)||!TIME.test(x.to)||tm(x.to)<=tm(x.from)){toast('Check the '+(k==='perms'?'permission':'trip')+' times');return}
+        if(k==='breaks'&&x.t&&!x.to&&d.date===todayStr()&&TIME.test(x.from))continue; /* today's break still running */
+        if(!TIME.test(x.from)||!TIME.test(x.to)||tm(x.to)<=tm(x.from)){toast('Check the '+({perms:'permission',trips:'trip',breaks:'break'})[k]+' times');return}
       }
     }
     if(kind!=='workday'){d.type='work';d.perms=[];d.trips=[]}
@@ -1039,10 +1075,10 @@ function savePer(id){
 /* ================= export / backup ================= */
 const csvCell=v=>{v=String(v==null?'':v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
 function toCsv(dates){
-  const rows=[['Date','Day','Type','Clock in','Clock out','Late (min)','Early (min)','Permission (min)','Trip (min)','Overtime (h)','Holiday credit','Note']];
+  const rows=[['Date','Day','Type','Clock in','Clock out','Late (min)','Early (min)','Permission (min)','Trip (min)','Breaks (min)','Overtime (h)','Holiday credit','Note']];
   dates.sort().forEach(d=>{
     const rec=S.days[d],c=calc(rec);
-    rows.push([d,c.kind,c.kind==='workday'?TYPE_LABEL[c.type]:'Work',rec.in,rec.out,c.late,c.early,c.perm,c.tripMin,c.ot,c.credit,rec.note||'']);
+    rows.push([d,c.kind,c.kind==='workday'?TYPE_LABEL[c.type]:'Work',rec.in,rec.out,c.late,c.early,c.perm,c.tripMin,c.brk,c.ot,c.credit,rec.note||'']);
   });
   return rows.map(r=>r.map(csvCell).join(',')).join('\n');
 }
@@ -1526,6 +1562,8 @@ document.addEventListener('click',ev=>{
     case 'in':clockIn();break;
     case 'stepout':stepOut();break;
     case 'backin':backIn();break;
+    case 'brkstart':breakStart();break;
+    case 'brkend':breakEnd();break;
     case 'out':clockOut();break;
     case 'editday':openDay(t.dataset.d);break;
     case 'seltog':if(sel)selToggle(t.dataset.d,t);break;
