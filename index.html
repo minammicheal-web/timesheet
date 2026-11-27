@@ -244,8 +244,7 @@ html.mk-lock,html.mk-lock body{overflow:hidden!important;overscroll-behavior:non
 .mk-scroll{overscroll-behavior:none!important}
 
 /* ---------- 14 · no blinking while picking several things ---------- */
-html.mk-quiet body *:not(.mk-rip){animation:none!important}
-html.mk-quiet body *::after{animation:none!important}
+/* (quiet mode finishes entrance animations instantly from JS; a CSS 'animation:none' switch would replay them all when it ends) */
 
 /* ---------- 15 · smooth transitions ---------- */
 @keyframes mkFadeIn{from{opacity:0}}
@@ -332,18 +331,30 @@ window.addEventListener('scroll',e=>{if(inPop(e.target))e.stopImmediatePropagati
 
 /* ======================= ripple ======================= */
 const RSEL='button,.btn,[role=tab],[role=button],nav a,.mk-tab,.chip,a.setbtn,[data-ripple]';
-D.addEventListener('pointerdown',e=>{
-  const el=e.target.closest&&e.target.closest(RSEL);if(!el||el.disabled||el.closest('[data-noripple]')||RM.matches)return;
-  if(el.matches('input,select,textarea'))return;
+function ripple(el,x,y){
   if(getComputedStyle(el).position==='static')cA(el,'mk-rel');
   let w=el.querySelector(':scope>.mk-rw');if(!w){w=D.createElement('span');w.className='mk-rw';el.appendChild(w)}
   const r=el.getBoundingClientRect(),s=Math.max(r.width,r.height)*2.2,sp=D.createElement('span');sp.className='mk-rip';
-  sp.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-r.left-s/2)+'px;top:'+(e.clientY-r.top-s/2)+'px';
-  w.appendChild(sp);setTimeout(()=>sp.remove(),620)},true);
+  sp.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(x-r.left-s/2)+'px;top:'+(y-r.top-s/2)+'px';
+  w.appendChild(sp);setTimeout(()=>sp.remove(),620)}
+/* touch: wait a moment so starting a scroll on a row shows no ripple; mouse/pen: ripple at once */
+let RP=null;
+D.addEventListener('pointerdown',e=>{
+  const el=e.target.closest&&e.target.closest(RSEL);if(!el||el.disabled||el.closest('[data-noripple]')||RM.matches)return;
+  if(el.matches('input,select,textarea'))return;
+  if(e.pointerType!=='touch'){ripple(el,e.clientX,e.clientY);return}
+  clearTimeout(RP&&RP.t);RP={el,x:e.clientX,y:e.clientY,t:setTimeout(()=>{if(RP&&RP.el===el){ripple(el,RP.x,RP.y);RP.done=1}},90)}},true);
+D.addEventListener('pointermove',e=>{if(RP&&!RP.done&&Math.hypot(e.clientX-RP.x,e.clientY-RP.y)>8){clearTimeout(RP.t);RP=null}},true);
+D.addEventListener('pointercancel',()=>{if(RP){clearTimeout(RP.t);RP=null}},true);
+D.addEventListener('pointerup',()=>{if(RP){clearTimeout(RP.t);if(!RP.done)ripple(RP.el,RP.x,RP.y);RP=null}},true);
 
 /* ======================= quiet mode: picking several items never re-runs entrance animations ======================= */
 const QSEL='input[type=checkbox],.cbx,.chip,.seg button,[role=option],.selm,.picked,.chk label,label.chkline,[data-a=seltog],.mk-pkday,.mk-pky button,.mk-pmo button,.mk-pki,.mk-pkm,[aria-pressed],'+(C.quiet||'');
-let qT;function quiet(){cA(R,'mk-quiet');clearTimeout(qT);qT=setTimeout(()=>cR(R,'mk-quiet'),450)}
+let qT,qOn=false;function quiet(){qOn=true;clearTimeout(qT);qT=setTimeout(()=>{qOn=false},450)}
+const KEEP=/^(mkRip|crip|rip|rpl|mkFadeOut|mkSheetOut|mkDlgOut|mkMenuOut)$/;
+function still(el){if(!el||el.nodeType!==1||!el.getAnimations)return;try{for(const a of el.getAnimations({subtree:true})){if(a.animationName&&!KEEP.test(a.animationName)&&a.playState!=='finished')a.finish()}}catch(e){}}
+D.addEventListener('animationstart',e=>{if(qOn&&!KEEP.test(e.animationName))for(const a of e.target.getAnimations())if(a.animationName===e.animationName)a.finish()},true);
+MK.isQuiet=()=>qOn;
 MK.quiet=quiet;
 D.addEventListener('pointerdown',e=>{const t=e.target;if(t.closest&&t.closest(QSEL.replace(/,$/,'')))quiet()},true);
 D.addEventListener('click',e=>{const t=e.target;if(t.closest&&t.closest(QSEL.replace(/,$/,'')))quiet()},true);
@@ -421,7 +432,8 @@ D.addEventListener('pointerdown',e=>{for(const c of C.closers)for(const el of qa
 
 /* ======================= status bar + navigation bar = the colour on screen ======================= */
 const parse=c=>{const m=String(c).match(/rgba?\(([^)]+)\)/);if(!m)return null;const p=m[1].split(/[ ,/]+/).filter(Boolean).map(Number);return [p[0],p[1],p[2],p.length>3?p[3]:1]};
-function bgAt(x,y){let el=D.elementFromPoint(x,y);const layers=[];
+const SKIP='button,a,input,select,textarea,label,img,svg,.btn,.fab,.mk-rw,.mk-rip,.mk-tab,.tag,.chip';
+function bgAt(x,y){let el=D.elementsFromPoint(x,y).find(e=>!e.closest(SKIP))||D.body;const layers=[];
   for(;el;el=el.parentElement){const c=parse(getComputedStyle(el).backgroundColor);if(c&&c[3]>0){layers.push(c);if(c[3]>=1)break}}
   let base=parse(getComputedStyle(D.body).backgroundColor);if(!base||base[3]<1)base=parse(getComputedStyle(R).backgroundColor)||[255,255,255,1];
   if(!layers.length||layers[layers.length-1][3]<1)layers.push(base);
@@ -430,12 +442,12 @@ function bgAt(x,y){let el=D.elementFromPoint(x,y);const layers=[];
 const hex=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');
 const light=c=>(.2126*c[0]+.7152*c[1]+.0722*c[2])/255>.55;
 let lastBars='',bT=0;
-function bars(force){if(force)lastBars='';cancelAnimationFrame(bT);bT=requestAnimationFrame(()=>{
+function bars(force){if(force)lastBars='';clearTimeout(bT);bT=setTimeout(()=>requestAnimationFrame(()=>{
   {const b=parse(getComputedStyle(D.body).backgroundColor);R.classList.toggle('mk-dark',!!b&&b[3]>0&&!light(b))}
   if(!window.Android)return;
   const top=bgAt(innerWidth/2,1),bot=bgAt(innerWidth/2,innerHeight-1),k=hex(top)+hex(bot);if(k===lastBars)return;lastBars=k;
   try{if(Android.setBars)Android.setBars(hex(top),light(top))}catch(e){}
-  try{if(Android.setNav)Android.setNav(hex(bot),light(bot))}catch(e){}})}
+  try{if(Android.setNav)Android.setNav(hex(bot),light(bot))}catch(e){}}),140)}
 MK.bars=bars;
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>setTimeout(()=>bars(true),60));
 D.addEventListener('visibilitychange',()=>{if(!D.hidden)setTimeout(()=>bars(true),120)});
@@ -574,7 +586,7 @@ function titleDot(){if(!C.title)return;const t=q(C.title);if(!t)return;cA(t,'mk-
 let lastKey=null;
 function screenKey(){try{return C.screenKey?C.screenKey():(location.hash+'|'+(C.title&&q(C.title)?q(C.title).textContent:''))}catch(e){return ''}}
 function maybeEnter(){const v=C.view&&q(C.view);const k=screenKey();if(lastKey===null){lastKey=k;return}if(k===lastKey||!v)return;lastKey=k;
-  if(RM.matches||R.classList.contains('mk-quiet'))return;
+  if(RM.matches||qOn)return;
   if(v.getAnimations&&v.getAnimations().some(a=>a.playState==='running'))return;
   cR(v,'mk-enter');void v.offsetWidth;cA(v,'mk-enter');setTimeout(()=>cR(v,'mk-enter'),340)}
 
@@ -587,6 +599,7 @@ function boot(){
     try{
       for(const r of recs)if(r.type==='childList')for(const n of r.addedNodes){if(n.nodeType===1&&!n.closest('#mk-gh'))decorate(n)}
       titleDot();
+      if(qOn)for(const r of recs){if(r.type==='childList')r.addedNodes.forEach(still);else if(r.type==='attributes')still(r.target)}
       scanOverlays(recs);maybeEnter();bars();
     }finally{busy=false}
   }).observe(D.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','style'],attributeOldValue:true,characterData:true});
