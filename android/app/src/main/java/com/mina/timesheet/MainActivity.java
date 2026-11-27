@@ -48,6 +48,7 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setAllowFileAccess(true);
         web.addJavascriptInterface(new Bridge(), "Android");
+        web.addJavascriptInterface(new M3Feedback(this, web), "M3");
 
         web.setWebViewClient(new WebViewClient() {
             @Override

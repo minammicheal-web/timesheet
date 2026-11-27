@@ -610,6 +610,241 @@ if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boo
 })();
 </script>
 <!-- mkit:end -->
+<script id="m3fb-cfg">window.M3FB_CFG={app:'Timesheet',id:'timesheet',repo:'timesheet'}</script>
+<!-- m3fb:start — M3 Studio customer support (same block in every app; only window.M3FB_CFG differs) -->
+<style id="m3fb-css">
+#m3fb{position:fixed;inset:0;z-index:9990;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0);pointer-events:none;transition:background .25s}
+#m3fb.on{background:rgba(0,0,0,.45);pointer-events:auto}
+#m3fb .fb-s{width:100%;max-width:560px;max-height:94vh;overflow:auto;overscroll-behavior:contain;background:var(--fb-card);color:var(--fb-ink);border-radius:28px 28px 0 0;padding:6px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+#m3fb.on .fb-s{transform:none}
+#m3fb .fb-gr{width:36px;height:4px;border-radius:2px;background:var(--fb-line);margin:6px auto 10px}
+#m3fb .fb-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+#m3fb .fb-h b{display:block;font-size:20px;font-weight:600}
+#m3fb .fb-h small{color:var(--fb-mute);font-size:12.5px}
+#m3fb .fb-x{margin-inline-start:auto;width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--fb-mute);font-size:22px;cursor:pointer}
+#m3fb .fb-seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--fb-line);border-radius:999px;overflow:hidden;margin:4px 0 14px}
+#m3fb .fb-seg button{border:0;background:transparent;color:var(--fb-ink);padding:11px 6px;font:inherit;font-weight:500;cursor:pointer}
+#m3fb .fb-seg button+button{border-inline-start:1px solid var(--fb-line)}
+#m3fb .fb-seg button.on{background:var(--fb-tint);color:var(--fb-acc)}
+#m3fb label.fb-f{display:block;position:relative;margin:0 0 12px}
+#m3fb label.fb-f span{position:absolute;top:-8px;inset-inline-start:12px;padding:0 5px;background:var(--fb-card);color:var(--fb-mute);font-size:12px}
+#m3fb input,#m3fb textarea{width:100%;box-sizing:border-box;border:1px solid var(--fb-line);border-radius:12px;background:transparent;color:var(--fb-ink);padding:14px 13px 12px;font:inherit;outline:0}
+#m3fb textarea{min-height:96px;resize:vertical}
+#m3fb input:focus,#m3fb textarea:focus{border-color:var(--fb-acc);box-shadow:0 0 0 1px var(--fb-acc)}
+#m3fb .fb-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#m3fb .fb-t{font-size:13px;color:var(--fb-mute);margin:14px 2px 8px;font-weight:500}
+#m3fb .fb-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--fb-line);border-radius:999px;background:transparent;color:var(--fb-acc);padding:10px 18px;font:inherit;font-weight:500;cursor:pointer}
+#m3fb .fb-rec{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#m3fb .fb-rec.live .fb-btn{background:#d93025;color:#fff;border-color:#d93025}
+#m3fb .fb-dot{width:10px;height:10px;border-radius:50%;background:#d93025;animation:m3fbp 1s infinite}
+@keyframes m3fbp{50%{opacity:.25}}
+#m3fb audio{height:40px;flex:1;min-width:180px}
+#m3fb .fb-ph{display:flex;gap:8px;flex-wrap:wrap}
+#m3fb .fb-ph div{position:relative;width:72px;height:72px;border-radius:12px;overflow:hidden;border:1px solid var(--fb-line)}
+#m3fb .fb-ph img{width:100%;height:100%;object-fit:cover}
+#m3fb .fb-ph i{position:absolute;top:3px;inset-inline-end:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font:14px/22px sans-serif;text-align:center;font-style:normal;cursor:pointer}
+#m3fb .fb-ph .fb-add{display:flex;align-items:center;justify-content:center;color:var(--fb-acc);font-size:26px;cursor:pointer;border-style:dashed}
+#m3fb .fb-err{color:#d93025;font-size:13px;min-height:18px;margin:8px 2px 0}
+#m3fb .fb-go{width:100%;margin-top:6px;border:0;border-radius:999px;background:var(--fb-acc);color:var(--fb-on);padding:14px;font:inherit;font-weight:600;font-size:16px;cursor:pointer}
+#m3fb .fb-go:disabled{opacity:.6}
+#m3fb .fb-meta{color:var(--fb-mute);font-size:12px;text-align:center;margin-top:10px}
+#m3fb .fb-done{text-align:center;padding:26px 6px 10px}
+#m3fb .fb-done b{display:block;font-size:20px;margin:12px 0 6px}
+</style>
+<script id="m3fb-js">
+(function () {
+  'use strict';
+  /* M3 Studio Firebase project (fill once; same in every app) */
+  var FB = { k: 'AIzaSyBaapwrrbjVR5UUg0pQaJBuaxTYwM9tdpA', p: 'm3-studio-27982' };
+  var HOST = Object.assign({ id: 'https://identitytoolkit.googleapis.com', tok: 'https://securetoken.googleapis.com', fs: 'https://firestore.googleapis.com' }, window.M3FB_HOSTS || {});
+  if (window.M3FB_FB) FB = window.M3FB_FB;
+  var CFG = window.M3FB_CFG || {}, D = document, N = window.M3 || null;
+  var MAXREC = 120, MAXPH = 4;
+  var T = {
+    ar: { title: 'خدمة العملاء', sub: 'من M3 Studio · Mina Mounir', comp: 'شكوى', sugg: 'مقترح', kind: 'اختار: شكوى ولا مقترح؟', ttl: 'عنوان المشكلة أو المقترح', txt: 'اكتب التفاصيل', voice: 'رسالة صوتية', rec: '🎤 سجّل', stop: '⏹ وقّف', del: 'امسح', shots: 'صور / سكرين شوت', who: 'بياناتك علشان نرد عليك ونبعتلك النسخة الجديدة', name: 'الاسم', phone: 'الموبايل (واتساب)', email: 'الإيميل', send: 'ابعت', sending: 'بيتبعت…', needT: 'اكتب عنوان أو سجّل رسالة صوتية', needK: 'اختار شكوى ولا مقترح', needC: 'اكتب موبايل أو إيميل علشان نقدر نرد عليك', mic: 'محتاجين إذن الميكروفون علشان التسجيل', micNo: 'الميكروفون مش متاح', ok: 'وصلتنا رسالتك، شكراً!', okS: 'هنراجعها ونرد عليك على الموبايل أو الإيميل، ولما تنزل نسخة فيها الحل هنبعتهالك.', queued: 'مفيش نت دلوقتي — الرسالة اتحفظت وهتتبعت لوحدها أول ما النت يرجع.', close: 'تمام', big: 'الصورة كبيرة قوي', fail: 'ما اتبعتتش: ', notset: 'خدمة العملاء لسه بتتجهّز — جرّب في النسخة الجاية', app: 'التطبيق' },
+    en: { title: 'Customer support', sub: 'by M3 Studio · Mina Mounir', comp: 'Complaint', sugg: 'Suggestion', kind: 'Complaint or suggestion?', ttl: 'Title', txt: 'Details', voice: 'Voice message', rec: '🎤 Record', stop: '⏹ Stop', del: 'Delete', shots: 'Photos / screenshots', who: 'Your contact, so we can reply and send you the new version', name: 'Name', phone: 'Mobile (WhatsApp)', email: 'Email', send: 'Send', sending: 'Sending…', needT: 'Write a title or record a voice message', needK: 'Choose complaint or suggestion', needC: 'Add a mobile number or an email so we can reply', mic: 'Microphone permission is needed to record', micNo: 'Microphone not available', ok: 'Got it — thank you!', okS: 'We’ll review it and reply by phone or email, and send you the version that fixes it.', queued: 'You’re offline — saved, and it will be sent as soon as you’re back online.', close: 'Done', big: 'Photo too large', fail: 'Not sent: ', notset: 'Support isn’t set up yet — try the next version', app: 'App' }
+  };
+  var L = function () { return T[(D.documentElement.dir === 'rtl' || /^ar/.test(D.documentElement.lang)) ? 'ar' : 'en']; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var LOGO = '<svg width="44" height="44" aria-hidden="true" viewBox="0 0 1024 1024"><defs><filter id="m3fbsh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="10" dy="14" stdDeviation="12" flood-color="#000" flood-opacity=".45"/></filter></defs><rect width="1024" height="1024" rx="236" fill="#0B1F4D"/><path transform="translate(367.1 755.5) scale(0.33 -0.33)" d="M220.39 1456H459.15L775.69 416.38L1090.46 1456H1306.86L875.31 0H674.57ZM126.69 1456H351.89L386.74 512.13V0H126.69ZM1197.47 1456H1423.19V0H1163.37V512.13Z" fill="#FFFFFF"/><g filter="url(#m3fbsh)"><path transform="translate(162.5 755.5) scale(0.33 -0.33)" d="M346.38 848.13H477.85Q535.43 848.13 572.99 874.65Q610.55 901.17 628.66 949.14Q646.78 997.11 646.78 1059.93Q646.78 1121.11 630.12 1166.36Q613.46 1211.61 579.67 1236.84Q545.88 1262.07 494.45 1262.07Q452.73 1262.07 417.96 1240.01Q383.20 1217.96 363.27 1176.67Q343.35 1135.38 343.35 1078.88H86.66Q86.66 1196.67 139.32 1286.37Q191.97 1376.06 283.22 1426.29Q374.47 1476.52 488.38 1476.52Q611.39 1476.52 704.80 1429.87Q798.20 1383.23 850.81 1290.83Q903.42 1198.43 903.42 1062.10Q903.42 996.52 878.71 932.05Q854.00 867.57 804.91 815.28Q755.83 762.99 684.14 732.01Q612.46 701.02 518.77 701.02H346.38ZM346.38 638.38V782.17H518.97Q625.48 782.17 702.07 753.90Q778.67 725.62 827.27 674.75Q875.87 623.88 898.67 555.60Q921.47 487.32 921.47 408.57Q921.47 306.32 888.57 226.42Q855.67 146.52 796.36 91.52Q737.04 36.52 658.47 8.26Q579.89 -20 487.31 -20Q407.70 -20 333.40 5.31Q259.11 30.63 200.74 82.51Q142.37 134.38 108.66 212.72Q74.95 291.07 74.95 396.20H331.33Q331.33 337.38 352.05 291.69Q372.77 246.01 408.83 220.23Q444.89 194.44 492.38 194.44Q546.15 194.44 584.59 220.43Q623.02 246.42 643.66 294.78Q664.30 343.13 664.30 410.37Q664.30 490.67 642.13 540.84Q619.96 591.00 578.49 614.69Q537.01 638.38 477.85 638.38Z" fill="#8AB4F8" stroke="#0B1F4D" stroke-width="70" paint-order="stroke" stroke-linejoin="round"/></g></svg>';
+
+  /* ---------- device info ---------- */
+  function info() {
+    var o = {}; try { if (N && N.info) o = JSON.parse(N.info()) || {}; } catch (e) { }
+    o.ver = o.ver || CFG.ver || ''; o.device = o.device || navigator.userAgent.slice(0, 120); return o;
+  }
+
+  /* ---------- http (native bridge avoids CORS from file://) ---------- */
+  var hs = 0, hcb = {};
+  function http(method, url, headers, body) {
+    return new Promise(function (res) {
+      if (N && N.http) { var id = ++hs; hcb[id] = res; N.http(id, method, url, JSON.stringify(headers || {}), body || ''); }
+      else fetch(url, { method: method, headers: headers, body: body || undefined }).then(function (r) { return r.text().then(function (t) { res({ status: r.status, body: t }); }); }).catch(function (e) { res({ status: 0, body: String(e) }); });
+    });
+  }
+  window.m3OnHttp = function (id, st, body) { var f = hcb[id]; delete hcb[id]; if (f) f({ status: st, body: body }); };
+
+  /* ---------- anonymous sign-in to the M3 Studio project ---------- */
+  var AK = 'm3fb-auth';
+  function aget() { try { return JSON.parse(localStorage.getItem(AK)) || {}; } catch (e) { return {}; } }
+  function aset(a) { try { localStorage.setItem(AK, JSON.stringify(a)); } catch (e) { } }
+  function herr(r) { if (!r.status) { var e = new Error('offline'); e.offline = true; return e; } var m = ''; try { m = JSON.parse(r.body).error.message; } catch (x) { } return new Error(m || ('HTTP ' + r.status)); }
+  async function token() {
+    var a = aget(), r, j;
+    if (a.tok && Date.now() < (a.exp || 0) - 120000) return a;
+    if (a.ref) {
+      r = await http('POST', HOST.tok + '/v1/token?key=' + FB.k, { 'Content-Type': 'application/x-www-form-urlencoded' }, 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(a.ref));
+      if (r.status === 200) { j = JSON.parse(r.body); a = { tok: j.id_token, ref: j.refresh_token, exp: Date.now() + j.expires_in * 1000, uid: j.user_id || a.uid }; aset(a); return a; }
+      if (!r.status) throw herr(r);
+    }
+    r = await http('POST', HOST.id + '/v1/accounts:signUp?key=' + FB.k, { 'Content-Type': 'application/json' }, '{"returnSecureToken":true}');
+    if (r.status !== 200) throw herr(r);
+    j = JSON.parse(r.body); a = { tok: j.idToken, ref: j.refreshToken, exp: Date.now() + j.expiresIn * 1000, uid: j.localId }; aset(a); return a;
+  }
+
+  /* ---------- send one message: the main doc + one doc per voice/photo, in one commit ---------- */
+  var sv = function (v) { return { stringValue: String(v == null ? '' : v) }; };
+  async function push(m) {
+    var a = await token(), base = 'projects/' + FB.p + '/databases/(default)/documents/', id = m.id;
+    var f = { uid: sv(a.uid), app: sv(m.app), appId: sv(m.appId), repo: sv(m.repo), ver: sv(m.ver), device: sv(m.device), android: sv(m.android), lang: sv(m.lang), kind: sv(m.kind), title: sv(m.title), text: sv(m.text), name: sv(m.name), phone: sv(m.phone), email: sv(m.email), status: sv('new'), voiceSec: { integerValue: String(m.voiceSec || 0) }, photos: { integerValue: String(m.media.filter(function (x) { return x.kind === 'img'; }).length) }, hasVoice: { booleanValue: m.media.some(function (x) { return x.kind === 'voice'; }) }, sentAt: sv(m.at) };
+    var w = [{ update: { name: base + 'feedback/' + id, fields: f }, updateTransforms: [{ fieldPath: 'created', setToServerValue: 'REQUEST_TIME' }], currentDocument: { exists: false } }];
+    m.media.forEach(function (x, i) { w.push({ update: { name: base + 'feedback/' + id + '/media/m' + i, fields: { uid: sv(a.uid), kind: sv(x.kind), mime: sv(x.mime), data: sv(x.data), n: { integerValue: String(i) } } }, currentDocument: { exists: false } }); });
+    var r = await http('POST', HOST.fs + '/v1/' + base.replace(/\/$/, '') + ':commit', { 'Content-Type': 'application/json', Authorization: 'Bearer ' + a.tok }, JSON.stringify({ writes: w }));
+    if (r.status === 409 || (r.status === 400 && /exist/i.test(r.body))) return; // already there from an earlier try
+    if (r.status !== 200) throw herr(r);
+  }
+
+  /* ---------- offline queue ---------- */
+  var QK = 'm3fb-queue';
+  function qget() { try { return JSON.parse(localStorage.getItem(QK)) || []; } catch (e) { return []; } }
+  function qset(q) { try { if (q.length) localStorage.setItem(QK, JSON.stringify(q)); else localStorage.removeItem(QK); return true; } catch (e) { return false; } }
+  var flushing = false;
+  async function flush() {
+    if (flushing || !ready()) return; var q = qget(); if (!q.length) return; flushing = true;
+    try { while (q.length) { await push(q[0]); q.shift(); qset(q); } } catch (e) { } flushing = false;
+  }
+  function ready() { return FB.k && FB.k.indexOf('__') !== 0; }
+  window.addEventListener('online', flush); setTimeout(flush, 4000);
+
+  /* ---------- images: shrink to ≤1280 px JPEG so each fits in a Firestore doc ---------- */
+  function shrink(file) {
+    return new Promise(function (res) {
+      var fr = new FileReader(); fr.onload = function () {
+        var im = new Image(); im.onload = function () {
+          var s = Math.min(1, 1280 / Math.max(im.width, im.height)), c = D.createElement('canvas'); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+          c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          var q = .75, u = c.toDataURL('image/jpeg', q); while (u.length > 880000 && q > .3) { q -= .15; u = c.toDataURL('image/jpeg', q); }
+          res(u.length > 880000 ? null : u);
+        }; im.onerror = function () { res(null); }; im.src = fr.result;
+      }; fr.onerror = function () { res(null); }; fr.readAsDataURL(file);
+    });
+  }
+
+  /* ---------- voice: native MediaRecorder (AAC) in the apps, browser MediaRecorder elsewhere ---------- */
+  var V = { on: false, t0: 0, tm: 0, data: null, mime: '', sec: 0, br: null, chunks: [] };
+  function recTick() { var s = Math.floor((Date.now() - V.t0) / 1000); var el = D.getElementById('fb-rt'); if (el) el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' / 2:00'; if (s >= MAXREC) recStop(); }
+  async function recStart() {
+    err('');
+    if (N && N.recStart) {
+      var r = N.recStart();
+      if (r === 'perm') { N.askMic(); err(L().mic); var n = 0; var iv = setInterval(function () { if (N.micPerm() === 'yes') { clearInterval(iv); err(''); recStart(); } else if (++n > 60) clearInterval(iv); }, 500); return; }
+      if (r !== 'ok') { err(L().micNo + ' (' + r + ')'); return; }
+    } else {
+      try {
+        var st = await navigator.mediaDevices.getUserMedia({ audio: true }); V.chunks = []; V.br = new MediaRecorder(st);
+        V.br.ondataavailable = function (e) { if (e.data.size) V.chunks.push(e.data); };
+        V.br.onstop = function () { st.getTracks().forEach(function (t) { t.stop(); }); var b = new Blob(V.chunks, { type: V.br.mimeType || 'audio/webm' }); var fr = new FileReader(); fr.onload = function () { V.data = fr.result.split(',')[1]; V.mime = (V.br.mimeType || 'audio/webm').split(';')[0]; draw(); }; fr.readAsDataURL(b); };
+        V.br.start();
+      } catch (e) { err(L().micNo); return; }
+    }
+    V.on = true; V.t0 = Date.now(); V.data = null; V.tm = setInterval(recTick, 250); draw(); recTick();
+  }
+  function recStop() {
+    if (!V.on) return; V.on = false; clearInterval(V.tm); V.sec = Math.max(1, Math.round((Date.now() - V.t0) / 1000));
+    if (N && N.recStop) { try { var j = JSON.parse(N.recStop()); V.data = j.b64 || null; V.mime = 'audio/mp4'; if (j.ms) V.sec = Math.max(1, Math.round(j.ms / 1000)); } catch (e) { V.data = null; } draw(); }
+    else if (V.br) V.br.stop();
+  }
+  function recDrop() { if (V.on) { V.on = false; clearInterval(V.tm); if (N && N.recCancel) N.recCancel(); else if (V.br) { V.br.onstop = null; V.br.stop(); } } V.data = null; V.sec = 0; draw(); }
+
+  /* ---------- the sheet ---------- */
+  var S = null, el = null, PH = [], busy = false;
+  function contact() { try { return JSON.parse(localStorage.getItem('m3fb-me')) || {}; } catch (e) { return {}; } }
+  function err(m) { var e = el && el.querySelector('.fb-err'); if (e) e.textContent = m || ''; }
+  function colors() {
+    var vars = (window.MKCFG && MKCFG.vars) || {}, cs = getComputedStyle(D.body), g = function (n, d) { var v = n && cs.getPropertyValue(n).trim(); return v || d; };
+    var dark = (function () { var b = cs.backgroundColor.match(/\d+/g); return b ? (b[0] * .3 + b[1] * .59 + b[2] * .11) < 110 : false; })();
+    var acc = g(vars.acc || '--accent', g('--acc', '#0f766e'));
+    el.style.cssText = '--fb-acc:' + acc + ';--fb-on:' + g(vars.on, '#fff') + ';--fb-ink:' + (dark ? '#e8eef7' : '#0f172a') + ';--fb-mute:' + (dark ? '#9aa7b8' : '#5b6b80') + ';--fb-line:' + (dark ? '#2b3a52' : '#d9e0e8') + ';--fb-card:' + (dark ? '#131c2e' : '#fff') + ';--fb-tint:' + (dark ? 'rgba(255,255,255,.08)' : 'rgba(15,118,110,.10)');
+  }
+  function draw() {
+    if (!el) return; var t = L(), s = el.querySelector('.fb-s');
+    if (S.done) { s.innerHTML = '<div class="fb-gr"></div><div class="fb-done">' + LOGO + '<b>' + esc(S.done === 'q' ? '📶' : t.ok) + '</b><div style="color:var(--fb-mute)">' + esc(S.done === 'q' ? t.queued : t.okS) + '</div><button class="fb-go" data-fb="x" style="margin-top:22px">' + esc(t.close) + '</button></div>'; return; }
+    var keep = {}; s.querySelectorAll('[data-k]').forEach(function (i) { keep[i.dataset.k] = i.value; }); Object.assign(S, keep);
+    var inf = info();
+    s.innerHTML = '<div class="fb-gr"></div><div class="fb-h">' + LOGO + '<div><b>' + esc(t.title) + '</b><small>' + esc(t.sub) + '</small></div><button class="fb-x" data-fb="x" aria-label="close">✕</button></div>' +
+      '<div class="fb-seg" role="group"><button data-fb="kind" data-v="complaint" class="' + (S.kind === 'complaint' ? 'on' : '') + '">😟 ' + esc(t.comp) + '</button><button data-fb="kind" data-v="suggestion" class="' + (S.kind === 'suggestion' ? 'on' : '') + '">💡 ' + esc(t.sugg) + '</button></div>' +
+      '<label class="fb-f"><span>' + esc(t.ttl) + '</span><input data-k="title" maxlength="120" value="' + esc(S.title) + '"></label>' +
+      '<label class="fb-f"><span>' + esc(t.txt) + '</span><textarea data-k="text" maxlength="4000">' + esc(S.text) + '</textarea></label>' +
+      '<div class="fb-t">' + esc(t.voice) + '</div><div class="fb-rec' + (V.on ? ' live' : '') + '">' +
+      (V.on ? '<button class="fb-btn" data-fb="stop">' + esc(t.stop) + '</button><span class="fb-dot"></span><span id="fb-rt"></span>'
+        : V.data ? '<audio controls src="data:' + V.mime + ';base64,' + V.data + '"></audio><button class="fb-btn" data-fb="vdel">' + esc(t.del) + '</button>'
+          : '<button class="fb-btn" data-fb="rec">' + esc(t.rec) + '</button>') + '</div>' +
+      '<div class="fb-t">' + esc(t.shots) + '</div><div class="fb-ph">' + PH.map(function (u, i) { return '<div><img src="' + u + '" alt=""><i data-fb="pdel" data-i="' + i + '">×</i></div>'; }).join('') +
+      (PH.length < MAXPH ? '<div class="fb-add" data-fb="padd">＋</div>' : '') + '</div><input type="file" accept="image/*" multiple hidden id="fb-file">' +
+      '<div class="fb-t">' + esc(t.who) + '</div><label class="fb-f"><span>' + esc(t.name) + '</span><input data-k="name" autocomplete="name" value="' + esc(S.name) + '"></label>' +
+      '<div class="fb-row"><label class="fb-f"><span>' + esc(t.phone) + '</span><input data-k="phone" type="tel" inputmode="tel" dir="ltr" value="' + esc(S.phone) + '"></label><label class="fb-f"><span>' + esc(t.email) + '</span><input data-k="email" type="email" dir="ltr" value="' + esc(S.email) + '"></label></div>' +
+      '<div class="fb-err"></div><button class="fb-go" data-fb="send"' + (busy ? ' disabled' : '') + '>' + esc(busy ? t.sending : t.send) + '</button>' +
+      '<div class="fb-meta">' + esc(t.app) + ': ' + esc(CFG.app || '') + (inf.ver ? ' · v' + esc(inf.ver) : '') + '</div>';
+    s.querySelector('#fb-file').addEventListener('change', async function (e) {
+      var fs = [].slice.call(e.target.files || []).slice(0, MAXPH - PH.length);
+      for (var i = 0; i < fs.length; i++) { var u = await shrink(fs[i]); if (u) PH.push(u); else err(L().big); }
+      draw();
+    });
+    if (V.on) recTick();
+  }
+  async function send() {
+    var t = L(); draw(); err('');
+    if (!S.kind) return err(t.needK);
+    if (!(S.title || '').trim() && !(S.text || '').trim() && !V.data) return err(t.needT);
+    if (!(S.phone || '').trim() && !/\S+@\S+\.\S+/.test(S.email || '')) return err(t.needC);
+    if (V.on) recStop();
+    if (!ready()) return err(t.notset);
+    try { localStorage.setItem('m3fb-me', JSON.stringify({ name: S.name || '', phone: S.phone || '', email: S.email || '' })); } catch (e) { }
+    var inf = info(), media = [];
+    if (V.data) media.push({ kind: 'voice', mime: V.mime, data: V.data });
+    PH.forEach(function (u) { media.push({ kind: 'img', mime: 'image/jpeg', data: u.split(',')[1] }); });
+    var m = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), app: CFG.app || D.title, appId: CFG.id || inf.pkg || '', repo: CFG.repo || '', ver: inf.ver || '', device: inf.device || '', android: inf.android || '', lang: L() === T.ar ? 'ar' : 'en', kind: S.kind, title: (S.title || '').trim() || (V.data ? '🎤' : (S.text || '').trim().slice(0, 60)), text: (S.text || '').trim(), name: (S.name || '').trim(), phone: (S.phone || '').trim(), email: (S.email || '').trim(), voiceSec: V.data ? V.sec : 0, media: media, at: new Date().toISOString() };
+    busy = true; draw();
+    try { await flush(); await push(m); S.done = 'ok'; }
+    catch (e) { if (e.offline) { if (qset(qget().concat([m]))) S.done = 'q'; else { busy = false; draw(); return err(t.queued); } } else { busy = false; draw(); return err(t.fail + e.message); } }
+    busy = false; reset(); draw();
+  }
+  function reset() { PH = []; V.data = null; V.sec = 0; var c = contact(); S = Object.assign({ kind: '', title: '', text: '', name: c.name || '', phone: c.phone || '', email: c.email || '', done: S && S.done }); }
+  function open() {
+    if (!el) {
+      el = D.createElement('div'); el.id = 'm3fb'; el.innerHTML = '<div class="fb-s" role="dialog" aria-modal="true"></div>'; D.body.appendChild(el);
+      el.addEventListener('click', function (e) {
+        if (e.target === el) return close();
+        var b = e.target.closest('[data-fb]'); if (!b) return; var a = b.dataset.fb;
+        if (a === 'x') close(); else if (a === 'kind') { S.kind = b.dataset.v; draw(); }
+        else if (a === 'rec') recStart(); else if (a === 'stop') recStop(); else if (a === 'vdel') recDrop();
+        else if (a === 'padd') el.querySelector('#fb-file').click(); else if (a === 'pdel') { PH.splice(+b.dataset.i, 1); draw(); }
+        else if (a === 'send') send();
+      });
+      el.addEventListener('input', function (e) { var k = e.target.dataset && e.target.dataset.k; if (k) S[k] = e.target.value; });
+    }
+    if (!S || S.done) { S = null; reset(); S.done = null; }
+    D.body.style.overflow = 'hidden'; colors(); draw(); requestAnimationFrame(function () { el.classList.add('on'); }); flush();
+  }
+  function close() { if (!el || !el.classList.contains('on')) return false; if (V.on) recDrop(); el.classList.remove('on'); D.body.style.overflow = ''; if (S && S.done) S = null; return true; }
+  window.M3FB = { open: open, close: close, isOpen: function () { return !!(el && el.classList.contains('on')); }, flush: flush };
+  /* Android back closes the sheet first */
+  function hookBack() { if (!window.MK || MK.__m3fb) return; var ob = MK.back; MK.back = function () { if (close()) return true; return ob ? ob.apply(this, arguments) : false; }; MK.__m3fb = 1; }
+  hookBack(); D.addEventListener('DOMContentLoaded', hookBack); setTimeout(hookBack, 1500);
+  D.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-m3fb]'); if (b) { e.preventDefault(); e.stopPropagation(); open(); } }, true);
+})();
+</script>
+<!-- m3fb:end -->
 </head>
 <body>
 <div id="top"><header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
@@ -1203,6 +1438,7 @@ function vSettings(){
     '<div class="muted small" style="margin-top:6px">Leave the afternoon time empty to be reminded at your finish time. No reminders on weekends, holidays or leave days.</div>'+
     '<label>Default alarm for planned work days<input type="time" data-set="alarmDefault" value="'+esc(s.alarmDefault)+'"></label>'+
     '<button class="btn ghost full" style="margin-top:14px" data-a="testnotif">Send a test notification</button></section>'+
+    '<section class="card"><h3>Support</h3><div class="menu"><button data-m3fb><span class="ic">🎧</span>Customer support — report a problem or suggest an idea<span class="go">›</span></button></div></section>'+
     '<section class="card"><h3>Data</h3><div class="muted small">Everything is stored on this phone only.</div>'+
     '<div class="btns" style="margin-top:12px"><button class="btn ghost" data-a="backup">Back up</button><button class="btn ghost" data-a="restore">Restore</button></div>'+
     '<div class="btns"><button class="btn ghost" data-a="csvall">Export all (CSV)</button><button class="btn danger" data-a="wipe">Erase all</button></div></section>';
