@@ -175,6 +175,428 @@ body.selon main{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .sb-all{display:flex;align-items:center;gap:10px;margin:0;padding:8px 4px;color:var(--text);font-size:15px;font-weight:600;cursor:pointer}
 #selbar .btns{margin-top:8px}
 </style>
+<script id="mk-cfg">window.MKCFG={tabs:'#tabs',tab:'#tabs .tab',overlays:[{sel:'#modal',cls:'show',panel:'#sheet',kind:'sheet'}],
+ menus:[{sel:'#msmenu',mask:'#msmask'}],view:'#view',title:'#title',dotSel:'.dot',gear:'#gear',hbtns:'#back',autoDate:true,
+ screenKey:()=>(document.getElementById('title')||{}).textContent};</script>
+<!-- mkit:start · Mina's shared Material kit (same block in every app; only MKCFG changes) -->
+<style id="mk-css">
+/* ---------- shared tokens (each app maps them to its own variables in MKCFG.vars) ---------- */
+:root{--mk-ease:cubic-bezier(.2,.8,.2,1);--mk-pop:0 2px 6px 2px rgba(15,23,42,.14),0 8px 24px rgba(15,23,42,.18),0 1px 2px rgba(15,23,42,.25);
+ --mk-pill-shadow:0 10px 22px rgba(15,23,42,.16),0 3px 7px rgba(15,23,42,.10),inset 0 1px 0 rgba(255,255,255,.9);--mk-pill-on:0 4px 10px rgba(15,23,42,.35);
+ --mk-fab-shadow:0 10px 22px rgba(15,23,42,.28),0 3px 7px rgba(15,23,42,.18)}
+:root.mk-dark{--mk-pop:0 2px 6px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.6);
+ --mk-pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--mk-pill-on:0 4px 12px rgba(0,0,0,.55);--mk-fab-shadow:0 10px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.45)}
+
+/* ---------- 3 · ripple on every tap ---------- */
+.mk-rw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:0}
+.mk-rel{position:relative}
+.mk-rip{position:absolute;border-radius:50%;background:currentColor;opacity:.24;transform:scale(0);pointer-events:none;animation:mkRip .55s ease-out forwards}
+@keyframes mkRip{to{transform:scale(1);opacity:0}}
+.rip,.rpl,.ripple{display:none!important}
+
+/* ---------- 3 · pill tab bar with drop shadow ---------- */
+.mk-tabs{display:flex!important;gap:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;background:var(--mk-card)!important;
+ border:1px solid var(--mk-line)!important;border-radius:26px!important;padding:6px!important;box-shadow:var(--mk-pill-shadow)!important}
+.mk-tabs::-webkit-scrollbar{display:none}
+.mk-tab{position:relative;flex:0 0 auto;border:0;background:transparent;color:var(--mk-mute);padding:11px 18px;border-radius:21px!important;font-size:15px;font-weight:700;cursor:pointer;
+ text-decoration:none;transition:background-color .28s,color .28s,box-shadow .28s,transform .2s}
+.mk-tab:active{transform:scale(.96)}
+.mk-tab.on{background:var(--mk-ink)!important;color:var(--mk-bg)!important;box-shadow:var(--mk-pill-on)}
+
+/* ---------- 4 · every add button is a pill ---------- */
+.fab,.mk-add{border-radius:999px!important}
+.fab{box-shadow:var(--mk-fab-shadow);transition:transform .18s var(--mk-ease),box-shadow .18s,opacity .2s}
+.fab:active{transform:scale(.96)}
+
+/* ---------- 8 · round check boxes ---------- */
+input[type=checkbox]:not(.mk-keep){-webkit-appearance:none;appearance:none;position:relative;flex:none;display:inline-block;width:22px;height:22px;min-height:0;margin:0;padding:0;
+ border:2px solid var(--mk-outline);border-radius:50%!important;background:transparent;cursor:pointer;vertical-align:middle;transition:background-color .18s,border-color .18s}
+input[type=checkbox]:not(.mk-keep)::after{content:"";position:absolute;left:5.5px;top:1.5px;width:5px;height:10px;border:solid var(--mk-on);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(0);transition:transform .2s cubic-bezier(.2,.8,.3,1.5)}
+input[type=checkbox]:not(.mk-keep):checked{background:var(--mk-acc);border-color:var(--mk-acc)}
+input[type=checkbox]:not(.mk-keep):checked::after{transform:rotate(45deg) scale(1)}
+input[type=checkbox]:focus{outline:none}
+
+/* ---------- 9 / 10 · title with the green dot, round-square gear ---------- */
+.mk-title{font-size:32px!important;line-height:1.1!important;font-weight:800!important;letter-spacing:-.6px;color:var(--mk-ink)}
+.mk-dot{color:var(--mk-dot)}
+.mk-hbtn.hide,.mk-hbtn[hidden]{display:none!important}
+.mk-hbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:50px!important;height:50px!important;border-radius:17px!important;
+ border:1px solid var(--mk-line)!important;background:var(--mk-card)!important;color:var(--mk-ink)!important;flex:0 0 auto;padding:0;cursor:pointer;transition:transform .3s var(--mk-ease)}
+.mk-hbtn svg{width:22px;height:22px}
+.mk-gear:active svg{transform:rotate(60deg)}.mk-gear svg{transition:transform .3s var(--mk-ease)}
+
+/* ---------- 7 / 11 · dropdown menus: shadow, no scroll chaining, bounce ---------- */
+.mk-menu{box-shadow:var(--mk-pop)!important;overscroll-behavior:none!important;border-radius:12px!important}
+.mk-dd{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:54px;padding:0 10px 0 16px;border:1px solid var(--mk-outline);border-radius:8px;
+ background:transparent;color:var(--mk-ink);font:inherit;font-size:16px;text-align:start;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.mk-dd.open{border-color:var(--mk-acc);box-shadow:inset 0 0 0 1px var(--mk-acc)}
+.mk-dd .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mk-dd.ph .v{color:var(--mk-mute)}
+.mk-dd svg{flex:none;color:var(--mk-mute);transition:transform .2s}.mk-dd.open .ch{transform:rotate(180deg);color:var(--mk-acc)}
+.mk-mask{position:fixed;inset:0;z-index:1990;background:transparent}
+.mk-ddmenu{position:fixed;z-index:1991;background:var(--mk-card);color:var(--mk-ink);padding:8px 0;overflow-y:auto;transform-origin:top center}
+.mk-ddmenu button{position:relative;display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:inherit;text-align:start;font:inherit;font-size:16px;padding:0 16px;min-height:48px;cursor:pointer}
+.mk-ddmenu button.sel{background:var(--mk-tint);color:var(--mk-acc);font-weight:600}
+.mk-bnc>*{transform:translateY(var(--mk-bo,0px))}
+.mk-settle>*{transition:transform .5s cubic-bezier(.2,1.6,.4,1)}
+
+/* ---------- 13 · the page under a popup stays still ---------- */
+html.mk-lock,html.mk-lock body{overflow:hidden!important;overscroll-behavior:none!important}
+.mk-scroll{overscroll-behavior:none!important}
+
+/* ---------- 14 · no blinking while picking several things ---------- */
+html.mk-quiet body *:not(.mk-rip){animation:none!important}
+html.mk-quiet body *::after{animation:none!important}
+
+/* ---------- 15 · smooth transitions ---------- */
+@keyframes mkFadeIn{from{opacity:0}}
+@keyframes mkFadeOut{to{opacity:0}}
+@keyframes mkSheetIn{from{transform:translateY(100%)}}
+@keyframes mkSheetOut{to{transform:translateY(100%)}}
+@keyframes mkDlgIn{from{opacity:0;transform:scale(.9)}}
+@keyframes mkDlgOut{to{opacity:0;transform:scale(.92)}}
+@keyframes mkMenuIn{from{opacity:0;transform:scaleY(.86) translateY(-6px)}}
+@keyframes mkMenuOut{to{opacity:0;transform:scaleY(.92)}}
+@keyframes mkEnter{from{opacity:0;transform:translateY(10px)}}
+.mk-enter{animation:mkEnter .3s var(--mk-ease)}
+.mk-ghost{pointer-events:none!important;animation:mkFadeOut .22s ease forwards!important}
+.mk-ghost *{pointer-events:none!important}
+.mk-ghost *:not([data-mk-panel]){animation:none!important}
+.mk-ghost[data-mk-kind=sheet] [data-mk-panel]{animation:mkSheetOut .26s cubic-bezier(.4,0,1,1) forwards!important}
+.mk-ghost[data-mk-kind=dialog] [data-mk-panel]{animation:mkDlgOut .2s ease forwards!important}
+.mk-ghost[data-mk-kind=menu]{animation:mkMenuOut .16s ease forwards!important}
+.mk-ghost[data-mk-kind=menu] [data-mk-panel]{animation:none!important}
+.mk-ghost[data-mk-kind=bar]{animation:mkSheetOut .22s cubic-bezier(.4,0,1,1) forwards!important}
+[data-mk-kind=sheet]:not([data-mk-seen]):not(.mk-ghost){animation:mkFadeIn .2s ease both!important}
+[data-mk-kind=sheet]:not([data-mk-seen]):not(.mk-ghost) [data-mk-panel]{animation:mkSheetIn .32s var(--mk-ease) both!important}
+[data-mk-kind=dialog]:not([data-mk-seen]):not(.mk-ghost){animation:mkFadeIn .18s ease both!important}
+[data-mk-kind=dialog]:not([data-mk-seen]):not(.mk-ghost) [data-mk-panel]{animation:mkDlgIn .26s var(--mk-ease) both!important}
+[data-mk-kind=menu]:not([data-mk-seen]):not(.mk-ghost){animation:mkMenuIn .18s var(--mk-ease) both!important;transform-origin:top center}
+[data-mk-kind=menu]:not([data-mk-seen]):not(.mk-ghost) [data-mk-panel]:not([data-mk-kind]){animation:none!important}
+[data-mk-seen]:not(.mk-ghost),[data-mk-seen]:not(.mk-ghost) [data-mk-panel]{animation:none!important}
+@media (prefers-reduced-motion:reduce){.mk-enter,[data-mk-kind],[data-mk-kind] [data-mk-panel],.mk-ghost{animation:none!important}}
+
+/* ---------- 12 · Material 3 date & month picker (the Expenses look) ---------- */
+.mk-df{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:54px;margin-top:5px;padding:0 12px 0 16px;border:1px solid var(--mk-outline);border-radius:8px;
+ background:transparent;color:var(--mk-ink);font:inherit;font-size:16px;text-align:start;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.mk-df.open{border-color:var(--mk-acc);box-shadow:inset 0 0 0 1px var(--mk-acc)}
+.mk-df .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mk-df.ph .v{color:var(--mk-mute)}
+.mk-df svg{flex:none;color:var(--mk-mute)}
+.mk-df[disabled]{opacity:.5}
+.mk-pk{position:fixed;inset:0;z-index:2000;background:rgba(2,6,23,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.mk-pkd{background:var(--mk-card);color:var(--mk-ink);border-radius:28px;width:min(360px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;overscroll-behavior:none;box-shadow:0 10px 34px rgba(0,0,0,.35);text-align:start}
+.mk-pkh{padding:20px 24px 14px;border-bottom:1px solid var(--mk-line)}
+.mk-pkh small{display:block;font-size:13px;font-weight:600;color:var(--mk-mute)}
+.mk-pkh .big{font-size:30px;font-weight:600;letter-spacing:-.3px;margin-top:22px}
+.mk-pknav{display:flex;align-items:center;padding:10px 12px 2px 16px}
+.mk-pkm{position:relative;flex:1;display:inline-flex;align-items:center;gap:2px;border:0;background:none;color:var(--mk-ink);font:inherit;font-size:15px;font-weight:700;padding:8px 10px;border-radius:20px;cursor:pointer;text-align:start}
+[dir=rtl] .mk-pki svg{transform:scaleX(-1)}
+.mk-pkm svg{color:var(--mk-mute);transition:transform .2s}.mk-pkm.open svg{transform:rotate(180deg)}
+.mk-pki{position:relative;width:44px;height:44px;border:0;background:none;color:var(--mk-mute);border-radius:50%;cursor:pointer;display:grid;place-items:center;padding:0}
+.mk-pkg{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 12px 4px;text-align:center}
+.mk-pkg .wd{font-size:13px;font-weight:600;color:var(--mk-mute);height:40px;line-height:40px}
+.mk-pkday{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid transparent;background:none;color:var(--mk-ink);font:inherit;font-size:15px;margin:2px auto;cursor:pointer;padding:0;transition:background-color .15s,color .15s}
+.mk-pkday.today{border-color:var(--mk-acc);color:var(--mk-acc)}
+.mk-pkday.sel{background:var(--mk-acc);border-color:var(--mk-acc);color:var(--mk-on);font-weight:700}
+.mk-pkday[disabled]{opacity:.32;cursor:default}
+.mk-pky{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:10px 16px 4px;scroll-behavior:smooth}
+.mk-pky::-webkit-scrollbar{display:none}
+.mk-pky button,.mk-pmo button{position:relative;flex:0 0 auto;height:40px;border:1px solid var(--mk-line);border-radius:999px;background:none;color:var(--mk-ink);font:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:0 16px;transition:background-color .15s,color .15s}
+.mk-pmo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 16px 6px}
+.mk-pmo button{height:46px;padding:0}
+.mk-pky button.cur,.mk-pmo button.cur{border-color:var(--mk-acc);color:var(--mk-acc)}
+.mk-pky button.sel,.mk-pmo button.sel{background:var(--mk-acc);border-color:var(--mk-acc);color:var(--mk-on);font-weight:700}
+.mk-pkb{display:flex;align-items:center;gap:4px;padding:8px 12px 14px}.mk-pkb .sp{flex:1}
+.mk-pkb button{position:relative;border:0;background:none;color:var(--mk-acc);font:inherit;font-size:15px;font-weight:700;padding:10px 14px;border-radius:20px;cursor:pointer}
+</style>
+<script id="mk-js">
+(function(){
+'use strict';
+const C=Object.assign({vars:{},tabs:null,tab:null,overlays:[],menus:[],closers:[],view:null,screenKey:null,title:null,dotSel:'.dot,.mk-dot,b',gear:null,hbtns:null,
+  autoDate:false,autoSelect:false,dark:()=>false,weekStart:1,rtl:false},window.MKCFG||{});
+const MK=window.MK={cfg:C};
+const D=document,R=D.documentElement;
+const q=(s,r)=>(r||D).querySelector(s),qa=(s,r)=>[...(r||D).querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion: reduce)');
+const pad=n=>String(n).padStart(2,'0');
+const cA=(el,...c)=>{for(const k of c)if(!el.classList.contains(k))el.classList.add(k)},cR=(el,...c)=>{for(const k of c)if(el.classList.contains(k))el.classList.remove(k)};
+
+/* variable mapping: --mk-ink etc. point at the app's own colours */
+{const map={bg:'--bg',card:'--card',ink:'--text',mute:'--muted',line:'--line',acc:'--accent',on:'--on-accent',tint:'--soft',outline:'--outline',dot:'--dot'};
+ Object.assign(map,C.vars);const s=D.createElement('style');s.id='mk-vars';
+ s.textContent=':root{'+Object.keys(map).map(k=>'--mk-'+k+':'+(map[k].startsWith('--')?'var('+map[k]+')':map[k])).join(';')+'}';
+ D.head.appendChild(s)}
+
+/* ======================= scroll guard: a scroll inside a menu or popup never closes it ======================= */
+const inPop=t=>t&&t.nodeType===1&&!!t.closest('.mk-menu,.mk-pk,.mk-ddmenu,[data-mk-kind],[data-mk-panel]');
+window.addEventListener('scroll',e=>{if(inPop(e.target))e.stopImmediatePropagation()},true);
+
+/* ======================= ripple ======================= */
+const RSEL='button,.btn,[role=tab],[role=button],nav a,.mk-tab,.chip,a.setbtn,[data-ripple]';
+D.addEventListener('pointerdown',e=>{
+  const el=e.target.closest&&e.target.closest(RSEL);if(!el||el.disabled||el.closest('[data-noripple]')||RM.matches)return;
+  if(el.matches('input,select,textarea'))return;
+  if(getComputedStyle(el).position==='static')cA(el,'mk-rel');
+  let w=el.querySelector(':scope>.mk-rw');if(!w){w=D.createElement('span');w.className='mk-rw';el.appendChild(w)}
+  const r=el.getBoundingClientRect(),s=Math.max(r.width,r.height)*2.2,sp=D.createElement('span');sp.className='mk-rip';
+  sp.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-r.left-s/2)+'px;top:'+(e.clientY-r.top-s/2)+'px';
+  w.appendChild(sp);setTimeout(()=>sp.remove(),620)},true);
+
+/* ======================= quiet mode: picking several items never re-runs entrance animations ======================= */
+const QSEL='input[type=checkbox],.cbx,.chip,.seg button,[role=option],.selm,.picked,.chk label,label.chkline,[data-a=seltog],.mk-pkday,.mk-pky button,.mk-pmo button,.mk-pki,.mk-pkm,[aria-pressed],'+(C.quiet||'');
+let qT;function quiet(){cA(R,'mk-quiet');clearTimeout(qT);qT=setTimeout(()=>cR(R,'mk-quiet'),450)}
+MK.quiet=quiet;
+D.addEventListener('pointerdown',e=>{const t=e.target;if(t.closest&&t.closest(QSEL.replace(/,$/,'')))quiet()},true);
+D.addEventListener('click',e=>{const t=e.target;if(t.closest&&t.closest(QSEL.replace(/,$/,'')))quiet()},true);
+
+/* ======================= overlays: lock the page, animate in and out ======================= */
+const OV=C.overlays.map(o=>Object.assign({kind:'sheet'},o));
+const MN=C.menus.map(o=>Object.assign({kind:'menu'},o));
+const ALL=OV.concat(MN);
+const elOf=o=>{const l=qa(o.sel);return l.find(x=>!x.classList.contains('mk-ghost'))||null};
+function isOpen(o,el){el=el||elOf(o);if(!el||!el.isConnected)return false;
+  if(o.cls)return el.classList.contains(o.cls);
+  if(o.hidden)return !el.hidden;
+  if(o.test)return !!o.test(el);
+  return el.getClientRects().length>0}
+const st=new Map();
+let ghostRoot=null;
+function ghostHost(){if(ghostRoot)return ghostRoot;const h=D.createElement('div');h.id='mk-gh';h.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:2147483000';
+  D.body.appendChild(h);ghostRoot=h.attachShadow({mode:'open'});
+  ghostRoot.innerHTML=qa('style').map(s=>s.outerHTML).join('');return ghostRoot}
+function ghost(node,kind){if(RM.matches)return;try{
+  const g=ghostHost();cA(node,'mk-ghost');node.setAttribute('data-mk-kind',kind);node.removeAttribute('data-mk-seen');
+  g.appendChild(node);setTimeout(()=>node.remove(),kind==='sheet'?280:240)}catch(e){}}
+function markOpen(o,el){el.setAttribute('data-mk-kind',o.kind);const p=o.panel?q(o.panel,el):el;if(p&&p!==el)p.setAttribute('data-mk-panel','');
+  if(o.kind==='menu'){cA(el,'mk-menu');bnc(el)}
+  if(p)cA(p,'mk-scroll');
+  clearTimeout(el._mkS);el.removeAttribute('data-mk-seen');el._mkS=setTimeout(()=>{if(isOpen(o,el))el.setAttribute('data-mk-seen','')},420)}
+function scanOverlays(recs){
+  for(const o of ALL){
+    const prev=st.get(o)||{open:false,el:null},el=elOf(o),open=isOpen(o,el);
+    if(open&&(!prev.open||prev.el!==el))markOpen(o,el);
+    if(prev.open&&(!open||prev.el!==el)&&prev.el){
+      const pe=prev.el;clearTimeout(pe._mkS);
+      if(!pe.isConnected)ghost(pe,o.kind);
+      else if(!open){
+        const g=pe.cloneNode(true);
+        if(o.cls){const r=recs&&recs.find(r=>r.target===pe&&r.attributeName==='class');g.className=r&&r.oldValue!=null?r.oldValue:g.className+' '+o.cls}
+        if(o.hidden)g.hidden=false;
+        if(o.panel){const pp=q(o.panel,pe),gp=q(o.panel,g);
+          const rem=recs?recs.filter(r=>r.type==='childList'&&r.target===pp).flatMap(r=>[...r.removedNodes]):[];
+          if(gp&&rem.length&&!pp.childNodes.length){rem.forEach(n=>gp.appendChild(n))}}
+        g.style.removeProperty('display');
+        pe.removeAttribute('data-mk-seen');pe.removeAttribute('data-mk-kind');
+        ghost(g,o.kind)}
+    }
+    if(!open&&el){el.removeAttribute('data-mk-seen')}
+    st.set(o,{open,el:open?el:null})}
+  const any=ALL.some(o=>(st.get(o)||{}).open)||!!q('.mk-pk')||!!q('.mk-ddmenu');
+  R.classList.toggle('mk-lock',any);
+}
+MK.anyOpen=()=>R.classList.contains('mk-lock');
+
+/* ======================= bounce at the ends of a list + keep touches out of the page under popups ======================= */
+function bnc(el){cA(el,'mk-bnc','mk-scroll')}
+const scrollableY=el=>{const s=getComputedStyle(el);return /(auto|scroll)/.test(s.overflowY)&&el.scrollHeight>el.clientHeight+1};
+let T=null;
+D.addEventListener('touchstart',e=>{T=null;if(e.touches.length!==1||!R.classList.contains('mk-lock'))return;
+  let s=e.target.nodeType===1?e.target:e.target.parentElement,sc=null;
+  for(;s&&s!==D.body;s=s.parentElement){if(scrollableY(s)){sc=s;break}if(s.matches('.mk-menu,.mk-pkd,[data-mk-panel]')){if(!sc)sc=s;break}}
+  T={sc,x:e.touches[0].clientX,y:e.touches[0].clientY,ly:e.touches[0].clientY,on:false,y0:0,dir:0}},{passive:true});
+D.addEventListener('touchmove',e=>{if(!T)return;const t=e.touches[0],dx=t.clientX-T.x,dy=t.clientY-T.y,step=t.clientY-T.ly;T.ly=t.clientY;
+  if(!T.on&&Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>8){if(!T.sc&&e.cancelable)e.preventDefault();return}
+  const sc=T.sc;
+  if(!sc||!scrollableY(sc)){if(e.cancelable)e.preventDefault();if(sc&&!RM.matches)pull(sc,dy);return}
+  const top=sc.scrollTop<=0,bot=sc.scrollTop+sc.clientHeight>=sc.scrollHeight-1;
+  if(!T.on&&((step>0&&top)||(step<0&&bot))){T.on=true;T.y0=t.clientY;T.dir=step>0?1:-1}
+  if(T.on){const d=t.clientY-T.y0;if(d*T.dir<=0){T.on=false;sc.style.setProperty('--mk-bo','0px');return}
+    if(e.cancelable)e.preventDefault();if(!RM.matches)pull(sc,d)}},{passive:false});
+function pull(sc,d){bnc(sc);cR(sc,'mk-settle');const o=Math.sign(d)*Math.min(140,Math.pow(Math.abs(d),.82)*.55);sc.style.setProperty('--mk-bo',o.toFixed(1)+'px');sc._mkB=1}
+function release(){if(!T)return;const sc=T.sc;T=null;if(sc&&sc._mkB){sc._mkB=0;cA(sc,'mk-settle');sc.style.setProperty('--mk-bo','0px');setTimeout(()=>cR(sc,'mk-settle'),520)}}
+D.addEventListener('touchend',release,{passive:true});D.addEventListener('touchcancel',release,{passive:true});
+
+/* ======================= tap outside closes (lists without their own mask) ======================= */
+D.addEventListener('pointerdown',e=>{for(const c of C.closers)for(const el of qa(c.sel)){if(!(c.open?c.open(el):el.getClientRects().length))continue;
+  if(el.contains(e.target)||(c.keep&&e.target.closest(c.keep)))continue;try{c.close(el)}catch(x){}}},true);
+
+/* ======================= status bar + navigation bar = the colour on screen ======================= */
+const parse=c=>{const m=String(c).match(/rgba?\(([^)]+)\)/);if(!m)return null;const p=m[1].split(/[ ,/]+/).filter(Boolean).map(Number);return [p[0],p[1],p[2],p.length>3?p[3]:1]};
+function bgAt(x,y){let el=D.elementFromPoint(x,y);const layers=[];
+  for(;el;el=el.parentElement){const c=parse(getComputedStyle(el).backgroundColor);if(c&&c[3]>0){layers.push(c);if(c[3]>=1)break}}
+  let base=parse(getComputedStyle(D.body).backgroundColor);if(!base||base[3]<1)base=parse(getComputedStyle(R).backgroundColor)||[255,255,255,1];
+  if(!layers.length||layers[layers.length-1][3]<1)layers.push(base);
+  let out=layers.pop().slice(0,3);while(layers.length){const l=layers.pop();out=out.map((v,i)=>v*(1-l[3])+l[i]*l[3])}
+  return out.map(Math.round)}
+const hex=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');
+const light=c=>(.2126*c[0]+.7152*c[1]+.0722*c[2])/255>.55;
+let lastBars='',bT=0;
+function bars(force){if(force)lastBars='';cancelAnimationFrame(bT);bT=requestAnimationFrame(()=>{
+  {const b=parse(getComputedStyle(D.body).backgroundColor);R.classList.toggle('mk-dark',!!b&&b[3]>0&&!light(b))}
+  if(!window.Android)return;
+  const top=bgAt(innerWidth/2,1),bot=bgAt(innerWidth/2,innerHeight-1),k=hex(top)+hex(bot);if(k===lastBars)return;lastBars=k;
+  try{if(Android.setBars)Android.setBars(hex(top),light(top))}catch(e){}
+  try{if(Android.setNav)Android.setNav(hex(bot),light(bot))}catch(e){}})}
+MK.bars=bars;
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>setTimeout(()=>bars(true),60));
+D.addEventListener('visibilitychange',()=>{if(!D.hidden)setTimeout(()=>bars(true),120)});
+
+/* ======================= Android back: close the top popup, then go back, never just quit ======================= */
+MK.back=function(){
+  if(q('.mk-pk')){pkClose();return true}
+  if(q('.mk-ddmenu')){ddClose();return true}
+  const open=ALL.filter(o=>isOpen(o)).sort((a,b)=>(+getComputedStyle(elOf(b)).zIndex||0)-(+getComputedStyle(elOf(a)).zIndex||0));
+  for(const o of open){const el=elOf(o);
+    if(o.close){try{if(o.close(el)!==false)return true}catch(e){}}
+    const m=o.mask?q(o.mask):el;if(m){m.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));if(!isOpen(o))return true}}
+  for(const c of C.closers)for(const el of qa(c.sel)){if(c.open?c.open(el):el.getClientRects().length){c.close(el);return true}}
+  if(typeof window.onBack==='function'){try{return !!window.onBack()}catch(e){}}
+  return false};
+MK.home=function(){if(C.home)return !!C.home();if(!C.tab)return false;const t=qa(C.tab);if(!t.length)return false;
+  if(t[0].classList.contains('on')&&!(C.isSub&&C.isSub()))return false;t[0].click();return true};
+
+/* ======================= Material dropdown for any plain <select> ======================= */
+const CHEV='<svg class="ch" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>';
+const ddOf=new WeakMap();let dd=null;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function ddSync(sel){const b=ddOf.get(sel);if(!b)return;const o=sel.selectedOptions&&sel.selectedOptions[0];b.querySelector('.v').textContent=o?o.textContent:(C.choose||'Choose…');b.classList.toggle('ph',!o);b.disabled=sel.disabled}
+function ddEnhance(sel){if(ddOf.has(sel)||sel.multiple||sel.classList.contains('mk-native'))return;const b=D.createElement('button');b.type='button';b.className='mk-dd';
+  b.innerHTML='<span class="v"></span>'+CHEV;sel.style.display='none';sel.after(b);ddOf.set(sel,b);
+  if(sel.id){b.id=sel.id+'-dd';const l=q('label[for="'+sel.id+'"]');if(l)l.htmlFor=b.id}
+  b.addEventListener('click',()=>ddOpen(sel,b));sel.addEventListener('change',()=>ddSync(sel));ddSync(sel)}
+function ddClose(){if(!dd)return;const c=dd;dd=null;c.sh.remove();cR(c.b,'open');c.m.remove();ghost(c.m,'menu');scanOverlays()}
+function ddOpen(sel,b){const same=dd&&dd.sel===sel;ddClose();if(same||sel.disabled)return;
+  const opts=[...sel.options].filter(o=>!o.disabled&&!o.hidden);if(!opts.length)return;
+  const sh=D.createElement('div');sh.className='mk-mask';sh.addEventListener('click',ddClose);
+  const m=D.createElement('div');m.className='mk-ddmenu mk-menu mk-bnc';m.setAttribute('role','listbox');m.setAttribute('data-mk-kind','menu');m.dir=getComputedStyle(b).direction;
+  m.innerHTML=opts.map(o=>'<button type="button" role="option" data-v="'+esc(o.value)+'"'+(o.selected?' class="sel"':'')+'><span>'+esc(o.textContent)+'</span></button>').join('');
+  D.body.append(sh,m);
+  const r=b.getBoundingClientRect(),below=innerHeight-r.bottom-14,above=r.top-14,need=Math.min(380,m.scrollHeight),down=below>=need||below>=above;
+  m.style.width=r.width+'px';m.style.left=r.left+'px';m.style.maxHeight=Math.min(380,down?below:above)+'px';
+  if(down)m.style.top=(r.bottom+4)+'px';else{m.style.bottom=(innerHeight-r.top+4)+'px';m.style.transformOrigin='bottom center'}
+  cA(b,'open');dd={sel,b,m,sh};const cur=m.querySelector('.sel');if(cur)m.scrollTop=Math.max(0,cur.offsetTop-m.clientHeight/2+24);
+  setTimeout(()=>{if(m.isConnected)m.setAttribute('data-mk-seen','')},300);scanOverlays();
+  m.addEventListener('click',e=>{const x=e.target.closest('[data-v]');if(!x)return;const v=x.dataset.v;ddClose();
+    if(sel.value!==v){sel.value=v;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}))}})}
+MK.enhanceSelect=ddEnhance;MK.syncSelect=ddSync;
+
+/* ======================= Material 3 date & month picker ======================= */
+const L=Object.assign({date:'Select date',month:'Select month',none:'No date',cancel:'Cancel',ok:'OK',clear:'Clear',today:'Today',thism:'This month',chooseD:'Choose a date',chooseM:'Choose a month',
+  mon:['January','February','March','April','May','June','July','August','September','October','November','December'],wd:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],wl:['S','M','T','W','T','F','S'],short:3},C.text||{});
+const MON=L.mon,WD=L.wd,sh=(x)=>L.short?x.slice(0,L.short):x;
+const IC_L='<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+const IC_R='<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+const IC_AR='<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>';
+const IC_CAL='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>';
+const okD=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||''),okM=v=>/^\d{4}-\d{2}$/.test(v||'');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+const pd=s=>{const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]||1)};
+let P=null;
+function pkShell(inner){let e=q('.mk-pk');
+  if(!e){e=D.createElement('div');e.className='mk-pk';e.setAttribute('data-mk-kind','dialog');D.body.appendChild(e);
+    e.addEventListener('click',ev=>{if(ev.target===e)pkClose()});
+    e.addEventListener('click',pkClick);setTimeout(()=>{if(e.isConnected)e.setAttribute('data-mk-seen','')},380)}
+  const old=q('.mk-pkd',e),sy=old?(q('.mk-pky',old)||{}).scrollLeft:0;
+  e.innerHTML='<div class="mk-pkd" data-mk-panel role="dialog" aria-modal="true">'+inner+'</div>';
+  const y=q('.mk-pky .sel',e);if(y){const s=q('.mk-pky',e);s.style.scrollBehavior='auto';s.scrollLeft=sy||Math.max(0,y.offsetLeft-s.clientWidth/2+y.offsetWidth/2);s.style.scrollBehavior=''}
+  scanOverlays();return e}
+function pkClose(){const e=q('.mk-pk');if(P&&P.btn)cR(P.btn,'open');const oc=P&&!P.done&&P.oncancel;P=null;if(oc)setTimeout(oc,0);if(e){e.remove();ghost(e,'dialog')}scanOverlays()}
+function pkDone(v){const cb=P&&P.cb;if(P)P.done=true;pkClose();if(cb)cb(v)}
+const inRange=v=>(!P.min||v>=P.min)&&(!P.max||v<=P.max);
+function drawDate(){const s=P.sel,h=s?pd(s):null;
+  let x='<div class="mk-pkh"><small>'+L.date+'</small><div class="big">'+(h?sh(WD[h.getDay()])+(L.comma==null?',':L.comma)+' '+h.getDate()+' '+sh(MON[h.getMonth()]):L.none)+'</div></div>';
+  x+='<div class="mk-pknav"><button type="button" class="mk-pkm'+(P.ym?' open':'')+'" data-k="ym">'+MON[P.m]+' '+P.y+IC_AR+'</button>'+
+    (P.ym?'':'<button type="button" class="mk-pki" data-k="prev" aria-label="Previous month">'+IC_L+'</button><button type="button" class="mk-pki" data-k="next" aria-label="Next month">'+IC_R+'</button>')+'</div>';
+  if(P.ym)x+=ymGrid(P.y,P.m);
+  else{const ws=C.weekStart,names=L.wl;x+='<div class="mk-pkg">';for(let i=0;i<7;i++)x+='<div class="wd">'+names[(i+ws)%7]+'</div>';
+    const lead=(new Date(P.y,P.m,1).getDay()-ws+7)%7,n=new Date(P.y,P.m+1,0).getDate(),td=today();for(let i=0;i<lead;i++)x+='<div></div>';
+    for(let k=1;k<=n;k++){const v=P.y+'-'+pad(P.m+1)+'-'+pad(k);x+='<button type="button" class="mk-pkday'+(v===s?' sel':'')+(v===td?' today':'')+'" data-k="d" data-v="'+v+'"'+(inRange(v)?'':' disabled')+'>'+k+'</button>'}x+='</div>'}
+  x+='<div class="mk-pkb">'+(P.clear?'<button type="button" data-k="clear">'+L.clear+'</button>':'<button type="button" data-k="today">'+L.today+'</button>')+'<span class="sp"></span><button type="button" data-k="cancel">'+L.cancel+'</button><button type="button" data-k="ok">'+L.ok+'</button></div>';
+  pkShell(x)}
+function ymGrid(y,m){const ny=new Date().getFullYear(),cm=new Date().getMonth();let ys='';for(let k=ny-12;k<=ny+10;k++)ys+='<button type="button" data-k="y" data-v="'+k+'" class="'+(k===y?'sel':'')+(k===ny?' cur':'')+'">'+k+'</button>';
+  let ms='';for(let i=0;i<12;i++)ms+='<button type="button" data-k="m" data-v="'+i+'" class="'+(i===m?'sel':'')+(i===cm&&y===ny?' cur':'')+'">'+sh(MON[i])+'</button>';
+  return '<div class="mk-pky">'+ys+'</div><div class="mk-pmo">'+ms+'</div>'}
+function drawMonth(){const s=P.sel;
+  pkShell('<div class="mk-pkh"><small>'+L.month+'</small><div class="big">'+(s?MON[+s.slice(5,7)-1]+' '+s.slice(0,4):L.none)+'</div></div>'+ymGrid(P.y,s&&+s.slice(0,4)===P.y?+s.slice(5,7)-1:-1)+
+   '<div class="mk-pkb"><button type="button" data-k="thism">'+L.thism+'</button><span class="sp"></span><button type="button" data-k="cancel">'+L.cancel+'</button><button type="button" data-k="ok">'+L.ok+'</button></div>')}
+function pkClick(ev){const b=ev.target.closest('[data-k]');if(!b||!P||b.disabled)return;const k=b.dataset.k;
+  if(k==='cancel')return pkClose();
+  if(k==='ok')return pkDone(P.sel);
+  if(k==='clear')return pkDone('');
+  if(P.kind==='date'){
+    if(k==='prev'||k==='next'){const d=new Date(P.y,P.m+(k==='next'?1:-1),1);P.y=d.getFullYear();P.m=d.getMonth()}
+    else if(k==='ym')P.ym=!P.ym;
+    else if(k==='y')P.y=+b.dataset.v;
+    else if(k==='m'){P.m=+b.dataset.v;P.ym=false}
+    else if(k==='d')P.sel=b.dataset.v;
+    else if(k==='today'){P.sel=today();P.y=new Date().getFullYear();P.m=new Date().getMonth();P.ym=false}
+    drawDate()}
+  else{if(k==='y')P.y=+b.dataset.v;else if(k==='m')P.sel=P.y+'-'+pad(+b.dataset.v+1);else if(k==='thism'){P.sel=today().slice(0,7);P.y=+P.sel.slice(0,4)}drawMonth()}}
+MK.pickDate=function(v,cb,o){o=o||{};const s=okD(v)?v:'',d=pd(s||today());P={kind:'date',sel:s||(o.blank?'':today()),y:d.getFullYear(),m:d.getMonth(),ym:false,cb,min:o.min||'',max:o.max||'',clear:!!o.clear,btn:o.btn,oncancel:o.oncancel};if(o.btn)cA(o.btn,'open');drawDate()};
+MK.pickMonth=function(v,cb,o){o=o||{};const s=okM(v)?v:today().slice(0,7);P={kind:'month',sel:s,y:+s.slice(0,4),cb,btn:o.btn,oncancel:o.oncancel};if(o.btn)cA(o.btn,'open');drawMonth()};
+
+/* any <input type=date|month> becomes a Material field that opens the picker */
+const dfOf=new WeakMap();
+const fmtD=v=>{const d=pd(v);return sh(WD[d.getDay()])+' '+d.getDate()+' '+sh(MON[d.getMonth()])+' '+d.getFullYear()};
+function dfSync(inp){const b=dfOf.get(inp);if(!b)return;const v=inp.value,k=inp.dataset.mkKind;
+  b.querySelector('.v').textContent=k==='month'?(okM(v)?MON[+v.slice(5,7)-1]+' '+v.slice(0,4):L.chooseM):(okD(v)?fmtD(v):(inp.dataset.ph||L.chooseD));
+  b.classList.toggle('ph',!v);b.disabled=inp.disabled}
+{const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+ Object.defineProperty(HTMLInputElement.prototype,'value',{configurable:true,get(){return d.get.call(this)},set(v){d.set.call(this,v);if(dfOf.has(this))dfSync(this)}})}
+function dfEnhance(inp){if(dfOf.has(inp)||inp.classList.contains('mk-native'))return;const kind=inp.type;if(kind!=='date'&&kind!=='month')return;
+  inp.dataset.mkKind=kind;const min=inp.getAttribute('min'),max=inp.getAttribute('max');inp.type='hidden';
+  const b=D.createElement('button');b.type='button';b.className='mk-df';b.innerHTML='<span class="v"></span>'+IC_CAL;inp.after(b);dfOf.set(inp,b);
+  b.addEventListener('click',ev=>{ev.preventDefault();if(inp.disabled)return;const set=v=>{if(inp.value===v)return;inp.value=v;inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}))};
+    if(kind==='month')MK.pickMonth(inp.value,set,{btn:b});
+    else MK.pickDate(inp.value,set,{btn:b,min:inp.getAttribute('min')||min,max:inp.getAttribute('max')||max,clear:!inp.required&&inp.dataset.clear!=='no'})});
+  dfSync(inp)}
+MK.enhanceDate=dfEnhance;
+
+/* ======================= header, tabs, add buttons, title dot ======================= */
+const GEAR='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>';
+const ADD=/^\s*(\+|＋)\s*\S|^\s*(add|new)\b|^\s*(إضافة|اضافة|أضف|اضف|جديد)/i;
+function decorate(root){
+  if(C.tabs)qa(C.tabs,root.nodeType===1&&root.matches(C.tabs)?root.parentNode:root).forEach(t=>cA(t,'mk-tabs'));
+  if(C.tab)qa(C.tab).forEach(t=>cA(t,'mk-tab'));
+  if(C.gear)qa(C.gear).forEach(g=>{if(!g.classList.contains('mk-gear')){cA(g,'mk-gear','mk-hbtn');g.innerHTML=GEAR}});
+  if(C.hbtns)qa(C.hbtns).forEach(g=>cA(g,'mk-hbtn'));
+  titleDot();
+  qa('button,.btn,a.btn',root.nodeType===1?root:D).forEach(b=>{if(!b.classList.contains('mk-add')&&!b.classList.contains('mk-tab')&&ADD.test(b.textContent||''))cA(b,'mk-add')});
+  if(C.autoDate)qa('input[type=date],input[type=month]',root.nodeType===1?root:D).forEach(dfEnhance);
+  if(C.autoSelect)qa('select',root.nodeType===1?root:D).forEach(ddEnhance);
+  if(root.nodeType===1&&C.autoDate&&root.matches('input[type=date],input[type=month]'))dfEnhance(root);
+  if(root.nodeType===1&&C.autoSelect&&root.matches('select'))ddEnhance(root);
+}
+MK.decorate=decorate;
+function titleDot(){if(!C.title)return;const t=q(C.title);if(!t)return;cA(t,'mk-title');if(!q(C.dotSel+',.mk-dot',t)&&t.textContent.trim()){const s=D.createElement('span');s.className='mk-dot';s.textContent='.';t.appendChild(s)}}
+
+/* ======================= page changes fade in ======================= */
+let lastKey=null;
+function screenKey(){try{return C.screenKey?C.screenKey():(location.hash+'|'+(C.title&&q(C.title)?q(C.title).textContent:''))}catch(e){return ''}}
+function maybeEnter(){const v=C.view&&q(C.view);const k=screenKey();if(lastKey===null){lastKey=k;return}if(k===lastKey||!v)return;lastKey=k;
+  if(RM.matches||R.classList.contains('mk-quiet'))return;
+  if(v.getAnimations&&v.getAnimations().some(a=>a.playState==='running'))return;
+  cR(v,'mk-enter');void v.offsetWidth;cA(v,'mk-enter');setTimeout(()=>cR(v,'mk-enter'),340)}
+
+/* ======================= wiring ======================= */
+function boot(){
+  decorate(D);scanOverlays();lastKey=screenKey();bars(true);
+  let busy=false;
+  new MutationObserver(recs=>{
+        if(busy)return;busy=true;
+    try{
+      for(const r of recs)if(r.type==='childList')for(const n of r.addedNodes){if(n.nodeType===1&&!n.closest('#mk-gh'))decorate(n)}
+      titleDot();
+      scanOverlays(recs);maybeEnter();bars();
+    }finally{busy=false}
+  }).observe(D.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','style'],attributeOldValue:true,characterData:true});
+  new MutationObserver(()=>bars(true)).observe(R,{attributes:true,attributeFilter:['class','data-theme','style']});
+  setTimeout(()=>bars(true),300);
+}
+if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+<!-- mkit:end -->
 </head>
 <body>
 <div id="top"><header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
@@ -1554,7 +1976,7 @@ document.addEventListener('click',ev=>{
   const t=ev.target.closest('[data-a]');if(!t)return;
   const a=t.dataset.a,id=t.dataset.id;
   switch(a){
-    case 'mpopen':monthSheet(+ui.month.slice(0,4));break;
+    case 'mpopen':MK.pickMonth(ui.month,v=>{ui.month=v;render()});break;
     case 'mpyear':monthSheet(+t.dataset.y);break;
     case 'mppick':ui.month=t.dataset.ym;closeModal();render();break;
     case 'msopen':{const box=t.closest('.ms');if(msBox===box)closeMs();else openMs(box);break}

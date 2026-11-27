@@ -119,8 +119,15 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (web.canGoBack()) web.goBack();
-        else super.onBackPressed();
+        // 1) let the page close its top popup / menu, 2) go back in the page history,
+        // 3) go to the first tab, 4) only then send the app to the background (never kill it).
+        web.evaluateJavascript("(function(){try{return !!(window.MK&&MK.back())}catch(e){return false}})()", v -> {
+            if ("true".equals(v)) return;
+            if (web.canGoBack()) { web.goBack(); return; }
+            web.evaluateJavascript("(function(){try{return !!(window.MK&&MK.home())}catch(e){return false}})()", h -> {
+                if (!"true".equals(h)) moveTaskToBack(true);
+            });
+        });
     }
 
     /* ---------- Google Drive ---------- */
@@ -204,6 +211,23 @@ public class MainActivity extends Activity {
 
     /** Functions the page can call as Android.xxx(). */
     private class Bridge {
+        /** Paints the navigation bar like the bottom of the page (a bottom sheet, the page, a dim popup). */
+        @JavascriptInterface
+        public void setNav(final String color, final boolean darkIcons) {
+            runOnUiThread(() -> {
+                try {
+                    android.view.Window w = getWindow();
+                    w.setNavigationBarColor(android.graphics.Color.parseColor(color));
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        android.view.View d = w.getDecorView();
+                        int f = d.getSystemUiVisibility();
+                        f = darkIcons ? (f | android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) : (f & ~android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                        d.setSystemUiVisibility(f);
+                    }
+                } catch (Exception ignored) {}
+            });
+        }
+
         /** Paints the phone's status and navigation bars like the page and picks light or dark icons. */
         @JavascriptInterface
         public void setBars(final String color, final boolean darkIcons) {
