@@ -241,6 +241,19 @@ input[type=checkbox]:focus{outline:none}
 .mk-ddmenu{position:fixed;z-index:1991;background:var(--mk-card);color:var(--mk-ink);padding:8px 0;overflow-y:auto;transform-origin:top center}
 .mk-ddmenu button{position:relative;display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:inherit;text-align:start;font:inherit;font-size:16px;padding:0 16px;min-height:48px;cursor:pointer}
 .mk-ddmenu button.sel{background:var(--mk-tint);color:var(--mk-acc);font-weight:600}
+/* dropdowns open as a centred pop-up list (Material 3 simple dialog), above every screen */
+.mk-mask.mk-dim{z-index:2147482000;background:rgba(2,6,23,.5);animation:mkFadeIn .18s ease both}
+.mk-ddmenu.mk-ddpop{z-index:2147482001;inset:0!important;margin:auto!important;width:min(360px,calc(100vw - 48px))!important;height:fit-content;max-height:min(72vh,540px)!important;
+ border-radius:28px;padding:0 0 10px;box-shadow:0 24px 60px rgba(0,0,0,.35),0 8px 20px rgba(0,0,0,.22);transform-origin:center}
+.mk-ddpop .mk-pt{position:sticky;top:0;z-index:1;background:var(--mk-card);padding:20px 24px 12px;font-size:19px;font-weight:700;line-height:1.25;border-bottom:1px solid var(--mk-line)}
+.mk-ddpop button{min-height:54px;padding:0 24px;gap:16px;font-size:16px}
+.mk-ddpop button span{flex:1}
+.mk-ddpop button .mk-rd{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--mk-mute);position:relative}
+.mk-ddpop button.sel{background:var(--mk-tint)}
+.mk-ddpop button.sel .mk-rd{border-color:var(--mk-acc)}
+.mk-ddpop button.sel .mk-rd::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--mk-acc)}
+.mk-ddpop[data-mk-kind=menu]:not([data-mk-seen]):not(.mk-ghost){animation:mkDlgIn .24s var(--mk-ease) both!important;transform-origin:center}
+.mk-ghost.mk-ddpop[data-mk-kind=menu]{animation:mkDlgOut .2s ease forwards!important}
 .mk-bnc>*{transform:translateY(var(--mk-bo,0px))}
 .mk-settle>*{transition:transform .5s cubic-bezier(.2,1.6,.4,1)}
 
@@ -480,20 +493,29 @@ function ddEnhance(sel){if(ddOf.has(sel)||sel.multiple||sel.classList.contains('
   b.innerHTML='<span class="v"></span>'+CHEV;sel.style.display='none';sel.after(b);ddOf.set(sel,b);
   if(sel.id){b.id=sel.id+'-dd';const l=q('label[for="'+sel.id+'"]');if(l)l.htmlFor=b.id}
   b.addEventListener('click',()=>ddOpen(sel,b));sel.addEventListener('change',()=>ddSync(sel));ddSync(sel)}
-function ddClose(){if(!dd)return;const c=dd;dd=null;c.sh.remove();cR(c.b,'open');c.m.remove();ghost(c.m,'menu');scanOverlays()}
+function ddClose(){if(!dd)return;const c=dd;dd=null;if(c.b)cR(c.b,'open');c.sh.remove();ghost(c.sh,'mask');c.m.remove();ghost(c.m,'menu');scanOverlays();if(c.onClose)try{c.onClose()}catch(e){}}
+/* pop-up list: MK.popList({title,items:[{v,label,sel}],onPick(v),onClose(),btn,dir}) */
+function popList(o){ddClose();const items=(o.items||[]).filter(x=>x);if(!items.length)return;
+  const sh=D.createElement('div');sh.className='mk-mask mk-dim';sh.addEventListener('click',ddClose);
+  const m=D.createElement('div');m.className='mk-ddmenu mk-menu mk-bnc mk-ddpop';m.setAttribute('role','listbox');m.setAttribute('data-mk-kind','menu');
+  m.dir=o.dir||getComputedStyle(o.btn||D.body).direction;if(o.title)m.setAttribute('aria-label',o.title);
+  m.innerHTML=(o.title?'<div class="mk-pt">'+esc(o.title)+'</div>':'')+items.map(x=>'<button type="button" role="option" data-v="'+esc(x.v)+'"'+(x.sel?' class="sel" aria-selected="true"':'')+'><span>'+esc(x.label)+'</span><i class="mk-rd"></i></button>').join('');
+  D.body.append(sh,m);if(o.btn)cA(o.btn,'open');
+  dd={sel:o.key||null,b:o.btn||null,m,sh,onClose:o.onClose};const cur=m.querySelector('.sel');if(cur)m.scrollTop=Math.max(0,cur.offsetTop-m.clientHeight/2+27);
+  setTimeout(()=>{if(m.isConnected)m.setAttribute('data-mk-seen','')},300);scanOverlays();
+  m.addEventListener('click',e=>{const x=e.target.closest('[data-v]');if(!x)return;const v=x.dataset.v;const f=o.onPick;dd&&(dd.onClose=null);ddClose();if(f)f(v)})}
+MK.popList=popList;MK.closeList=ddClose;
+function labelFor(sel,b){const LS='label,.lbl,.mk-fl,.fl,.ms-l';let l=null;const id=sel&&sel.id;
+  if(id)l=q('label[for="'+id+'"],label[for="'+id+'-dd"]');if(!l&&b)l=b.closest('label');
+  if(!l&&sel){let e=sel.previousElementSibling,n=0;while(e&&n<4&&!e.matches(LS)){if(e.matches('input,select,textarea,button,.mk-dd,.dd,.btn')){e=null;break}e=e.previousElementSibling;n++}if(e&&e.matches(LS))l=e}
+  if(!l&&sel&&sel.parentElement){const c=[...sel.parentElement.children].filter(x=>x.matches(LS));if(c.length===1)l=c[0]}
+  let t=l?l.textContent:'';if(!t&&sel)t=sel.getAttribute('aria-label')||sel.title||'';return (t||'').replace(/\s+/g,' ').trim()}
+MK.labelFor=labelFor;
 function ddOpen(sel,b){const same=dd&&dd.sel===sel;ddClose();if(same||sel.disabled)return;
   const opts=[...sel.options].filter(o=>!o.disabled&&!o.hidden);if(!opts.length)return;
-  const sh=D.createElement('div');sh.className='mk-mask';sh.addEventListener('click',ddClose);
-  const m=D.createElement('div');m.className='mk-ddmenu mk-menu mk-bnc';m.setAttribute('role','listbox');m.setAttribute('data-mk-kind','menu');m.dir=getComputedStyle(b).direction;
-  m.innerHTML=opts.map(o=>'<button type="button" role="option" data-v="'+esc(o.value)+'"'+(o.selected?' class="sel"':'')+'><span>'+esc(o.textContent)+'</span></button>').join('');
-  D.body.append(sh,m);
-  const r=b.getBoundingClientRect(),below=innerHeight-r.bottom-14,above=r.top-14,need=Math.min(380,m.scrollHeight),down=below>=need||below>=above;
-  m.style.width=r.width+'px';m.style.left=r.left+'px';m.style.maxHeight=Math.min(380,down?below:above)+'px';
-  if(down)m.style.top=(r.bottom+4)+'px';else{m.style.bottom=(innerHeight-r.top+4)+'px';m.style.transformOrigin='bottom center'}
-  cA(b,'open');dd={sel,b,m,sh};const cur=m.querySelector('.sel');if(cur)m.scrollTop=Math.max(0,cur.offsetTop-m.clientHeight/2+24);
-  setTimeout(()=>{if(m.isConnected)m.setAttribute('data-mk-seen','')},300);scanOverlays();
-  m.addEventListener('click',e=>{const x=e.target.closest('[data-v]');if(!x)return;const v=x.dataset.v;ddClose();
-    if(sel.value!==v){sel.value=v;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}))}})}
+  popList({key:sel,btn:b,title:labelFor(sel,b),items:opts.map(o=>({v:o.value,label:o.textContent,sel:o.selected})),
+    onPick:v=>{if(sel.value!==v){sel.value=v;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}))}}})}
+MK.openSelect=ddOpen;
 MK.enhanceSelect=ddEnhance;MK.syncSelect=ddSync;
 
 /* ======================= Material 3 date & month picker ======================= */
@@ -1170,12 +1192,14 @@ function msel(id,label,opts,cur){
     '<button type="button" class="ms-b" data-a="msopen" aria-haspopup="listbox"><span class="ms-v">'+esc(o?o[1]:'')+'</span>'+ARROW+'</button></div>';
 }
 let msBox=null;
-function closeMs(){
+function closeMs(){if(window.MK&&MK.closeList&&document.querySelector('.mk-ddpop'))MK.closeList();
   const a=$('#msmask'),b=$('#msmenu');if(a)a.remove();if(b)b.remove();
   if(msBox){const bt=$('.ms-b',msBox);if(bt)bt.classList.remove('open')}
   msBox=null;
 }
 function openMs(box){
+  if(window.MK&&MK.popList){closeMs();const opts=JSON.parse(box.dataset.opts),cur=box.dataset.cur,btn=$('.ms-b',box),lb=$('.ms-l',box);msBox=box;MK.popList({btn,title:lb?lb.textContent:'',items:opts.map(o=>({v:o[0],label:o[1],sel:o[0]===cur})),onClose:()=>{if(msBox===box)msBox=null},onPick:v=>{msBox=null;box.dataset.cur=v;applySelect(box.dataset.ms,v,box)}});return}
+
   closeMs();
   const opts=JSON.parse(box.dataset.opts),cur=box.dataset.cur,btn=$('.ms-b',box),r=btn.getBoundingClientRect();
   const mask=document.createElement('div');mask.id='msmask';
@@ -2437,7 +2461,7 @@ document.addEventListener('pointerdown',timePre,true);document.addEventListener(
 window.addEventListener('popstate',()=>{closeMs();if(sel){selPushed=false;if($('#modal').classList.contains('show'))closeModal();selDone();return}if(view==='settings'){view=prevView||'home';render()}else if(view!=='home'){view='home';render()}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeMs()});
 window.addEventListener('resize',closeMs);
-document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&t.id==='msmenu')return;closeMs()},true);
+document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&(t.id==='msmenu'||(t.closest&&t.closest('.mk-ddpop'))))return;closeMs()},true);
 /* Only the home screen refreshes on resume; redrawing other screens could swallow a file picked from the chooser. */
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
