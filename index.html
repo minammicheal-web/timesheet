@@ -850,6 +850,92 @@ if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boo
 })();
 </script>
 <!-- m3fb:end -->
+<!-- mupd:start · M3 Studio in-app updates from GitHub Releases (same block in every app) -->
+<style id="mupd-css">
+#mupd{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;z-index:1990;
+ display:flex;align-items:center;gap:12px;padding:12px 10px 12px 16px;border-radius:20px;background:var(--mk-card,#fff);color:var(--mk-ink,#0a1a33);
+ border:1px solid var(--mk-line,#e0e6ef);box-shadow:var(--mk-pop,0 8px 24px rgba(10,26,51,.2));font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ transform:translateY(calc(100% + 48px));opacity:0;visibility:hidden;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .25s,visibility 0s .32s}
+#mupd.on{transform:none;opacity:1;visibility:visible;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .25s}
+#mupd .ic{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--mk-tint,#dce7f8)}
+#mupd .t{flex:1;min-width:0}#mupd .t b{display:block;font-size:15px}#mupd .t small{display:block;font-size:13px;color:var(--mk-mute,#55647c)}
+#mupd .bar{height:6px;border-radius:6px;background:var(--mk-tint,#dce7f8);overflow:hidden;margin-top:7px}
+#mupd .bar i{display:block;height:100%;width:0;background:var(--mk-acc,#0d3b8c);border-radius:6px;transition:width .25s}
+#mupd .bar.ind i{width:35%;animation:mupdInd 1.1s ease-in-out infinite}
+@keyframes mupdInd{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
+#mupd button{position:relative;overflow:hidden;flex:none;border:0;cursor:pointer;font:700 14px system-ui,sans-serif}
+#mupd .go{background:var(--mk-acc,#0d3b8c);color:var(--mk-on,#fff);border-radius:999px;min-height:40px;padding:0 18px}
+#mupd .x{background:none;color:var(--mk-mute,#55647c);width:36px;height:36px;border-radius:50%;font-size:18px;padding:0}
+#mupd [hidden]{display:none!important}
+</style>
+<script id="mupd-js">(function(){
+'use strict';
+var U=null;try{U=window.M3U||null}catch(e){}
+var LS='mupd.', D=document, st={latest:0,current:0,manual:false,state:''}, el=null, hideT=0;
+function ar(){var h=D.documentElement;return /^ar/i.test(h.lang||'')||h.dir==='rtl'}
+function T(en,a){return ar()?a:en}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(LS+k);localStorage.setItem(LS+k,String(v))}catch(e){return null}}
+function build(){if(el)return el;el=D.createElement('div');el.id='mupd';el.setAttribute('role','status');
+ el.innerHTML='<span class="ic">🔄</span><span class="t"><b></b><small></small><span class="bar" hidden><i></i></span></span><button class="go" type="button"></button><button class="x" type="button" aria-label="Close">✕</button>';
+ el.querySelector('.go').addEventListener('click',onGo);el.querySelector('.x').addEventListener('click',function(){
+  if(st.state==='avail'&&st.latest)ls('skip',st.latest);hide()});
+ D.body.appendChild(el);return el}
+function show(state,title,sub,goLabel,pct,auto){build();st.state=state;clearTimeout(hideT);
+ el.querySelector('.t b').textContent=title;el.querySelector('.t small').textContent=sub||'';
+ var g=el.querySelector('.go');if(goLabel){g.textContent=goLabel;g.hidden=false}else g.hidden=true;
+ var bar=el.querySelector('.bar'),i=bar.firstChild;if(pct===undefined){bar.hidden=true}else{bar.hidden=false;
+  if(pct<0){bar.classList.add('ind')}else{bar.classList.remove('ind');i.style.width=pct+'%'}}
+ el.querySelector('.x').hidden=(state==='dl'||state==='inst');
+ if(!el.classList.contains('on')){void el.offsetWidth;el.classList.add('on')}
+ if(auto)hideT=setTimeout(hide,auto)}
+function hide(){if(el&&el.classList.contains('on'))el.classList.remove('on');st.state=''}
+function mb(n){return n?(' · '+(n/1048576).toFixed(1)+' MB'):''}
+function onGo(){if(!U)return;
+ if(st.state==='avail'||st.state==='perm'||st.state==='err2'){show('dl',T('Downloading update…','جاري تحميل التحديث…'),'',null,-1);U.install()}}
+function check(manual){if(!U)return;st.manual=!!manual;ls('last',Date.now());
+ if(manual)show('chk',T('Checking for updates…','بيدور على تحديث…'),'',null,-1);U.check()}
+window.onM3U=function(m){if(!m)return;
+ if(m.type==='check'){st.latest=m.latest;st.current=m.current;
+  if(m.latest>m.current&&m.hasApk){if(!st.manual&&String(ls('skip'))===String(m.latest))return;
+   show('avail',T('New version '+m.latest+' is ready','فيه نسخة جديدة '+m.latest),T('You have version '+m.current,'النسخة اللي عندك '+m.current)+mb(m.size),T('Update','تحديث'))}
+  else if(st.manual)show('ok',T('You have the latest version','عندك آخر نسخة'),T('Version ','النسخة ')+m.current,null,undefined,2600)}
+ else if(m.type==='progress')show('dl',T('Downloading update…','جاري تحميل التحديث…'),m.pct>=0?m.pct+'%':'',null,m.pct)
+ else if(m.type==='installing')show('inst',T('Installing…','جاري التثبيت…'),T('The app will restart by itself','التطبيق هيقفل ويتحدث لوحده'),null,-1)
+ else if(m.type==='confirm')show('inst',T('Tap Update on the Android screen','اضغط "تحديث" في شاشة أندرويد'),T('Next time it updates without asking','المرة الجاية هيتحدث من غير ما يسألك'),null,-1)
+ else if(m.type==='perm')show('perm',T('Allow updates for this app','اسمح للتطبيق إنه يثبت التحديثات'),T('Turn on "Allow from this source", then come back','فعّل "السماح من هذا المصدر" وارجع هنا'),T('Update','تحديث'))
+ else if(m.type==='done')show('ok',T('Updated','اتحدث'),'',null,undefined,2500)
+ else if(m.type==='cancel')show('avail',T('Update cancelled','التحديث اتلغى'),T('Tap Update to try again','دوس تحديث تاني'),T('Update','تحديث'))
+ else if(m.type==='error'){if(st.state==='dl'||st.state==='inst')show('err2',T('Update failed','التحديث منفعش'),T('Check the internet and try again','اتأكد من النت وجرب تاني'),T('Retry','حاول تاني'));
+  else if(st.manual)show('err',T("Couldn't check for updates","مقدرتش أدور على تحديث"),T('Check the internet and try again','اتأكد من النت وجرب تاني'),null,undefined,3200)}};
+/* settings entry: a twin of the Customer support row */
+var VER=0;try{VER=U?JSON.parse(U.info()).version:0}catch(e){}
+function addRow(){var fb=D.querySelectorAll('[data-m3fb]');
+ for(var k=0;k<fb.length;k++){var b=fb[k],host=(b.parentElement&&b.parentElement.classList.contains('sw'))?b.parentElement:b;
+  var prev=host.previousElementSibling;if(prev&&(prev.hasAttribute('data-mupd')||prev.querySelector('[data-mupd]')))continue;
+  var c=host.cloneNode(true),btn=c.hasAttribute('data-m3fb')?c:c.querySelector('[data-m3fb]');
+  btn.removeAttribute('data-m3fb');btn.setAttribute('data-mupd','');if(c!==btn)c.setAttribute('data-mupd','');
+  var w=D.createTreeWalker(c,NodeFilter.SHOW_TEXT),n,nodes=[];while((n=w.nextNode()))nodes.push(n);
+  nodes.forEach(function(t){t.nodeValue=t.nodeValue.replace('🎧','🔄')});
+  var title=T('Check for updates','التحقق من التحديثات'),sub=T('Installed version ','النسخة الحالية ')+VER;
+  var bb=c.querySelector('b'),sm=c.querySelector('small');
+  if(bb&&sm){bb.textContent=title;sm.textContent=sub}
+  else{var best=null;nodes.forEach(function(t){if(t.parentNode&&t.parentNode.classList&&(t.parentNode.classList.contains('ic')||t.parentNode.classList.contains('go')))return;
+    if(c.tagName!=='BUTTON'&&btn.contains(t))return;if(!best||t.nodeValue.trim().length>best.nodeValue.trim().length)best=t});
+   if(best)best.nodeValue=(/🔄/.test(best.nodeValue)?'🔄 ':'')+title+' — '+sub}
+  if(c!==btn)btn.textContent=T('Check','تحقق');
+  btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();check(true)});
+  host.parentNode.insertBefore(c,host)}}
+var pend=0;function sched(){if(pend)return;pend=requestAnimationFrame(function(){pend=0;addRow()})}
+function start(){if(!U)return;sched();
+ new MutationObserver(function(ms){for(var i=0;i<ms.length;i++)if(ms[i].addedNodes.length){sched();return}}).observe(D.body,{childList:true,subtree:true});
+ var last=+ls('last')||0;if(Date.now()-last>3*3600e3)setTimeout(function(){check(false)},2500);
+ D.addEventListener('visibilitychange',function(){if(D.visibilityState!=='visible')return;
+  if(st.state==='perm'){try{if(JSON.parse(U.info()).canInstall)onGo()}catch(e){}}
+  else if(!st.state&&Date.now()-(+ls('last')||0)>3*3600e3)check(false)})}
+if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',start);else start();
+window.MUPD={check:check};
+})();</script>
+<!-- mupd:end -->
 </head>
 <body>
 <div id="top"><header><button id="back" class="hide" aria-label="Back">‹</button><h1 id="title">Attendance</h1><button id="gear" data-go="settings" aria-label="Settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></header>
