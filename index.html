@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f3f6f8">
+<meta name="theme-color" content="#f1f4f9">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <title>Attendance &amp; Leave</title>
 <style>
 :root{
-  --bg:#f3f6f8;--card:#fff;--text:#0f172a;--muted:#5b6b80;--line:#e5eaf0;
-  --accent:#0f766e;--on-accent:#fff;--soft:#d9f2ee;--danger:#dc2626;--on-danger:#fff;--danger-soft:#fee2e2;
+  --bg:#f1f4f9;--card:#fff;--text:#0a1a33;--muted:#55647c;--line:#e0e6ef;
+  --accent:#0d3b8c;--on-accent:#fff;--soft:#dce7f8;--danger:#dc2626;--on-danger:#fff;--danger-soft:#fee2e2;
   --warn:#b45309;--warn-soft:#fef3c7;--ok:#15803d;--ok-soft:#dcfce7;--info:#1d4ed8;--info-soft:#dbeafe;
-  --danger-fg:#b91c1c;--dot:#16a34a;--pill-shadow:0 10px 22px rgba(15,23,42,.16),0 3px 7px rgba(15,23,42,.10),inset 0 1px 0 rgba(255,255,255,.9);--pill-on-shadow:0 4px 10px rgba(15,23,42,.35);--hdr-bg:#0b5f58;--hdr-fg:#fff;--toast-bg:#0f172a;--toast-fg:#fff;--outline:#79868f;color-scheme:light;
-  --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.05)}
-:root[data-theme=dark]{--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--dot:#3ddc97;--pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--pill-on-shadow:0 4px 12px rgba(0,0,0,.55);--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--card:#131c2e;--text:#e6edf6;--muted:#9fb0c6;--line:#27354f;--accent:#2dd4bf;--on-accent:#04201c;--soft:#12332f;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--dot:#3ddc97;--pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--pill-on-shadow:0 4px 12px rgba(0,0,0,.55);--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf6;--toast-fg:#0b1220;--outline:#8a98ab;color-scheme:dark}}
+  --danger-fg:#b91c1c;--dot:#2f7cf6;--pill-shadow:0 10px 22px rgba(10,26,51,.16),0 3px 7px rgba(10,26,51,.10),inset 0 1px 0 rgba(255,255,255,.9);--pill-on-shadow:0 4px 10px rgba(10,26,51,.35);--hdr-bg:#0d3b8c;--hdr-fg:#fff;--toast-bg:#0a1a33;--toast-fg:#fff;--outline:#76849a;color-scheme:light;
+  --shadow:0 1px 2px rgba(10,26,51,.05),0 4px 14px rgba(10,26,51,.05)}
+:root[data-theme=dark]{--bg:#071226;--card:#0f1c33;--text:#e6edf8;--muted:#9babc4;--line:#213153;--accent:#8db8ff;--on-accent:#04122b;--soft:#16305c;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--dot:#5aa0ff;--pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--pill-on-shadow:0 4px 12px rgba(0,0,0,.55);--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf8;--toast-fg:#071226;--outline:#8796ad;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#071226;--card:#0f1c33;--text:#e6edf8;--muted:#9babc4;--line:#213153;--accent:#8db8ff;--on-accent:#04122b;--soft:#16305c;--danger:#f87171;--on-danger:#2a0a0a;--danger-soft:#3b1717;--warn:#fbbf24;--warn-soft:#3a2d0b;--ok:#4ade80;--ok-soft:#10301c;--info:#93c5fd;--info-soft:#16284a;--shadow:none;--danger-fg:#f87171;--dot:#5aa0ff;--pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--pill-on-shadow:0 4px 12px rgba(0,0,0,.55);--hdr-bg:#0e3b37;--hdr-fg:#e0fbf7;--toast-bg:#e6edf8;--toast-fg:#071226;--outline:#8796ad;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 #top{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:env(safe-area-inset-top)}
@@ -134,7 +134,7 @@ main .ms-l{background:var(--bg)}
 /* Round checkboxes (native inputs and the log's selection circles) with a ripple on press */
 input[type=checkbox],.cbx{-webkit-appearance:none;appearance:none;position:relative;flex:none;display:inline-block;width:22px;height:22px;margin:0;padding:0;
   border:2px solid var(--outline);border-radius:50%;background:transparent;cursor:pointer;vertical-align:middle;transition:background-color .18s,border-color .18s;
-  --rc:rgba(15,118,110,.3)}
+  --rc:rgba(13,59,140,.3)}
 @supports (color:color-mix(in srgb,red 50%,blue)){input[type=checkbox],.cbx{--rc:color-mix(in srgb,var(--accent) 34%,transparent)}}
 input[type=checkbox]::after,.cbx::after{content:"";position:absolute;left:5.5px;top:1.5px;width:5px;height:10px;border:solid var(--on-accent);border-width:0 2.5px 2.5px 0;
   transform:rotate(45deg) scale(0);transition:transform .2s cubic-bezier(.2,.8,.3,1.5)}
@@ -158,15 +158,15 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offse
 /* Floating "+ Add" button, bottom right (same as the expenses app) */
 .fab{position:fixed;right:max(18px,calc(50vw - 292px));bottom:calc(18px + env(safe-area-inset-bottom));z-index:4;border:0;border-radius:999px;background:var(--accent);color:var(--on-accent);
   font:800 17px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 24px;min-height:58px;cursor:pointer;overflow:hidden;
-  box-shadow:0 10px 22px rgba(15,23,42,.28),0 3px 7px rgba(15,23,42,.18);transition:transform .15s,box-shadow .15s;animation:fabIn .28s cubic-bezier(.2,.8,.2,1)}
-.fab:active{transform:scale(.96);box-shadow:0 5px 12px rgba(15,23,42,.26),0 2px 4px rgba(15,23,42,.16)}
+  box-shadow:0 10px 22px rgba(10,26,51,.28),0 3px 7px rgba(10,26,51,.18);transition:transform .15s,box-shadow .15s;animation:fabIn .28s cubic-bezier(.2,.8,.2,1)}
+.fab:active{transform:scale(.96);box-shadow:0 5px 12px rgba(10,26,51,.26),0 2px 4px rgba(10,26,51,.16)}
 :root[data-theme=dark] .fab{box-shadow:0 10px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.45)}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .fab{box-shadow:0 10px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.45)}}
 @keyframes fabIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 body.fabon main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 body.selon main{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 #selbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--card);border-top:1px solid var(--line);border-radius:20px 20px 0 0;
-  box-shadow:0 -8px 24px rgba(15,23,42,.14);padding:10px 14px calc(14px + env(safe-area-inset-bottom));animation:sbUp .26s cubic-bezier(.2,.8,.2,1)}
+  box-shadow:0 -8px 24px rgba(10,26,51,.14);padding:10px 14px calc(14px + env(safe-area-inset-bottom));animation:sbUp .26s cubic-bezier(.2,.8,.2,1)}
 @keyframes sbUp{from{transform:translateY(100%)}to{transform:none}}
 #selbar .in{max-width:620px;margin:0 auto}
 .sb-top{display:flex;align-items:center;gap:10px}
@@ -174,6 +174,11 @@ body.selon main{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .sb-n{flex:1;font-weight:800;font-size:17px}
 .sb-all{display:flex;align-items:center;gap:10px;margin:0;padding:8px 4px;color:var(--text);font-size:15px;font-weight:600;cursor:pointer}
 #selbar .btns{margin-top:8px}
+
+/* ---- CheckBook look (navy family) — shared by every app ---- */
+.tab.on,#tabs .tab.on,.mk-tab.on{background:var(--accent)!important;color:var(--on-accent)!important}
+.btn.ghost{background:var(--soft);color:var(--accent)}
+:root{--rc:rgba(13,59,140,.3)}:root[data-theme=dark]{--rc:rgba(141,184,255,.3)}
 </style>
 <script id="mk-cfg">window.MKCFG={tabs:'#tabs',tab:'#tabs .tab',overlays:[{sel:'#modal',cls:'show',panel:'#sheet',kind:'sheet'}],
  menus:[{sel:'#msmenu',mask:'#msmask'}],view:'#view',title:'#title',dotSel:'.dot',gear:'#gear',hbtns:'#back',autoDate:true,
@@ -181,9 +186,9 @@ body.selon main{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 <!-- mkit:start · Mina's shared Material kit (same block in every app; only MKCFG changes) -->
 <style id="mk-css">
 /* ---------- shared tokens (each app maps them to its own variables in MKCFG.vars) ---------- */
-:root{--mk-ease:cubic-bezier(.2,.8,.2,1);--mk-pop:0 2px 6px 2px rgba(15,23,42,.14),0 8px 24px rgba(15,23,42,.18),0 1px 2px rgba(15,23,42,.25);
- --mk-pill-shadow:0 10px 22px rgba(15,23,42,.16),0 3px 7px rgba(15,23,42,.10),inset 0 1px 0 rgba(255,255,255,.9);--mk-pill-on:0 4px 10px rgba(15,23,42,.35);
- --mk-fab-shadow:0 10px 22px rgba(15,23,42,.28),0 3px 7px rgba(15,23,42,.18)}
+:root{--mk-ease:cubic-bezier(.2,.8,.2,1);--mk-pop:0 2px 6px 2px rgba(10,26,51,.14),0 8px 24px rgba(10,26,51,.18),0 1px 2px rgba(10,26,51,.25);
+ --mk-pill-shadow:0 10px 22px rgba(10,26,51,.16),0 3px 7px rgba(10,26,51,.10),inset 0 1px 0 rgba(255,255,255,.9);--mk-pill-on:0 4px 10px rgba(10,26,51,.35);
+ --mk-fab-shadow:0 10px 22px rgba(10,26,51,.28),0 3px 7px rgba(10,26,51,.18)}
 :root.mk-dark{--mk-pop:0 2px 6px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.6);
  --mk-pill-shadow:0 12px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07);--mk-pill-on:0 4px 12px rgba(0,0,0,.55);--mk-fab-shadow:0 10px 24px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.45)}
 
@@ -773,7 +778,7 @@ if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boo
   function colors() {
     var vars = (window.MKCFG && MKCFG.vars) || {}, cs = getComputedStyle(D.body), g = function (n, d) { var v = n && cs.getPropertyValue(n).trim(); return v || d; };
     var dark = (function () { var b = cs.backgroundColor.match(/\d+/g); return b ? (b[0] * .3 + b[1] * .59 + b[2] * .11) < 110 : false; })();
-    var acc = g(vars.acc || '--accent', g('--acc', '#0f766e'));
+    var acc = g(vars.acc || '--accent', g('--acc', '#0d3b8c'));
     el.style.cssText = '--fb-acc:' + acc + ';--fb-on:' + g(vars.on, '#fff') + ';--fb-ink:' + (dark ? '#e8eef7' : '#0f172a') + ';--fb-mute:' + (dark ? '#9aa7b8' : '#5b6b80') + ';--fb-line:' + (dark ? '#2b3a52' : '#d9e0e8') + ';--fb-card:' + (dark ? '#131c2e' : '#fff') + ';--fb-tint:' + (dark ? 'rgba(255,255,255,.08)' : 'rgba(15,118,110,.10)');
   }
   function draw() {
@@ -1798,8 +1803,8 @@ function applyTheme(){
   const dark=t==='dark'||(t!=='light'&&deviceDark());
   /* always set explicitly so it works even where the WebView does not report the device mode */
   root.setAttribute('data-theme',dark?'dark':'light');
-  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',dark?'#0b1220':'#f3f6f8');
-  try{if(window.Android&&Android.setBars)Android.setBars(dark?'#0b1220':'#f3f6f8',!dark)}catch(e){};
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',dark?'#071226':'#f1f4f9');
+  try{if(window.Android&&Android.setBars)Android.setBars(dark?'#071226':'#f1f4f9',!dark)}catch(e){};
 }
 window.onDeviceTheme=applyTheme;
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyTheme()});
